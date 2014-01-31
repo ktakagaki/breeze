@@ -63,7 +63,8 @@ libraryDependencies ++= Seq(
     "org.apache.logging.log4j" % "log4j-slf4j-impl" % "2.0-beta9" % "test",
     "org.apache.logging.log4j" % "log4j-core" % "2.0-beta9" % "test",
     "org.apache.logging.log4j" % "log4j-api" % "2.0-beta9" % "test",
-    "com.chuusai" % "shapeless_2.10.3" % "2.0.0-M1" % "test"
+    "com.chuusai" % "shapeless_2.10.3" % "2.0.0-M1" % "test",
+  "org.scalafx" % "scalafx_2.10" % "1.0.0-M7"
   )
 
 // see https://github.com/typesafehub/scalalogging/issues/23
