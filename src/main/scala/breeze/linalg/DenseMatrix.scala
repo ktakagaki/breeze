@@ -355,11 +355,18 @@ with MatrixConstructors[DenseMatrix] {
 
   implicit def canSliceRows[V]: CanSlice2[DenseMatrix[V], Range, ::.type, DenseMatrix[V]] = {
     new CanSlice2[DenseMatrix[V], Range, ::.type, DenseMatrix[V]] {
-      def apply(m: DenseMatrix[V], rows: Range, ignored: ::.type) = {
+      def apply(m: DenseMatrix[V], rowsWNegative: Range, ignored: ::.type) = {
+
+        val rows = rowsWNegative.getRangeWithoutNegativeIndexes(m.rows)
+
         if(rows.isEmpty) new DenseMatrix(0, m.cols, m.data, 0, 0)
         else if(!m.isTranspose) {
           require(rows.step == 1, "Sorry, we can't support row ranges with step sizes other than 1")
           val first = rows.head
+          require(rows.last < m.rows)
+          if(rows.last >= m.rows) {
+            throw new IndexOutOfBoundsException(s"Row slice of $rows was bigger than matrix rows of ${m.rows}")
+          }
           new DenseMatrix(rows.length, m.cols, m.data, m.offset + first, m.majorStride)
         } else {
           canSliceCols(m.t, ::, rows).t
@@ -368,20 +375,18 @@ with MatrixConstructors[DenseMatrix] {
     }
   }
 
-  implicit def canSliceRowsSuffix[V]: CanSlice2[DenseMatrix[V], RangeSuffix, ::.type, DenseMatrix[V]] = {
-    new CanSlice2[DenseMatrix[V], RangeSuffix, ::.type, DenseMatrix[V]] {
-      def apply(m: DenseMatrix[V], rows: RangeSuffix, ignored: ::.type) = {
-        canSliceRows(m, rows.start until m.rows, ::)
-      }
-    }
-  }
-
   implicit def canSliceCols[V]: CanSlice2[DenseMatrix[V], ::.type, Range, DenseMatrix[V]] = {
     new CanSlice2[DenseMatrix[V], ::.type, Range, DenseMatrix[V]] {
-      def apply(m: DenseMatrix[V], ignored: ::.type, cols: Range) = {
+      def apply(m: DenseMatrix[V], ignored: ::.type, colsWNegative: Range) = {
+
+        val cols = colsWNegative.getRangeWithoutNegativeIndexes(m.cols)
+
         if(cols.isEmpty) new DenseMatrix(m.rows, 0, m.data, 0, 1)
         else if(!m.isTranspose) {
           val first = cols.head
+          if(cols.last >= m.cols) {
+            throw new IndexOutOfBoundsException(s"Col slice of $cols was bigger than matrix cols of ${m.cols}")
+          }
           new DenseMatrix(m.rows, cols.length, m.data, m.offset + first * m.majorStride, m.majorStride * cols.step)
         } else {
           canSliceRows(m.t, cols, ::).t
@@ -390,21 +395,23 @@ with MatrixConstructors[DenseMatrix] {
     }
   }
 
-  implicit def canSliceColsSuffix[V]: CanSlice2[DenseMatrix[V], ::.type, RangeSuffix, DenseMatrix[V]] = {
-    new CanSlice2[DenseMatrix[V], ::.type, RangeSuffix, DenseMatrix[V]] {
-      def apply(m: DenseMatrix[V], ignored: ::.type, cols: RangeSuffix) = {
-        canSliceCols(m, ::, cols.start until m.cols)
-      }
-    }
-  }
-
   implicit def canSliceColsAndRows[V]: CanSlice2[DenseMatrix[V], Range, Range, DenseMatrix[V]] = {
     new CanSlice2[DenseMatrix[V], Range, Range, DenseMatrix[V]] {
-      def apply(m: DenseMatrix[V], rows: Range, cols: Range) = {
-        if(rows.isEmpty || cols.isEmpty) new DenseMatrix(0, 0, m.data, 0, 1)
+      def apply(m: DenseMatrix[V], rowsWNegative: Range, colsWNegative: Range) = {
+
+        val rows = rowsWNegative.getRangeWithoutNegativeIndexes(m.rows)
+        val cols = colsWNegative.getRangeWithoutNegativeIndexes(m.cols)
+
+        if(rows.isEmpty || cols.isEmpty) new DenseMatrix(rows.size, cols.size, m.data, 0, 1)
         else if(!m.isTranspose) {
           require(rows.step == 1, "Sorry, we can't support row ranges with step sizes other than 1 for non transposed matrices")
           val first = cols.head
+          if(rows.last >= m.rows) {
+            throw new IndexOutOfBoundsException(s"Row slice of $rows was bigger than matrix rows of ${m.rows}")
+          }
+          if(cols.last >= m.cols) {
+            throw new IndexOutOfBoundsException(s"Col slice of $cols was bigger than matrix cols of ${m.cols}")
+          }
           new DenseMatrix(rows.length, cols.length, m.data, m.offset + first * m.rows + rows.head, m.majorStride * cols.step)
         } else {
           require(cols.step == 1, "Sorry, we can't support col ranges with step sizes other than 1 for transposed matrices")
@@ -426,11 +433,17 @@ with MatrixConstructors[DenseMatrix] {
 
   implicit def canSlicePartOfRow[V]: CanSlice2[DenseMatrix[V], Int, Range, DenseMatrix[V]] = {
     new CanSlice2[DenseMatrix[V], Int, Range, DenseMatrix[V]] {
-      def apply(m: DenseMatrix[V], row: Int, cols: Range) = {
+      def apply(m: DenseMatrix[V], row: Int, colsWNegative: Range) = {
+
+        val cols = colsWNegative.getRangeWithoutNegativeIndexes(m.cols)
+
         if(row < 0  || row > m.rows) throw new IndexOutOfBoundsException("Slice with out of bounds row! " + row)
         if(cols.isEmpty) new DenseMatrix(0, 0, m.data, 0, 1)
         else if(!m.isTranspose) {
           val first = cols.head
+          if(cols.last >= m.cols) {
+            throw new IndexOutOfBoundsException(s"Col slice of $cols was bigger than matrix cols of ${m.cols}")
+          }
           new DenseMatrix(1, cols.length, m.data, m.offset + first * m.rows + row, m.majorStride * cols.step)
         } else {
           require(cols.step == 1, "Sorry, we can't support col ranges with step sizes other than 1 for transposed matrices")
@@ -442,9 +455,15 @@ with MatrixConstructors[DenseMatrix] {
 
   implicit def canSlicePartOfCol[V]: CanSlice2[DenseMatrix[V], Range, Int, DenseVector[V]] = {
     new CanSlice2[DenseMatrix[V], Range, Int, DenseVector[V]] {
-      def apply(m: DenseMatrix[V], rows: Range, col: Int) = {
+      def apply(m: DenseMatrix[V], rowsWNegative: Range, col: Int) = {
+
+        val rows = rowsWNegative.getRangeWithoutNegativeIndexes(m.rows)
+
         if(rows.isEmpty) new DenseVector(m.data, 0, 0, 0)
         else if(!m.isTranspose) {
+          if(rows.last >= m.rows) {
+            throw new IndexOutOfBoundsException(s"Row slice of $rows was bigger than matrix rows of ${m.rows}")
+          }
           new DenseVector(m.data, col * m.rows + m.offset + rows.head, rows.step, rows.length)
         } else {
           val m2 = canSlicePartOfRow(m.t, col, rows).t

@@ -25,7 +25,6 @@ import breeze.storage.DefaultArrayValue
 import scala.reflect.ClassTag
 import com.github.fommil.netlib.BLAS.{getInstance => blas}
 import breeze.macros.expand
-import breeze.numerics.IntMath
 import scala.math.BigInt
 import CanTraverseValues.ValuesVisitor
 
@@ -373,7 +372,10 @@ object DenseVector extends VectorConstructors[DenseVector] with DenseVector_Gene
 
   private val __canSlice = {
     new CanSlice[DenseVector[Any], Range, DenseVector[Any]] {
-      def apply(v: DenseVector[Any], r: Range) = {
+      def apply(v: DenseVector[Any], re: Range) = {
+
+        val r = re.getRangeWithoutNegativeIndexes(v.length)
+
         require(r.isEmpty || r.last < v.length)
         require(r.isEmpty || r.start >= 0)
         new DenseVector(v.data, offset = v.offset + r.start, stride = v.stride * r.step, length = r.length)
@@ -381,25 +383,16 @@ object DenseVector extends VectorConstructors[DenseVector] with DenseVector_Gene
     }
   }
 
-  implicit def canSliceSuffix[V]: CanSlice[DenseVector[V], RangeSuffix, DenseVector[V]] = __canSliceSuffix.asInstanceOf[CanSlice[DenseVector[V], RangeSuffix, DenseVector[V]]]
 
-  private val __canSliceSuffix = {
-    new CanSlice[DenseVector[Any], RangeSuffix, DenseVector[Any]] {
-      def apply(v: DenseVector[Any], r: RangeSuffix) = {
-        canSlice(v, r.start until v.length)
-      }
-    }
-  }
-
-  implicit def canSliceExtender[V]: CanSlice[DenseVector[V], RangeExtender, DenseVector[V]] = __canSliceExtender.asInstanceOf[CanSlice[DenseVector[V], RangeExtender, DenseVector[V]]]
-
-  private val __canSliceExtender = {
-    new CanSlice[DenseVector[Any], RangeExtender, DenseVector[Any]] {
-      def apply(v: DenseVector[Any], r: RangeExtender) = {
-        canSlice(v, r.getRange(v.length) )
-      }
-    }
-  }
+//  implicit def canSliceExtender[V]: CanSlice[DenseVector[V], RangeExtender, DenseVector[V]] = __canSliceExtender.asInstanceOf[CanSlice[DenseVector[V], RangeExtender, DenseVector[V]]]
+//
+//  private val __canSliceExtender = {
+//    new CanSlice[DenseVector[Any], RangeExtender, DenseVector[Any]] {
+//      def apply(v: DenseVector[Any], re: RangeExtender) = {
+//        canSlice(v, re.getRange(v.length) )
+//      }
+//    }
+//  }
 
   implicit def canTranspose[V]: CanTranspose[DenseVector[V], DenseMatrix[V]] = {
     new CanTranspose[DenseVector[V], DenseMatrix[V]] {
