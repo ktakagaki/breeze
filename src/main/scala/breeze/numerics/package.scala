@@ -220,6 +220,8 @@ package object numerics {
   object abs extends UFunc with MappingUFunc {
     implicit object absDoubleImpl extends Impl[Double, Double] { def apply(v: Double) = m.abs(v)}
     implicit object absFloatImpl extends Impl[Float, Float] { def apply(v: Float) = m.abs(v)}
+    implicit object absIntImpl extends Impl[Int, Int] { def apply(v: Int) = m.abs(v)}
+    implicit object absLongImpl extends Impl[Long, Long] { def apply(v: Long) = m.abs(v)}
   }
 
   /** Whether a number is odd. For Double and Float, isOdd also implies that the number is an integer,
@@ -343,6 +345,12 @@ package object numerics {
    *  \sum_a lgamma(c(a))- lgamma(c.sum)
    */
   object lbeta extends UFunc {
+    implicit object impl2Double extends Impl2[Double, Double, Double] {
+      def apply(v: Double, v2: Double): Double = {
+        lgamma(v) + lgamma(v2) - lgamma(v + v2)
+      }
+    }
+
     implicit def reduceDouble[T](implicit iter: CanTraverseValues[T, Double]): Impl[T, Double] = new Impl[T, Double] {
       def apply(v: T): Double = {
         val visit = new ValuesVisitor[Double] {
