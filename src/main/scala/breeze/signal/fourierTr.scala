@@ -133,18 +133,18 @@ object fourierTr extends UFunc {
 
   implicit val dvDouble1DFourierRange: Impl2[DenseVector[Double], Range, DenseVector[Complex]] = {
     new Impl2[DenseVector[Double], Range, DenseVector[Complex]] {
-      def apply(v: DenseVector[Double], rangeNegative: Range = Range(0, -1) ): DenseVector[Complex] = {
+      def apply(v: DenseVector[Double], rangeNegative: Range ): DenseVector[Complex] = {
 
         val range = rangeNegative.getRangeWithoutNegativeIndexes( v.length )
-
+        //ToDo check lengths and throw errors
 
         val tempret =
           for( k <- range ) yield {
             val pk2_N = scala.math.Pi * k * 2d / v.length
-              DenseVector.tabulate[Complex](v.length)( (n: Int) => {
+              sum(DenseVector.tabulate[Complex](v.length)( (n: Int) => {
                                         val nd = n.toDouble
                                         Complex(cos(pk2_N * nd), sin(pk2_N * nd))
-                                                                                      } ).sum
+                                                                                      } ))
              }
 
         new DenseVector[Complex]( tempret.toArray[Complex] )

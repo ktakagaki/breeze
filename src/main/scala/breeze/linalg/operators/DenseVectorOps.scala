@@ -45,8 +45,8 @@ trait DenseVectorOps extends DenseVector_GenericOps { this: DenseVector.type =>
   @expand.exclude(Complex, OpMod)
   @expand.exclude(BigInt, OpPow)
   implicit def dv_v_InPlaceOp[@expand.args(Int, Double, Float, Long, BigInt, Complex) T,
-  @expand.args(OpAdd, OpSub, OpMulScalar, OpDiv, OpSet, OpMod, OpPow) Op <: OpType]
-  (implicit @expand.sequence[Op]({_ + _},  {_ - _}, {_ * _}, {_ / _}, {(a,b) => b}, {_ % _}, {_ pow _})
+  @expand.args(OpMulScalar, OpDiv, OpSet, OpMod, OpPow) Op <: OpType]
+  (implicit @expand.sequence[Op]({_ * _}, {_ / _}, {(a,b) => b}, {_ % _}, {_ pow _})
   op: Op.Impl2[T, T, T]):BinaryUpdateRegistry[DenseVector[T], Vector[T], Op.type] = new BinaryUpdateRegistry[DenseVector[T], Vector[T], Op.type] {
 
     override protected def bindingMissing(a: DenseVector[T], b: Vector[T]): Unit = {
@@ -58,6 +58,26 @@ trait DenseVectorOps extends DenseVector_GenericOps { this: DenseVector.type =>
         ad(aoff) = op(ad(aoff), b(i))
         aoff += a.stride
         i += 1
+      }
+    }
+    implicitly[BinaryUpdateRegistry[Vector[T], Vector[T], Op.type]].register(this)
+  }
+
+  @expand
+  @expand.valify
+  @expand.exclude(Complex, OpMod)
+  @expand.exclude(BigInt, OpPow)
+  implicit def dv_v_ZeroIdempotent_InPlaceOp[@expand.args(Int, Double, Float, Long, BigInt, Complex) T,
+  @expand.args(OpAdd, OpSub) Op <: OpType]
+  (implicit @expand.sequence[Op]({_ + _},  {_ - _})
+  op: Op.Impl2[T, T, T]):BinaryUpdateRegistry[DenseVector[T], Vector[T], Op.type] = new BinaryUpdateRegistry[DenseVector[T], Vector[T], Op.type] {
+
+    override protected def bindingMissing(a: DenseVector[T], b: Vector[T]): Unit = {
+      val ad = a.data
+      var aoff = a.offset
+
+      for( (i, v) <- b.activeIterator) {
+        a(i) = op(a(i), v)
       }
     }
     implicitly[BinaryUpdateRegistry[Vector[T], Vector[T], Op.type]].register(this)
@@ -228,6 +248,38 @@ trait DenseVectorOps extends DenseVector_GenericOps { this: DenseVector.type =>
 
   }
 
+  @expand
+  @expand.valify
+  implicit def canZipValues_DV_DV[@expand.args(Int, Double, Float, Long, BigInt, Complex) T]()
+  : zipValues.Impl2[DenseVector[T], DenseVector[T], ZippedValues[T, T]] = {
+    val res = new zipValues.Impl2[DenseVector[T], DenseVector[T], ZippedValues[T, T]] {
+      def apply(v1: DenseVector[T], v2: DenseVector[T]) = {
+        val n = v1.length
+        require(v2.length == n, "vector length mismatch")
+        new ZippedValues[T, T] {
+          def foreach(fn: (T, T) => Unit) {
+            val data1 = v1.data
+            val stride1 = v1.stride
+            var offset1 = v1.offset
+            val data2 = v2.data
+            val stride2 = v2.stride
+            var offset2 = v2.offset
+            var i = 0
+            while (i < n) {
+              fn(data1(offset1), data2(offset2))
+              i += 1
+              offset1 += stride1
+              offset2 += stride2
+            }
+          }
+        }
+      }
+    }
+
+    implicitly[BinaryRegistry[Vector[T], Vector[T], zipValues.type, ZippedValues[T, T]]]
+
+    res
+  }
 
   @expand
   implicit def axpy[@expand.args(Int, Double, Float, Long, BigInt, Complex) V]: CanAxpy[V, DenseVector[V], DenseVector[V]] = {

@@ -28,6 +28,7 @@ import breeze.macros.expand
 import scala.annotation.unchecked.uncheckedVariance
 import CanTraverseValues.ValuesVisitor
 import scala.collection.mutable.ArrayBuilder
+import breeze.generic.UFunc.{UImpl2, UImpl, InPlaceImpl2}
 
 /**
  * Trait for operators and such used in vectors.
@@ -354,6 +355,18 @@ trait VectorOps { this: Vector.type =>
     }
   }
 
+  implicit def castUpdateOps[V1, V2, T, Op <: OpType](implicit v1ev: V1<:<Vector[T],
+                                                V2ev: V2<:<Vector[T],
+                                                op: UFunc.InPlaceImpl2[Op, Vector[T], Vector[T]]): InPlaceImpl2[Op, V1, V2] = {
+    op.asInstanceOf[UFunc.InPlaceImpl2[Op, V1, V2]]
+  }
+
+  implicit def castOps[V1, V2, T, Op <: OpType, VR](implicit v1ev: V1<:<Vector[T],
+                                                    V2ev: V2<:<Vector[T],
+                                                    op: UImpl2[Op, Vector[T], Vector[T], VR]): UImpl2[Op, V1, V2, VR] = {
+    op.asInstanceOf[UFunc.UImpl2[Op, V1, V2, VR]]
+  }
+
   @expand
   @expand.valify
   @expand.exclude(Complex, OpMod)
@@ -411,6 +424,34 @@ trait VectorOps { this: Vector.type =>
 
 
 
+
+  @expand
+  @expand.valify
+  implicit def zipValuesImpl_V_V[@expand.args(Int, Double, Float, Long, BigInt, Complex) T]: BinaryRegistry[Vector[T], Vector[T], zipValues.type, ZippedValues[T, T]] = {
+    new BinaryRegistry[Vector[T], Vector[T], zipValues.type, ZippedValues[T, T]]  {
+      protected override def bindingMissing(a: Vector[T], b: Vector[T]):ZippedValues[T, T] = {
+        require(a.length == b.length, "vector dimension mismatch")
+        ZippedVectorValues(a,b)
+      }
+    }
+  }
+
+  implicit def zipValuesSubclass[Vec1, Vec2, T, U](implicit view1: Vec1<:<Vector[T],
+                                                   view2: Vec2 <:< Vector[U],
+                                                   op: zipValues.Impl2[Vector[T], Vector[U], ZippedValues[T, U]]) = {
+    op.asInstanceOf[zipValues.Impl2[Vec1, Vec2, ZippedValues[T, U]]]
+  }
+
+  case class ZippedVectorValues[@specialized(Int, Double, Long, Float) T,
+                                @specialized(Int, Double, Long, Float) U](a: Vector[T], b: Vector[U]) extends ZippedValues[T, U] {
+    def foreach(f: (T, U) => Unit): Unit = {
+      var i = 0
+      while(i < a.length) {
+        f(a(i), b(i))
+        i += 1
+      }
+    }
+  }
 
 
 }

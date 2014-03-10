@@ -52,6 +52,7 @@ class DenseVector[@spec(Double, Int, Float) E](val data: Array[E],
   def this(data: Array[E]) = this(data, 0, 1, data.length)
   def this(data: Array[E], offset: Int) = this(data, offset, 1, data.length)
 
+
   // uncomment to get all the ridiculous places where specialization fails.
  // if(data.isInstanceOf[Array[Double]] && getClass.getName() == "breeze.linalg.DenseVector") throw new Exception("...")
 
@@ -68,11 +69,16 @@ class DenseVector[@spec(Double, Int, Float) E](val data: Array[E],
     data(offset + trueI * stride)
   }
 
-  def update(i: Int, v: E) {
+  def update(i: Int, v: E) = {
     if(i < - size || i >= size) throw new IndexOutOfBoundsException(i + " not in [-"+size+","+size+")")
     val trueI = if(i<0) i+size else i
     data(offset + trueI * stride) = v
   }
+
+  //I have no fucking clue why this speeds things up, but it does seem to.
+  private final val innerUpdate: ((Int,E) => Unit) = if ((offset == 0) && (stride == 1)) { (i:Int,v:E) => {data(i) = v} } else {(i:Int,v:E) => {data(offset+i*stride)=v}  }
+
+  def unsafeUpdate(i: Int, v: E) = innerUpdate(i,v) //data(offset + i * stride) = v
 
   def activeIterator = iterator
 
@@ -118,6 +124,11 @@ class DenseVector[@spec(Double, Int, Float) E](val data: Array[E],
   def valueAt(i: Int): E = apply(i)
 
   /**
+    * Unsafe version of above, a way to skip the checks.
+    */
+  def unsafeValueAt(i: Int): E = data(offset + i * stride)
+
+  /**
    * Gives the logical index from the physical index.
    * @param i
    * @return i
@@ -147,7 +158,7 @@ class DenseVector[@spec(Double, Int, Float) E](val data: Array[E],
    * @param fn
    * @tparam U
    */
-  override def foreach[U](fn: (E) => U) {
+  override def foreach[@specialized(Unit) U](fn: (E) => U) {
     var i = offset
     var j = 0
     while(j < length) {
@@ -194,6 +205,8 @@ class DenseVector[@spec(Double, Int, Float) E](val data: Array[E],
     arr
   }
 
+  /**Returns copy of this [[breeze.linalg.DenseVector]] as a [[scala.Vector]]*/
+  def toScalaVector()(implicit cm: ClassTag[E]): scala.Vector[E] = this.toArray.toVector
 
 }
 
@@ -213,13 +226,14 @@ object DenseVector extends VectorConstructors[DenseVector] with DenseVector_Gene
 
 
   def apply[@spec(Double, Float, Int) V](values: Array[V]) = new DenseVector(values)
-  def ones[@spec(Double, Float, Int) V: ClassTag:Semiring](size: Int) = {
+  def ones[@spec(Double, Float, Int) V: ClassTag:Semiring](size: Int) = fill[V](size, implicitly[Semiring[V]].one)
+
+  def fill[@spec(Double, Float, Int) V: ClassTag:Semiring](size: Int, v: V) = {
     val r = apply(new Array[V](size))
     assert(r.stride == 1)
-    ArrayUtil.fill(r.data, r.offset, r.length, implicitly[Semiring[V]].one)
+    ArrayUtil.fill(r.data, r.offset, r.length, v)
     r
   }
-
 
     // concatenation
   /**
@@ -326,6 +340,19 @@ object DenseVector extends VectorConstructors[DenseVector] with DenseVector_Gene
     }
   }
 
+  implicit def canTraverseKeyValuePairs[V]:CanTraverseKeyValuePairs[DenseVector[V], Int, V] = {
+    new CanTraverseKeyValuePairs[DenseVector[V], Int, V] {
+      def isTraversableAgain(from: DenseVector[V]): Boolean = true
+
+      /** Iterates all key-value pairs from the given collection. */
+      def traverse(from: DenseVector[V], fn: CanTraverseKeyValuePairs.KeyValuePairsVisitor[Int, V]): Unit = {
+        import from._
+
+        fn.visitArray((ind: Int)=> (ind - offset)/stride, data, offset, length, 1)
+      }
+
+    }
+  }
 
   implicit def canTransformValues[V]:CanTransformValues[DenseVector[V], V, V] = {
     new CanTransformValues[DenseVector[V], V, V] {
@@ -409,14 +436,14 @@ object DenseVector extends VectorConstructors[DenseVector] with DenseVector_Gene
       }
     }
   }
-  
+
   implicit def canTransposeComplex: CanTranspose[DenseVector[Complex], DenseMatrix[Complex]] = {
     new CanTranspose[DenseVector[Complex], DenseMatrix[Complex]] {
       def apply(from: DenseVector[Complex]) = {
-        new DenseMatrix(data = from.data map { _.conjugate }, 
-                        offset = from.offset, 
-                        cols = from.length, 
-                        rows = 1, 
+        new DenseMatrix(data = from.data map { _.conjugate },
+                        offset = from.offset,
+                        cols = from.length,
+                        rows = 1,
                         majorStride = from.stride)
       }
     }
@@ -514,6 +541,7 @@ object DenseVector extends VectorConstructors[DenseVector] with DenseVector_Gene
 
   implicit val canSetD: OpSet.InPlaceImpl2[DenseVector[Double], DenseVector[Double]] = new OpSet.InPlaceImpl2[DenseVector[Double], DenseVector[Double]] {
     def apply(a: DenseVector[Double], b: DenseVector[Double]) {
+      require(a.length == b.length, "Vector lengths must match!")
       blas.dcopy(
         a.length, b.data, b.offset, b.stride, a.data, a.offset, a.stride)
     }
@@ -527,7 +555,7 @@ object DenseVector extends VectorConstructors[DenseVector] with DenseVector_Gene
   */
   @expand
   @expand.valify
-  implicit def canNorm[@expand.args(Int, Double, Float, Long, BigInt, Complex) T]: norm.Impl2[DenseVector[T], Double, Double] = {
+  implicit def canNorm[@expand.args(Int, Float, Long, BigInt, Complex) T]: norm.Impl2[DenseVector[T], Double, Double] = {
 
     new norm.Impl2[DenseVector[T], Double, Double] {
       def apply(v: DenseVector[T], n: Double): Double = {
@@ -553,6 +581,36 @@ object DenseVector extends VectorConstructors[DenseVector] with DenseVector_Gene
     }
   }
 
+  /**
+   *  Returns the p-norm of this Vector (specialized for Double).
+   */
+  implicit def canNorm_Double: norm.Impl2[DenseVector[Double], Double, Double] = {
+    new norm.Impl2[DenseVector[Double], Double, Double] {
+      def apply(v: DenseVector[Double], p: Double): Double = {
+        if (p == 2) {
+          var sq = 0.0
+          v.foreach (x => sq += x * x)
+          math.sqrt(sq)
+        } else if (p == 1) {
+          var sum = 0.0
+          v.foreach (x => sum += x.abs)
+          sum
+        } else if (p == Double.PositiveInfinity) {
+          var max = 0.0
+          v.foreach (x => max = math.max(max, x.abs))
+          max
+        } else if (p == 0) {
+          var nnz = 0
+          v.foreach (x => if (x != 0) nnz += 1)
+          nnz
+        } else {
+          var sum = 0.0
+          v.foreach (x => sum += math.pow(x.abs, p))
+          math.pow(sum, 1.0 / p)
+        }
+      }
+    }
+  }
 
   implicit val space_d = TensorSpace.make[DenseVector[Double], Int, Double]
   implicit val space_f = TensorSpace.make[DenseVector[Float], Int, Float]
@@ -576,4 +634,3 @@ object DenseVector extends VectorConstructors[DenseVector] with DenseVector_Gene
   @noinline
   private def init() = {}
 }
-
