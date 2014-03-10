@@ -10,10 +10,10 @@
 NotebookFileLineBreakTest
 NotebookFileLineBreakTest
 NotebookDataPosition[       157,          7]
-NotebookDataLength[     32943,        559]
-NotebookOptionsPosition[     31959,        520]
-NotebookOutlinePosition[     32302,        535]
-CellTagsIndexPosition[     32259,        532]
+NotebookDataLength[     36526,        637]
+NotebookOptionsPosition[     35235,        587]
+NotebookOutlinePosition[     35583,        602]
+CellTagsIndexPosition[     35540,        599]
 WindowFrame->Normal*)
 
 (* Beginning of Notebook Content *)
@@ -168,6 +168,72 @@ tuple) \\n\"\>"], "Output",
   3.603450577290335*^9, {3.603450617310624*^9, 3.6034506905788145`*^9}, {
    3.603450730847118*^9, 3.603450742958811*^9}}]
 }, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell["case a: TupleN", "Section",
+ CellChangeTimes->{{3.6034553627730494`*^9, 3.6034553796500144`*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"tupleCaseArityize", "[", "n_Integer", "]"}], ":=", 
+  RowBox[{"\"\<case a: Tuple\>\"", "<>", 
+   RowBox[{"ToString", "[", "n", "]"}], "<>", "\"\<[\>\"", "<>", 
+   RowBox[{"tupleRepeat", "[", 
+    RowBox[{"\"\<Any\>\"", ",", "n"}], "]"}], "<>", "\"\<] => \>\"", "<>", 
+   RowBox[{"ToString", "[", 
+    RowBox[{"-", "n"}], "]"}], "<>", "\"\<\\n\>\""}]}]], "Input",
+ CellChangeTimes->{{3.6034516634814615`*^9, 3.6034517360886145`*^9}, {
+   3.6034517797671127`*^9, 3.6034517833993206`*^9}, 3.6034544360690446`*^9, {
+   3.603455387461461*^9, 3.603455467540041*^9}, {3.603456408868882*^9, 
+   3.603456420003519*^9}}],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"temp3", "=", 
+  RowBox[{"StringJoin", "@@", 
+   RowBox[{"Table", "[", 
+    RowBox[{
+     RowBox[{"tupleCaseArityize", "[", "n", "]"}], ",", 
+     RowBox[{"{", 
+      RowBox[{"n", ",", "1", ",", "22"}], "}"}]}], "]"}]}]}]], "Input",
+ CellChangeTimes->{{3.603455447114873*^9, 3.603455449643018*^9}}],
+
+Cell[BoxData["\<\"case a: Tuple1[Any] => -1\\ncase a: Tuple2[Any, Any] => \
+-2\\ncase a: Tuple3[Any, Any, Any] => -3\\ncase a: Tuple4[Any, Any, Any, Any] \
+=> -4\\ncase a: Tuple5[Any, Any, Any, Any, Any] => -5\\ncase a: Tuple6[Any, \
+Any, Any, Any, Any, Any] => -6\\ncase a: Tuple7[Any, Any, Any, Any, Any, Any, \
+Any] => -7\\ncase a: Tuple8[Any, Any, Any, Any, Any, Any, Any, Any] => \
+-8\\ncase a: Tuple9[Any, Any, Any, Any, Any, Any, Any, Any, Any] => -9\\ncase \
+a: Tuple10[Any, Any, Any, Any, Any, Any, Any, Any, Any, Any] => -10\\ncase a: \
+Tuple11[Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any] => -11\\ncase \
+a: Tuple12[Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any] => -12\
+\\ncase a: Tuple13[Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, \
+Any, Any] => -13\\ncase a: Tuple14[Any, Any, Any, Any, Any, Any, Any, Any, \
+Any, Any, Any, Any, Any, Any] => -14\\ncase a: Tuple15[Any, Any, Any, Any, \
+Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any] => -15\\ncase a: \
+Tuple16[Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, \
+Any, Any] => -16\\ncase a: Tuple17[Any, Any, Any, Any, Any, Any, Any, Any, \
+Any, Any, Any, Any, Any, Any, Any, Any, Any] => -17\\ncase a: Tuple18[Any, \
+Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, \
+Any, Any] => -18\\ncase a: Tuple19[Any, Any, Any, Any, Any, Any, Any, Any, \
+Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any] => -19\\ncase a: \
+Tuple20[Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, \
+Any, Any, Any, Any, Any, Any] => -20\\ncase a: Tuple21[Any, Any, Any, Any, \
+Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, \
+Any, Any] => -21\\ncase a: Tuple22[Any, Any, Any, Any, Any, Any, Any, Any, \
+Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any] => \
+-22\\n\"\>"], "Output",
+ CellChangeTimes->{{3.603455450774082*^9, 3.6034554694591513`*^9}, 
+   3.6034564210625796`*^9}]
+}, Open  ]]
+}, Closed]],
+
+Cell[CellGroupData[{
+
+Cell["case class EnrichedTupleN", "Section",
+ CellChangeTimes->{{3.6034553627730494`*^9, 3.6034553661402416`*^9}}],
 
 Cell[BoxData[
  RowBox[{
@@ -517,9 +583,10 @@ Cell[BoxData[
 Cell[BoxData["\<\"C:\\\\Users\\\\Kenta\\\\Documents\"\>"], "Output",
  CellChangeTimes->{3.603451905761319*^9}]
 }, Open  ]]
+}, Open  ]]
 },
-WindowSize->{1848, 867},
-WindowMargins->{{0, Automatic}, {Automatic, 0}},
+WindowSize->{1920, 1181},
+WindowMargins->{{-4, Automatic}, {Automatic, 1107}},
 FrontEndVersion->"9.0 for Microsoft Windows (64-bit) (January 25, 2013)",
 StyleDefinitions->"Default.nb"
 ]
@@ -546,24 +613,34 @@ Cell[1807, 60, 82, 1, 31, "Output"]
 Cell[1904, 64, 780, 14, 52, "Input"],
 Cell[CellGroupData[{
 Cell[2709, 82, 435, 9, 31, "Input"],
-Cell[3147, 93, 4948, 75, 652, "Output"]
-}, Open  ]],
-Cell[8110, 171, 1411, 21, 352, "Input"],
-Cell[CellGroupData[{
-Cell[9546, 196, 355, 9, 31, "Input"],
-Cell[9904, 207, 21463, 289, 7072, "Output"]
+Cell[3147, 93, 4948, 75, 632, "Output"]
 }, Open  ]],
 Cell[CellGroupData[{
-Cell[31404, 501, 175, 3, 31, "Input"],
-Cell[31582, 506, 88, 1, 31, "Output"]
+Cell[8132, 173, 103, 1, 79, "Section"],
+Cell[8238, 176, 645, 12, 31, "Input"],
+Cell[CellGroupData[{
+Cell[8908, 192, 321, 8, 31, "Input"],
+Cell[9232, 202, 1976, 26, 504, "Output"]
+}, Open  ]]
+}, Closed]],
+Cell[CellGroupData[{
+Cell[11257, 234, 114, 1, 49, "Section"],
+Cell[11374, 237, 1411, 21, 352, "Input"],
+Cell[CellGroupData[{
+Cell[12810, 262, 355, 9, 31, "Input"],
+Cell[13168, 273, 21463, 289, 7072, "Output"]
 }, Open  ]],
 Cell[CellGroupData[{
-Cell[31707, 512, 123, 2, 31, "Input"],
-Cell[31833, 516, 110, 1, 87, "Output"]
+Cell[34668, 567, 175, 3, 31, "Input"],
+Cell[34846, 572, 88, 1, 31, "Output"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[34971, 578, 123, 2, 31, "Input"],
+Cell[35097, 582, 110, 1, 31, "Output"]
+}, Open  ]]
 }, Open  ]]
 }
 ]
 *)
 
 (* End of internal cache information *)
-
