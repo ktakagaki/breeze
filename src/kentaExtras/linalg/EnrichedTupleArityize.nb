@@ -10,14 +10,21 @@
 NotebookFileLineBreakTest
 NotebookFileLineBreakTest
 NotebookDataPosition[       157,          7]
-NotebookDataLength[     36526,        637]
-NotebookOptionsPosition[     35235,        587]
-NotebookOutlinePosition[     35583,        602]
-CellTagsIndexPosition[     35540,        599]
+NotebookDataLength[     29690,        612]
+NotebookOptionsPosition[     28025,        548]
+NotebookOutlinePosition[     28373,        563]
+CellTagsIndexPosition[     28330,        560]
 WindowFrame->Normal*)
 
 (* Beginning of Notebook Content *)
 Notebook[{
+
+Cell[CellGroupData[{
+Cell["tupleRepeat: common", "Section",
+ CellChangeTimes->{{3.6034553627730494`*^9, 3.6034553661402416`*^9}, {
+  3.603457770984791*^9, 3.603457776545109*^9}, {3.6034597505070133`*^9, 
+  3.603459751235055*^9}, {3.6034621366264915`*^9, 3.603462145081975*^9}}],
+
 Cell[BoxData[
  RowBox[{
   RowBox[{
@@ -60,7 +67,15 @@ Cell[BoxData[
 
 Cell[BoxData["\<\"Any\"\>"], "Output",
  CellChangeTimes->{3.6034504510381136`*^9}]
+}, Open  ]]
 }, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell["implicit enrichedTupleNN", "Section",
+ CellChangeTimes->{{3.6034553627730494`*^9, 3.6034553661402416`*^9}, {
+  3.603457770984791*^9, 3.603457776545109*^9}, {3.6034597505070133`*^9, 
+  3.603459751235055*^9}}],
 
 Cell[BoxData[
  RowBox[{
@@ -91,82 +106,135 @@ Cell[BoxData[
   3.603450615596526*^9, 3.603450617012607*^9}, {3.6034506574439197`*^9, 
   3.603450689843773*^9}, {3.603450728051958*^9, 3.603450742571789*^9}}],
 
-Cell[BoxData["\<\"  implicit def tupleToDenseVectorBuilder1( tuple: \
-Tuple1[Any] ) =  new \
-breeze.linalg.support.tupleToDenseVectorBuilder.TupleToDenseVectorBuilder1(\
-tuple) \\n  implicit def tupleToDenseVectorBuilder2( tuple: Tuple2[Any, Any] \
-) =  new breeze.linalg.support.tupleToDenseVectorBuilder.\
-TupleToDenseVectorBuilder2(tuple) \\n  implicit def \
-tupleToDenseVectorBuilder3( tuple: Tuple3[Any, Any, Any] ) =  new \
-breeze.linalg.support.tupleToDenseVectorBuilder.TupleToDenseVectorBuilder3(\
-tuple) \\n  implicit def tupleToDenseVectorBuilder4( tuple: Tuple4[Any, Any, \
-Any, Any] ) =  new \
-breeze.linalg.support.tupleToDenseVectorBuilder.TupleToDenseVectorBuilder4(\
-tuple) \\n  implicit def tupleToDenseVectorBuilder5( tuple: Tuple5[Any, Any, \
-Any, Any, Any] ) =  new \
-breeze.linalg.support.tupleToDenseVectorBuilder.TupleToDenseVectorBuilder5(\
-tuple) \\n  implicit def tupleToDenseVectorBuilder6( tuple: Tuple6[Any, Any, \
+Cell[BoxData["\<\"  implicit def enrichedTuple1( tuple: Tuple1[Any] ) =  new \
+breeze.linalg.support.enrichedTuple.EnrichedTuple1(tuple) \\n  implicit def \
+enrichedTuple2( tuple: Tuple2[Any, Any] ) =  new \
+breeze.linalg.support.enrichedTuple.EnrichedTuple2(tuple) \\n  implicit def \
+enrichedTuple3( tuple: Tuple3[Any, Any, Any] ) =  new \
+breeze.linalg.support.enrichedTuple.EnrichedTuple3(tuple) \\n  implicit def \
+enrichedTuple4( tuple: Tuple4[Any, Any, Any, Any] ) =  new \
+breeze.linalg.support.enrichedTuple.EnrichedTuple4(tuple) \\n  implicit def \
+enrichedTuple5( tuple: Tuple5[Any, Any, Any, Any, Any] ) =  new \
+breeze.linalg.support.enrichedTuple.EnrichedTuple5(tuple) \\n  implicit def \
+enrichedTuple6( tuple: Tuple6[Any, Any, Any, Any, Any, Any] ) =  new \
+breeze.linalg.support.enrichedTuple.EnrichedTuple6(tuple) \\n  implicit def \
+enrichedTuple7( tuple: Tuple7[Any, Any, Any, Any, Any, Any, Any] ) =  new \
+breeze.linalg.support.enrichedTuple.EnrichedTuple7(tuple) \\n  implicit def \
+enrichedTuple8( tuple: Tuple8[Any, Any, Any, Any, Any, Any, Any, Any] ) =  \
+new breeze.linalg.support.enrichedTuple.EnrichedTuple8(tuple) \\n  implicit \
+def enrichedTuple9( tuple: Tuple9[Any, Any, Any, Any, Any, Any, Any, Any, \
+Any] ) =  new breeze.linalg.support.enrichedTuple.EnrichedTuple9(tuple) \\n  \
+implicit def enrichedTuple10( tuple: Tuple10[Any, Any, Any, Any, Any, Any, \
 Any, Any, Any, Any] ) =  new \
-breeze.linalg.support.tupleToDenseVectorBuilder.TupleToDenseVectorBuilder6(\
-tuple) \\n  implicit def tupleToDenseVectorBuilder7( tuple: Tuple7[Any, Any, \
-Any, Any, Any, Any, Any] ) =  new \
-breeze.linalg.support.tupleToDenseVectorBuilder.TupleToDenseVectorBuilder7(\
-tuple) \\n  implicit def tupleToDenseVectorBuilder8( tuple: Tuple8[Any, Any, \
-Any, Any, Any, Any, Any, Any] ) =  new \
-breeze.linalg.support.tupleToDenseVectorBuilder.TupleToDenseVectorBuilder8(\
-tuple) \\n  implicit def tupleToDenseVectorBuilder9( tuple: Tuple9[Any, Any, \
+breeze.linalg.support.enrichedTuple.EnrichedTuple10(tuple) \\n  implicit def \
+enrichedTuple11( tuple: Tuple11[Any, Any, Any, Any, Any, Any, Any, Any, Any, \
+Any, Any] ) =  new breeze.linalg.support.enrichedTuple.EnrichedTuple11(tuple) \
+\\n  implicit def enrichedTuple12( tuple: Tuple12[Any, Any, Any, Any, Any, \
 Any, Any, Any, Any, Any, Any, Any] ) =  new \
-breeze.linalg.support.tupleToDenseVectorBuilder.TupleToDenseVectorBuilder9(\
-tuple) \\n  implicit def tupleToDenseVectorBuilder10( tuple: Tuple10[Any, \
-Any, Any, Any, Any, Any, Any, Any, Any, Any] ) =  new \
-breeze.linalg.support.tupleToDenseVectorBuilder.TupleToDenseVectorBuilder10(\
-tuple) \\n  implicit def tupleToDenseVectorBuilder11( tuple: Tuple11[Any, \
-Any, Any, Any, Any, Any, Any, Any, Any, Any, Any] ) =  new \
-breeze.linalg.support.tupleToDenseVectorBuilder.TupleToDenseVectorBuilder11(\
-tuple) \\n  implicit def tupleToDenseVectorBuilder12( tuple: Tuple12[Any, \
-Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any] ) =  new \
-breeze.linalg.support.tupleToDenseVectorBuilder.TupleToDenseVectorBuilder12(\
-tuple) \\n  implicit def tupleToDenseVectorBuilder13( tuple: Tuple13[Any, \
-Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any] ) =  new \
-breeze.linalg.support.tupleToDenseVectorBuilder.TupleToDenseVectorBuilder13(\
-tuple) \\n  implicit def tupleToDenseVectorBuilder14( tuple: Tuple14[Any, \
-Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any] ) =  new \
-breeze.linalg.support.tupleToDenseVectorBuilder.TupleToDenseVectorBuilder14(\
-tuple) \\n  implicit def tupleToDenseVectorBuilder15( tuple: Tuple15[Any, \
-Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any] ) =  \
-new breeze.linalg.support.tupleToDenseVectorBuilder.\
-TupleToDenseVectorBuilder15(tuple) \\n  implicit def \
-tupleToDenseVectorBuilder16( tuple: Tuple16[Any, Any, Any, Any, Any, Any, \
-Any, Any, Any, Any, Any, Any, Any, Any, Any, Any] ) =  new \
-breeze.linalg.support.tupleToDenseVectorBuilder.TupleToDenseVectorBuilder16(\
-tuple) \\n  implicit def tupleToDenseVectorBuilder17( tuple: Tuple17[Any, \
-Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, \
-Any] ) =  new \
-breeze.linalg.support.tupleToDenseVectorBuilder.TupleToDenseVectorBuilder17(\
-tuple) \\n  implicit def tupleToDenseVectorBuilder18( tuple: Tuple18[Any, \
-Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, \
-Any, Any] ) =  new \
-breeze.linalg.support.tupleToDenseVectorBuilder.TupleToDenseVectorBuilder18(\
-tuple) \\n  implicit def tupleToDenseVectorBuilder19( tuple: Tuple19[Any, \
-Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, \
-Any, Any, Any] ) =  new \
-breeze.linalg.support.tupleToDenseVectorBuilder.TupleToDenseVectorBuilder19(\
-tuple) \\n  implicit def tupleToDenseVectorBuilder20( tuple: Tuple20[Any, \
-Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, \
+breeze.linalg.support.enrichedTuple.EnrichedTuple12(tuple) \\n  implicit def \
+enrichedTuple13( tuple: Tuple13[Any, Any, Any, Any, Any, Any, Any, Any, Any, \
 Any, Any, Any, Any] ) =  new \
-breeze.linalg.support.tupleToDenseVectorBuilder.TupleToDenseVectorBuilder20(\
-tuple) \\n  implicit def tupleToDenseVectorBuilder21( tuple: Tuple21[Any, \
-Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, \
+breeze.linalg.support.enrichedTuple.EnrichedTuple13(tuple) \\n  implicit def \
+enrichedTuple14( tuple: Tuple14[Any, Any, Any, Any, Any, Any, Any, Any, Any, \
 Any, Any, Any, Any, Any] ) =  new \
-breeze.linalg.support.tupleToDenseVectorBuilder.TupleToDenseVectorBuilder21(\
-tuple) \\n  implicit def tupleToDenseVectorBuilder22( tuple: Tuple22[Any, \
-Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, \
+breeze.linalg.support.enrichedTuple.EnrichedTuple14(tuple) \\n  implicit def \
+enrichedTuple15( tuple: Tuple15[Any, Any, Any, Any, Any, Any, Any, Any, Any, \
 Any, Any, Any, Any, Any, Any] ) =  new \
-breeze.linalg.support.tupleToDenseVectorBuilder.TupleToDenseVectorBuilder22(\
-tuple) \\n\"\>"], "Output",
+breeze.linalg.support.enrichedTuple.EnrichedTuple15(tuple) \\n  implicit def \
+enrichedTuple16( tuple: Tuple16[Any, Any, Any, Any, Any, Any, Any, Any, Any, \
+Any, Any, Any, Any, Any, Any, Any] ) =  new \
+breeze.linalg.support.enrichedTuple.EnrichedTuple16(tuple) \\n  implicit def \
+enrichedTuple17( tuple: Tuple17[Any, Any, Any, Any, Any, Any, Any, Any, Any, \
+Any, Any, Any, Any, Any, Any, Any, Any] ) =  new \
+breeze.linalg.support.enrichedTuple.EnrichedTuple17(tuple) \\n  implicit def \
+enrichedTuple18( tuple: Tuple18[Any, Any, Any, Any, Any, Any, Any, Any, Any, \
+Any, Any, Any, Any, Any, Any, Any, Any, Any] ) =  new \
+breeze.linalg.support.enrichedTuple.EnrichedTuple18(tuple) \\n  implicit def \
+enrichedTuple19( tuple: Tuple19[Any, Any, Any, Any, Any, Any, Any, Any, Any, \
+Any, Any, Any, Any, Any, Any, Any, Any, Any, Any] ) =  new \
+breeze.linalg.support.enrichedTuple.EnrichedTuple19(tuple) \\n  implicit def \
+enrichedTuple20( tuple: Tuple20[Any, Any, Any, Any, Any, Any, Any, Any, Any, \
+Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any] ) =  new \
+breeze.linalg.support.enrichedTuple.EnrichedTuple20(tuple) \\n  implicit def \
+enrichedTuple21( tuple: Tuple21[Any, Any, Any, Any, Any, Any, Any, Any, Any, \
+Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any] ) =  new \
+breeze.linalg.support.enrichedTuple.EnrichedTuple21(tuple) \\n  implicit def \
+enrichedTuple22( tuple: Tuple22[Any, Any, Any, Any, Any, Any, Any, Any, Any, \
+Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any] ) =  new \
+breeze.linalg.support.enrichedTuple.EnrichedTuple22(tuple) \\n\"\>"], "Output",
  CellChangeTimes->{
   3.603450577290335*^9, {3.603450617310624*^9, 3.6034506905788145`*^9}, {
-   3.603450730847118*^9, 3.603450742958811*^9}}]
+   3.603450730847118*^9, 3.603450742958811*^9}, 3.6034577656594863`*^9}]
+}, Open  ]]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell["anyToArray", "Section",
+ CellChangeTimes->{{3.6034553627730494`*^9, 3.6034553661402416`*^9}, {
+  3.603457770984791*^9, 3.603457776545109*^9}, {3.6034597505070133`*^9, 
+  3.603459751235055*^9}, {3.603462110097974*^9, 3.603462113026141*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{
+   RowBox[{"anyToArray", "[", "n_Integer", "]"}], ":=", 
+   RowBox[{"\"\<case a: Tuple\>\"", "<>", 
+    RowBox[{"ToString", "[", "n", "]"}], "<>", "\"\<[\>\"", "<>", 
+    RowBox[{"tupleRepeat", "[", 
+     RowBox[{"\"\<Any\>\"", ",", "n"}], "]"}], "<>", 
+    "\"\<] => a.v.toArray\\n\>\""}]}], "\[IndentingNewLine]"}]], "Input",
+ CellChangeTimes->{{3.6034501191791325`*^9, 3.603450203946981*^9}, {
+  3.603450446494854*^9, 3.6034505495337477`*^9}, {3.603450590750105*^9, 
+  3.6034506757259655`*^9}, {3.603451446360043*^9, 3.603451458951763*^9}, {
+  3.6034621563636203`*^9, 3.6034622399153996`*^9}}],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"StringJoin", "@@", 
+  RowBox[{"Table", "[", 
+   RowBox[{
+    RowBox[{"anyToArray", "[", "n", "]"}], ",", 
+    RowBox[{"{", 
+     RowBox[{"n", ",", "1", ",", "22"}], "}"}]}], "]"}]}]], "Input",
+ CellChangeTimes->{{3.6034505543460226`*^9, 3.6034505766933007`*^9}, {
+   3.603450615596526*^9, 3.603450617012607*^9}, {3.6034506574439197`*^9, 
+   3.603450689843773*^9}, {3.603450728051958*^9, 3.603450742571789*^9}, 
+   3.603462235363139*^9}],
+
+Cell[BoxData["\<\"case a: Tuple1[Any] => a.v.toArray\\ncase a: Tuple2[Any, \
+Any] => a.v.toArray\\ncase a: Tuple3[Any, Any, Any] => a.v.toArray\\ncase a: \
+Tuple4[Any, Any, Any, Any] => a.v.toArray\\ncase a: Tuple5[Any, Any, Any, \
+Any, Any] => a.v.toArray\\ncase a: Tuple6[Any, Any, Any, Any, Any, Any] => \
+a.v.toArray\\ncase a: Tuple7[Any, Any, Any, Any, Any, Any, Any] => \
+a.v.toArray\\ncase a: Tuple8[Any, Any, Any, Any, Any, Any, Any, Any] => \
+a.v.toArray\\ncase a: Tuple9[Any, Any, Any, Any, Any, Any, Any, Any, Any] => \
+a.v.toArray\\ncase a: Tuple10[Any, Any, Any, Any, Any, Any, Any, Any, Any, \
+Any] => a.v.toArray\\ncase a: Tuple11[Any, Any, Any, Any, Any, Any, Any, Any, \
+Any, Any, Any] => a.v.toArray\\ncase a: Tuple12[Any, Any, Any, Any, Any, Any, \
+Any, Any, Any, Any, Any, Any] => a.v.toArray\\ncase a: Tuple13[Any, Any, Any, \
+Any, Any, Any, Any, Any, Any, Any, Any, Any, Any] => a.v.toArray\\ncase a: \
+Tuple14[Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any] \
+=> a.v.toArray\\ncase a: Tuple15[Any, Any, Any, Any, Any, Any, Any, Any, Any, \
+Any, Any, Any, Any, Any, Any] => a.v.toArray\\ncase a: Tuple16[Any, Any, Any, \
+Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any] => \
+a.v.toArray\\ncase a: Tuple17[Any, Any, Any, Any, Any, Any, Any, Any, Any, \
+Any, Any, Any, Any, Any, Any, Any, Any] => a.v.toArray\\ncase a: Tuple18[Any, \
+Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, \
+Any, Any] => a.v.toArray\\ncase a: Tuple19[Any, Any, Any, Any, Any, Any, Any, \
+Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any] => \
+a.v.toArray\\ncase a: Tuple20[Any, Any, Any, Any, Any, Any, Any, Any, Any, \
+Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any] => a.v.toArray\\ncase \
+a: Tuple21[Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, \
+Any, Any, Any, Any, Any, Any, Any, Any] => a.v.toArray\\ncase a: Tuple22[Any, \
+Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, \
+Any, Any, Any, Any, Any, Any] => a.v.toArray\\n\"\>"], "Output",
+ CellChangeTimes->{
+  3.603450577290335*^9, {3.603450617310624*^9, 3.6034506905788145`*^9}, {
+   3.603450730847118*^9, 3.603450742958811*^9}, 3.6034577656594863`*^9, {
+   3.6034622316939287`*^9, 3.603462240840452*^9}}]
+}, Open  ]]
 }, Open  ]],
 
 Cell[CellGroupData[{
@@ -235,15 +303,27 @@ Cell[CellGroupData[{
 Cell["case class EnrichedTupleN", "Section",
  CellChangeTimes->{{3.6034553627730494`*^9, 3.6034553661402416`*^9}}],
 
-Cell[BoxData[
+Cell[BoxData[{
  RowBox[{
-  RowBox[{"tupleCaseClassArityize", "[", "n_Integer", "]"}], ":=", 
-  RowBox[{"\"\<  case class EnrichedTuple\>\"", "<>", 
-   RowBox[{"ToString", "[", "n", "]"}], "<>", "\"\<( tuple: Tuple\>\"", "<>", 
-   RowBox[{"ToString", "[", "n", "]"}], "<>", "\"\<[\>\"", "<>", 
-   RowBox[{"tupleRepeat", "[", 
-    RowBox[{"\"\<Any\>\"", ",", "n"}], "]"}], "<>", 
-   "\"\<] ) extends EnrichedTupleBase {\n    def v() = {\n      val temp = \
+  RowBox[{
+   RowBox[{"tupleCaseClassArityize", "[", "n_Integer", "]"}], ":=", 
+   "\[IndentingNewLine]", 
+   RowBox[{"\"\<  class EnrichedTuple\>\"", "<>", 
+    RowBox[{"ToString", "[", "n", "]"}], "<>", "\"\<(tuple: Tuple\>\"", "<>", 
+    RowBox[{"ToString", "[", "n", "]"}], "<>", "\"\<[\>\"", "<>", 
+    RowBox[{"tupleRepeat", "[", 
+     RowBox[{"\"\<Any\>\"", ",", "n"}], "]"}], "<>", 
+    "\"\<]) extends EnrichedTupleBase {\n    def v() = arrayToDenseVector( \
+anyToArray(tuple) )\n    def m() = arrayArrayToDenseMatrix( \
+tuple.productIterator.map( anyToArray(_) ).toArray )\n  }\n\n\>\""}]}], 
+  "\[IndentingNewLine]", "\n", 
+  RowBox[{"(*", 
+   RowBox[{"\"\<case class EnrichedTuple\>\"", "<>", 
+    RowBox[{"ToString", "[", "n", "]"}], "<>", "\"\<( tuple: Tuple\>\"", "<>", 
+    RowBox[{"ToString", "[", "n", "]"}], "<>", "\"\<[\>\"", "<>", 
+    RowBox[{"tupleRepeat", "[", 
+     RowBox[{"\"\<Any\>\"", ",", "n"}], "]"}], "<>", 
+    "\"\<] ) extends EnrichedTupleBase {\n    def v() = {\n      val temp = \
 tuple.productIterator.map( valueCode(_) ).toArray\n      if(temp.forall( _ > \
 0 )){\n        max( temp ) match {\n          case 1 => DenseVector( \
 tuple.productIterator.map( anyToInt(_) ).toArray )\n          case 2 => \
@@ -254,9 +334,83 @@ case 3 => DenseVector( tuple.productIterator.map( anyToFloat(_) ).toArray )\n \
 anyToComplex(_) ).toArray )\n        }\n      } else {\n        throw new \
 IllegalArgumentException( \\\"Cannot interpret tuples as DenseVector when \
 they contain values with classes other than Int/Long/Float/Double/Complex\\\" \
-)\n      }\n    }\n  }\n\>\""}]}]], "Input",
+)\n      }\n    }\n}\>"}], "*)"}]}], "\n", 
+ RowBox[{"(*", "\"\<\n    \>", 
+  RowBox[{"(*", 
+   RowBox[{
+    RowBox[{
+     RowBox[{
+      RowBox[{"def", " ", "m", 
+       RowBox[{"(", ")"}]}], " ", "=", " ", 
+      RowBox[{"{", "\n", "      ", 
+       RowBox[{
+        RowBox[{"val", " ", "temp"}], " ", "=", " ", 
+        RowBox[{
+         RowBox[{"tuple", ".", "productIterator", ".", "map"}], 
+         RowBox[{
+          RowBox[{"(", " ", 
+           RowBox[{"valueCode", 
+            RowBox[{"(", "_", ")"}]}], " ", ")"}], ".", "toArray"}], "\n", 
+         "      ", "if", 
+         RowBox[{"(", 
+          RowBox[{
+           RowBox[{"temp", ".", "forall"}], 
+           RowBox[{"(", " ", 
+            RowBox[{"_", " ", "<", " ", "0"}], " ", ")"}]}], ")"}], 
+         RowBox[{"{", "\n", "        ", 
+          RowBox[{"if", 
+           RowBox[{"(", 
+            RowBox[{
+             RowBox[{
+              RowBox[{"temp", ".", "reduce"}], 
+              RowBox[{"(", " ", 
+               RowBox[{
+                RowBox[{"(", 
+                 RowBox[{
+                  RowBox[{"p1", ":", " ", "Int"}], ",", " ", 
+                  RowBox[{"p2", ":", " ", "Int"}]}], ")"}], " ", "=", 
+                RowBox[{">", " ", 
+                 RowBox[{"if", 
+                  RowBox[{"(", " ", 
+                   RowBox[{"p1", " ", "==", " ", "p2"}], " ", ")"}], " ", 
+                  "p1", " ", "else", " ", "0"}]}]}], " ", ")"}]}], " ", "!=", 
+             " ", "0"}], " ", ")"}], " ", 
+           RowBox[{"{", "\n", "          ", 
+            RowBox[{
+             RowBox[{"DenseMatrix", ".", "horzcat"}], 
+             RowBox[{"(", " ", 
+              RowBox[{
+               RowBox[{"tuple", ".", "productIterator", ".", "map"}], 
+               RowBox[{
+                RowBox[{"(", " ", 
+                 RowBox[{"_.", "v"}], " ", ")"}], ".", "toSequence"}]}], " ", 
+              ")"}]}], "\n", "        ", "}"}], " ", "else", " ", 
+           RowBox[{"{", "\n", "          ", 
+            RowBox[{"throw", " ", "new", " ", "IllegalArgumentException", 
+             RowBox[{"(", " ", 
+              RowBox[{
+              "\\\"", "Cannot", " ", "interpret", " ", "a", " ", "tuple", " ",
+                "as", " ", "DenseMatrix", " ", "when", " ", "it", " ", 
+               "contains", " ", "nested", " ", "tuples", " ", "of", " ", 
+               "unequal", " ", "Length", "\\\""}], " ", ")"}]}], "\n", 
+            "        ", "}"}]}], "\n", "      ", "}"}], " ", "else", " ", 
+         RowBox[{"{", "\n", "        ", 
+          RowBox[{"throw", " ", "new", " ", "IllegalArgumentException", 
+           RowBox[{"(", " ", 
+            RowBox[{
+            "\\\"", "Cannot", " ", "interpret", " ", "a", " ", "tuple", " ", 
+             "as", " ", "DenseMatrix", " ", "when", " ", "it", " ", 
+             "contains", " ", "values", " ", "other", " ", "than", " ", 
+             "nested", " ", "tuples", "\\\""}], " ", ")"}]}], "\n", "      ", 
+          "}"}]}]}], "\n", "    ", "}"}]}], "\n", "  ", "}"}], "\n", 
+    "\"\<\>"}], "*)"}]}]}], "Input",
  CellChangeTimes->{{3.6034516634814615`*^9, 3.6034517360886145`*^9}, {
-   3.6034517797671127`*^9, 3.6034517833993206`*^9}, 3.6034544360690446`*^9}],
+   3.6034517797671127`*^9, 3.6034517833993206`*^9}, 3.6034544360690446`*^9, {
+   3.603457175888753*^9, 3.6034572025072756`*^9}, {3.6034575656740475`*^9, 
+   3.6034575739715223`*^9}, {3.6034576567072544`*^9, 3.603457657243285*^9}, {
+   3.603468758717253*^9, 3.603468871705716*^9}, {3.6034689788438435`*^9, 
+   3.6034689879823666`*^9}},
+ EmphasizeSyntaxErrors->True],
 
 Cell[CellGroupData[{
 
@@ -271,296 +425,100 @@ Cell[BoxData[
  CellChangeTimes->{
   3.603451754284655*^9, {3.6034518855391626`*^9, 3.6034518874032693`*^9}}],
 
-Cell[BoxData["\<\"  case class EnrichedTuple1( tuple: Tuple1[Any] ) extends \
-EnrichedTupleBase {\\n    def v() = {\\n      val temp = \
-tuple.productIterator.map( valueCode(_) )\\n      if(temp.forall( _ > 0 \
-)){\\n        max( temp ) match {\\n          case 1 => DenseVector( \
-tuple.productIterator.map( anyToInt(_) ).toArray )\\n          case 2 => \
-DenseVector( tuple.productIterator.map( anyToLong(_) ).toArray )\\n          \
-case 3 => DenseVector( tuple.productIterator.map( anyToFloat(_) ).toArray \
-)\\n          case 4 => DenseVector( tuple.productIterator.map( \
-anyToDouble(_) ).toArray )\\n          case 5 => DenseVector( \
-tuple.productIterator.map( anyToComplex(_) ).toArray )\\n        }\\n      } \
-else {\\n        throw new IllegalArgumentException( \\\"Cannot interpret \
-tuples as DenseVector when they contain values with classes other than \
-Int/Long/Float/Double/Complex\\\" )\\n      }\\n    }\\n  }\\n  case class \
-EnrichedTuple2( tuple: Tuple2[Any, Any] ) extends EnrichedTupleBase {\\n    \
-def v() = {\\n      val temp = tuple.productIterator.map( valueCode(_) )\\n   \
-   if(temp.forall( _ > 0 )){\\n        max( temp ) match {\\n          case 1 \
-=> DenseVector( tuple.productIterator.map( anyToInt(_) ).toArray )\\n         \
- case 2 => DenseVector( tuple.productIterator.map( anyToLong(_) ).toArray \
-)\\n          case 3 => DenseVector( tuple.productIterator.map( anyToFloat(_) \
-).toArray )\\n          case 4 => DenseVector( tuple.productIterator.map( \
-anyToDouble(_) ).toArray )\\n          case 5 => DenseVector( \
-tuple.productIterator.map( anyToComplex(_) ).toArray )\\n        }\\n      } \
-else {\\n        throw new IllegalArgumentException( \\\"Cannot interpret \
-tuples as DenseVector when they contain values with classes other than \
-Int/Long/Float/Double/Complex\\\" )\\n      }\\n    }\\n  }\\n  case class \
-EnrichedTuple3( tuple: Tuple3[Any, Any, Any] ) extends EnrichedTupleBase {\\n \
-   def v() = {\\n      val temp = tuple.productIterator.map( valueCode(_) \
-)\\n      if(temp.forall( _ > 0 )){\\n        max( temp ) match {\\n          \
-case 1 => DenseVector( tuple.productIterator.map( anyToInt(_) ).toArray )\\n  \
-        case 2 => DenseVector( tuple.productIterator.map( anyToLong(_) \
-).toArray )\\n          case 3 => DenseVector( tuple.productIterator.map( \
-anyToFloat(_) ).toArray )\\n          case 4 => DenseVector( \
-tuple.productIterator.map( anyToDouble(_) ).toArray )\\n          case 5 => \
-DenseVector( tuple.productIterator.map( anyToComplex(_) ).toArray )\\n        \
-}\\n      } else {\\n        throw new IllegalArgumentException( \\\"Cannot \
-interpret tuples as DenseVector when they contain values with classes other \
-than Int/Long/Float/Double/Complex\\\" )\\n      }\\n    }\\n  }\\n  case \
-class EnrichedTuple4( tuple: Tuple4[Any, Any, Any, Any] ) extends \
-EnrichedTupleBase {\\n    def v() = {\\n      val temp = \
-tuple.productIterator.map( valueCode(_) )\\n      if(temp.forall( _ > 0 \
-)){\\n        max( temp ) match {\\n          case 1 => DenseVector( \
-tuple.productIterator.map( anyToInt(_) ).toArray )\\n          case 2 => \
-DenseVector( tuple.productIterator.map( anyToLong(_) ).toArray )\\n          \
-case 3 => DenseVector( tuple.productIterator.map( anyToFloat(_) ).toArray \
-)\\n          case 4 => DenseVector( tuple.productIterator.map( \
-anyToDouble(_) ).toArray )\\n          case 5 => DenseVector( \
-tuple.productIterator.map( anyToComplex(_) ).toArray )\\n        }\\n      } \
-else {\\n        throw new IllegalArgumentException( \\\"Cannot interpret \
-tuples as DenseVector when they contain values with classes other than \
-Int/Long/Float/Double/Complex\\\" )\\n      }\\n    }\\n  }\\n  case class \
-EnrichedTuple5( tuple: Tuple5[Any, Any, Any, Any, Any] ) extends \
-EnrichedTupleBase {\\n    def v() = {\\n      val temp = \
-tuple.productIterator.map( valueCode(_) )\\n      if(temp.forall( _ > 0 \
-)){\\n        max( temp ) match {\\n          case 1 => DenseVector( \
-tuple.productIterator.map( anyToInt(_) ).toArray )\\n          case 2 => \
-DenseVector( tuple.productIterator.map( anyToLong(_) ).toArray )\\n          \
-case 3 => DenseVector( tuple.productIterator.map( anyToFloat(_) ).toArray \
-)\\n          case 4 => DenseVector( tuple.productIterator.map( \
-anyToDouble(_) ).toArray )\\n          case 5 => DenseVector( \
-tuple.productIterator.map( anyToComplex(_) ).toArray )\\n        }\\n      } \
-else {\\n        throw new IllegalArgumentException( \\\"Cannot interpret \
-tuples as DenseVector when they contain values with classes other than \
-Int/Long/Float/Double/Complex\\\" )\\n      }\\n    }\\n  }\\n  case class \
-EnrichedTuple6( tuple: Tuple6[Any, Any, Any, Any, Any, Any] ) extends \
-EnrichedTupleBase {\\n    def v() = {\\n      val temp = \
-tuple.productIterator.map( valueCode(_) )\\n      if(temp.forall( _ > 0 \
-)){\\n        max( temp ) match {\\n          case 1 => DenseVector( \
-tuple.productIterator.map( anyToInt(_) ).toArray )\\n          case 2 => \
-DenseVector( tuple.productIterator.map( anyToLong(_) ).toArray )\\n          \
-case 3 => DenseVector( tuple.productIterator.map( anyToFloat(_) ).toArray \
-)\\n          case 4 => DenseVector( tuple.productIterator.map( \
-anyToDouble(_) ).toArray )\\n          case 5 => DenseVector( \
-tuple.productIterator.map( anyToComplex(_) ).toArray )\\n        }\\n      } \
-else {\\n        throw new IllegalArgumentException( \\\"Cannot interpret \
-tuples as DenseVector when they contain values with classes other than \
-Int/Long/Float/Double/Complex\\\" )\\n      }\\n    }\\n  }\\n  case class \
-EnrichedTuple7( tuple: Tuple7[Any, Any, Any, Any, Any, Any, Any] ) extends \
-EnrichedTupleBase {\\n    def v() = {\\n      val temp = \
-tuple.productIterator.map( valueCode(_) )\\n      if(temp.forall( _ > 0 \
-)){\\n        max( temp ) match {\\n          case 1 => DenseVector( \
-tuple.productIterator.map( anyToInt(_) ).toArray )\\n          case 2 => \
-DenseVector( tuple.productIterator.map( anyToLong(_) ).toArray )\\n          \
-case 3 => DenseVector( tuple.productIterator.map( anyToFloat(_) ).toArray \
-)\\n          case 4 => DenseVector( tuple.productIterator.map( \
-anyToDouble(_) ).toArray )\\n          case 5 => DenseVector( \
-tuple.productIterator.map( anyToComplex(_) ).toArray )\\n        }\\n      } \
-else {\\n        throw new IllegalArgumentException( \\\"Cannot interpret \
-tuples as DenseVector when they contain values with classes other than \
-Int/Long/Float/Double/Complex\\\" )\\n      }\\n    }\\n  }\\n  case class \
-EnrichedTuple8( tuple: Tuple8[Any, Any, Any, Any, Any, Any, Any, Any] ) \
-extends EnrichedTupleBase {\\n    def v() = {\\n      val temp = \
-tuple.productIterator.map( valueCode(_) )\\n      if(temp.forall( _ > 0 \
-)){\\n        max( temp ) match {\\n          case 1 => DenseVector( \
-tuple.productIterator.map( anyToInt(_) ).toArray )\\n          case 2 => \
-DenseVector( tuple.productIterator.map( anyToLong(_) ).toArray )\\n          \
-case 3 => DenseVector( tuple.productIterator.map( anyToFloat(_) ).toArray \
-)\\n          case 4 => DenseVector( tuple.productIterator.map( \
-anyToDouble(_) ).toArray )\\n          case 5 => DenseVector( \
-tuple.productIterator.map( anyToComplex(_) ).toArray )\\n        }\\n      } \
-else {\\n        throw new IllegalArgumentException( \\\"Cannot interpret \
-tuples as DenseVector when they contain values with classes other than \
-Int/Long/Float/Double/Complex\\\" )\\n      }\\n    }\\n  }\\n  case class \
-EnrichedTuple9( tuple: Tuple9[Any, Any, Any, Any, Any, Any, Any, Any, Any] ) \
-extends EnrichedTupleBase {\\n    def v() = {\\n      val temp = \
-tuple.productIterator.map( valueCode(_) )\\n      if(temp.forall( _ > 0 \
-)){\\n        max( temp ) match {\\n          case 1 => DenseVector( \
-tuple.productIterator.map( anyToInt(_) ).toArray )\\n          case 2 => \
-DenseVector( tuple.productIterator.map( anyToLong(_) ).toArray )\\n          \
-case 3 => DenseVector( tuple.productIterator.map( anyToFloat(_) ).toArray \
-)\\n          case 4 => DenseVector( tuple.productIterator.map( \
-anyToDouble(_) ).toArray )\\n          case 5 => DenseVector( \
-tuple.productIterator.map( anyToComplex(_) ).toArray )\\n        }\\n      } \
-else {\\n        throw new IllegalArgumentException( \\\"Cannot interpret \
-tuples as DenseVector when they contain values with classes other than \
-Int/Long/Float/Double/Complex\\\" )\\n      }\\n    }\\n  }\\n  case class \
-EnrichedTuple10( tuple: Tuple10[Any, Any, Any, Any, Any, Any, Any, Any, Any, \
-Any] ) extends EnrichedTupleBase {\\n    def v() = {\\n      val temp = \
-tuple.productIterator.map( valueCode(_) )\\n      if(temp.forall( _ > 0 \
-)){\\n        max( temp ) match {\\n          case 1 => DenseVector( \
-tuple.productIterator.map( anyToInt(_) ).toArray )\\n          case 2 => \
-DenseVector( tuple.productIterator.map( anyToLong(_) ).toArray )\\n          \
-case 3 => DenseVector( tuple.productIterator.map( anyToFloat(_) ).toArray \
-)\\n          case 4 => DenseVector( tuple.productIterator.map( \
-anyToDouble(_) ).toArray )\\n          case 5 => DenseVector( \
-tuple.productIterator.map( anyToComplex(_) ).toArray )\\n        }\\n      } \
-else {\\n        throw new IllegalArgumentException( \\\"Cannot interpret \
-tuples as DenseVector when they contain values with classes other than \
-Int/Long/Float/Double/Complex\\\" )\\n      }\\n    }\\n  }\\n  case class \
-EnrichedTuple11( tuple: Tuple11[Any, Any, Any, Any, Any, Any, Any, Any, Any, \
-Any, Any] ) extends EnrichedTupleBase {\\n    def v() = {\\n      val temp = \
-tuple.productIterator.map( valueCode(_) )\\n      if(temp.forall( _ > 0 \
-)){\\n        max( temp ) match {\\n          case 1 => DenseVector( \
-tuple.productIterator.map( anyToInt(_) ).toArray )\\n          case 2 => \
-DenseVector( tuple.productIterator.map( anyToLong(_) ).toArray )\\n          \
-case 3 => DenseVector( tuple.productIterator.map( anyToFloat(_) ).toArray \
-)\\n          case 4 => DenseVector( tuple.productIterator.map( \
-anyToDouble(_) ).toArray )\\n          case 5 => DenseVector( \
-tuple.productIterator.map( anyToComplex(_) ).toArray )\\n        }\\n      } \
-else {\\n        throw new IllegalArgumentException( \\\"Cannot interpret \
-tuples as DenseVector when they contain values with classes other than \
-Int/Long/Float/Double/Complex\\\" )\\n      }\\n    }\\n  }\\n  case class \
-EnrichedTuple12( tuple: Tuple12[Any, Any, Any, Any, Any, Any, Any, Any, Any, \
-Any, Any, Any] ) extends EnrichedTupleBase {\\n    def v() = {\\n      val \
-temp = tuple.productIterator.map( valueCode(_) )\\n      if(temp.forall( _ > \
-0 )){\\n        max( temp ) match {\\n          case 1 => DenseVector( \
-tuple.productIterator.map( anyToInt(_) ).toArray )\\n          case 2 => \
-DenseVector( tuple.productIterator.map( anyToLong(_) ).toArray )\\n          \
-case 3 => DenseVector( tuple.productIterator.map( anyToFloat(_) ).toArray \
-)\\n          case 4 => DenseVector( tuple.productIterator.map( \
-anyToDouble(_) ).toArray )\\n          case 5 => DenseVector( \
-tuple.productIterator.map( anyToComplex(_) ).toArray )\\n        }\\n      } \
-else {\\n        throw new IllegalArgumentException( \\\"Cannot interpret \
-tuples as DenseVector when they contain values with classes other than \
-Int/Long/Float/Double/Complex\\\" )\\n      }\\n    }\\n  }\\n  case class \
-EnrichedTuple13( tuple: Tuple13[Any, Any, Any, Any, Any, Any, Any, Any, Any, \
-Any, Any, Any, Any] ) extends EnrichedTupleBase {\\n    def v() = {\\n      \
-val temp = tuple.productIterator.map( valueCode(_) )\\n      if(temp.forall( \
-_ > 0 )){\\n        max( temp ) match {\\n          case 1 => DenseVector( \
-tuple.productIterator.map( anyToInt(_) ).toArray )\\n          case 2 => \
-DenseVector( tuple.productIterator.map( anyToLong(_) ).toArray )\\n          \
-case 3 => DenseVector( tuple.productIterator.map( anyToFloat(_) ).toArray \
-)\\n          case 4 => DenseVector( tuple.productIterator.map( \
-anyToDouble(_) ).toArray )\\n          case 5 => DenseVector( \
-tuple.productIterator.map( anyToComplex(_) ).toArray )\\n        }\\n      } \
-else {\\n        throw new IllegalArgumentException( \\\"Cannot interpret \
-tuples as DenseVector when they contain values with classes other than \
-Int/Long/Float/Double/Complex\\\" )\\n      }\\n    }\\n  }\\n  case class \
-EnrichedTuple14( tuple: Tuple14[Any, Any, Any, Any, Any, Any, Any, Any, Any, \
-Any, Any, Any, Any, Any] ) extends EnrichedTupleBase {\\n    def v() = {\\n   \
-   val temp = tuple.productIterator.map( valueCode(_) )\\n      \
-if(temp.forall( _ > 0 )){\\n        max( temp ) match {\\n          case 1 => \
-DenseVector( tuple.productIterator.map( anyToInt(_) ).toArray )\\n          \
-case 2 => DenseVector( tuple.productIterator.map( anyToLong(_) ).toArray )\\n \
-         case 3 => DenseVector( tuple.productIterator.map( anyToFloat(_) \
-).toArray )\\n          case 4 => DenseVector( tuple.productIterator.map( \
-anyToDouble(_) ).toArray )\\n          case 5 => DenseVector( \
-tuple.productIterator.map( anyToComplex(_) ).toArray )\\n        }\\n      } \
-else {\\n        throw new IllegalArgumentException( \\\"Cannot interpret \
-tuples as DenseVector when they contain values with classes other than \
-Int/Long/Float/Double/Complex\\\" )\\n      }\\n    }\\n  }\\n  case class \
-EnrichedTuple15( tuple: Tuple15[Any, Any, Any, Any, Any, Any, Any, Any, Any, \
-Any, Any, Any, Any, Any, Any] ) extends EnrichedTupleBase {\\n    def v() = {\
-\\n      val temp = tuple.productIterator.map( valueCode(_) )\\n      \
-if(temp.forall( _ > 0 )){\\n        max( temp ) match {\\n          case 1 => \
-DenseVector( tuple.productIterator.map( anyToInt(_) ).toArray )\\n          \
-case 2 => DenseVector( tuple.productIterator.map( anyToLong(_) ).toArray )\\n \
-         case 3 => DenseVector( tuple.productIterator.map( anyToFloat(_) \
-).toArray )\\n          case 4 => DenseVector( tuple.productIterator.map( \
-anyToDouble(_) ).toArray )\\n          case 5 => DenseVector( \
-tuple.productIterator.map( anyToComplex(_) ).toArray )\\n        }\\n      } \
-else {\\n        throw new IllegalArgumentException( \\\"Cannot interpret \
-tuples as DenseVector when they contain values with classes other than \
-Int/Long/Float/Double/Complex\\\" )\\n      }\\n    }\\n  }\\n  case class \
-EnrichedTuple16( tuple: Tuple16[Any, Any, Any, Any, Any, Any, Any, Any, Any, \
-Any, Any, Any, Any, Any, Any, Any] ) extends EnrichedTupleBase {\\n    def \
-v() = {\\n      val temp = tuple.productIterator.map( valueCode(_) )\\n      \
-if(temp.forall( _ > 0 )){\\n        max( temp ) match {\\n          case 1 => \
-DenseVector( tuple.productIterator.map( anyToInt(_) ).toArray )\\n          \
-case 2 => DenseVector( tuple.productIterator.map( anyToLong(_) ).toArray )\\n \
-         case 3 => DenseVector( tuple.productIterator.map( anyToFloat(_) \
-).toArray )\\n          case 4 => DenseVector( tuple.productIterator.map( \
-anyToDouble(_) ).toArray )\\n          case 5 => DenseVector( \
-tuple.productIterator.map( anyToComplex(_) ).toArray )\\n        }\\n      } \
-else {\\n        throw new IllegalArgumentException( \\\"Cannot interpret \
-tuples as DenseVector when they contain values with classes other than \
-Int/Long/Float/Double/Complex\\\" )\\n      }\\n    }\\n  }\\n  case class \
-EnrichedTuple17( tuple: Tuple17[Any, Any, Any, Any, Any, Any, Any, Any, Any, \
-Any, Any, Any, Any, Any, Any, Any, Any] ) extends EnrichedTupleBase {\\n    \
-def v() = {\\n      val temp = tuple.productIterator.map( valueCode(_) )\\n   \
-   if(temp.forall( _ > 0 )){\\n        max( temp ) match {\\n          case 1 \
-=> DenseVector( tuple.productIterator.map( anyToInt(_) ).toArray )\\n         \
- case 2 => DenseVector( tuple.productIterator.map( anyToLong(_) ).toArray \
-)\\n          case 3 => DenseVector( tuple.productIterator.map( anyToFloat(_) \
-).toArray )\\n          case 4 => DenseVector( tuple.productIterator.map( \
-anyToDouble(_) ).toArray )\\n          case 5 => DenseVector( \
-tuple.productIterator.map( anyToComplex(_) ).toArray )\\n        }\\n      } \
-else {\\n        throw new IllegalArgumentException( \\\"Cannot interpret \
-tuples as DenseVector when they contain values with classes other than \
-Int/Long/Float/Double/Complex\\\" )\\n      }\\n    }\\n  }\\n  case class \
-EnrichedTuple18( tuple: Tuple18[Any, Any, Any, Any, Any, Any, Any, Any, Any, \
-Any, Any, Any, Any, Any, Any, Any, Any, Any] ) extends EnrichedTupleBase {\\n \
-   def v() = {\\n      val temp = tuple.productIterator.map( valueCode(_) \
-)\\n      if(temp.forall( _ > 0 )){\\n        max( temp ) match {\\n          \
-case 1 => DenseVector( tuple.productIterator.map( anyToInt(_) ).toArray )\\n  \
-        case 2 => DenseVector( tuple.productIterator.map( anyToLong(_) \
-).toArray )\\n          case 3 => DenseVector( tuple.productIterator.map( \
-anyToFloat(_) ).toArray )\\n          case 4 => DenseVector( \
-tuple.productIterator.map( anyToDouble(_) ).toArray )\\n          case 5 => \
-DenseVector( tuple.productIterator.map( anyToComplex(_) ).toArray )\\n        \
-}\\n      } else {\\n        throw new IllegalArgumentException( \\\"Cannot \
-interpret tuples as DenseVector when they contain values with classes other \
-than Int/Long/Float/Double/Complex\\\" )\\n      }\\n    }\\n  }\\n  case \
-class EnrichedTuple19( tuple: Tuple19[Any, Any, Any, Any, Any, Any, Any, Any, \
-Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any] ) extends \
-EnrichedTupleBase {\\n    def v() = {\\n      val temp = \
-tuple.productIterator.map( valueCode(_) )\\n      if(temp.forall( _ > 0 \
-)){\\n        max( temp ) match {\\n          case 1 => DenseVector( \
-tuple.productIterator.map( anyToInt(_) ).toArray )\\n          case 2 => \
-DenseVector( tuple.productIterator.map( anyToLong(_) ).toArray )\\n          \
-case 3 => DenseVector( tuple.productIterator.map( anyToFloat(_) ).toArray \
-)\\n          case 4 => DenseVector( tuple.productIterator.map( \
-anyToDouble(_) ).toArray )\\n          case 5 => DenseVector( \
-tuple.productIterator.map( anyToComplex(_) ).toArray )\\n        }\\n      } \
-else {\\n        throw new IllegalArgumentException( \\\"Cannot interpret \
-tuples as DenseVector when they contain values with classes other than \
-Int/Long/Float/Double/Complex\\\" )\\n      }\\n    }\\n  }\\n  case class \
-EnrichedTuple20( tuple: Tuple20[Any, Any, Any, Any, Any, Any, Any, Any, Any, \
-Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any] ) extends \
-EnrichedTupleBase {\\n    def v() = {\\n      val temp = \
-tuple.productIterator.map( valueCode(_) )\\n      if(temp.forall( _ > 0 \
-)){\\n        max( temp ) match {\\n          case 1 => DenseVector( \
-tuple.productIterator.map( anyToInt(_) ).toArray )\\n          case 2 => \
-DenseVector( tuple.productIterator.map( anyToLong(_) ).toArray )\\n          \
-case 3 => DenseVector( tuple.productIterator.map( anyToFloat(_) ).toArray \
-)\\n          case 4 => DenseVector( tuple.productIterator.map( \
-anyToDouble(_) ).toArray )\\n          case 5 => DenseVector( \
-tuple.productIterator.map( anyToComplex(_) ).toArray )\\n        }\\n      } \
-else {\\n        throw new IllegalArgumentException( \\\"Cannot interpret \
-tuples as DenseVector when they contain values with classes other than \
-Int/Long/Float/Double/Complex\\\" )\\n      }\\n    }\\n  }\\n  case class \
-EnrichedTuple21( tuple: Tuple21[Any, Any, Any, Any, Any, Any, Any, Any, Any, \
-Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any] ) extends \
-EnrichedTupleBase {\\n    def v() = {\\n      val temp = \
-tuple.productIterator.map( valueCode(_) )\\n      if(temp.forall( _ > 0 \
-)){\\n        max( temp ) match {\\n          case 1 => DenseVector( \
-tuple.productIterator.map( anyToInt(_) ).toArray )\\n          case 2 => \
-DenseVector( tuple.productIterator.map( anyToLong(_) ).toArray )\\n          \
-case 3 => DenseVector( tuple.productIterator.map( anyToFloat(_) ).toArray \
-)\\n          case 4 => DenseVector( tuple.productIterator.map( \
-anyToDouble(_) ).toArray )\\n          case 5 => DenseVector( \
-tuple.productIterator.map( anyToComplex(_) ).toArray )\\n        }\\n      } \
-else {\\n        throw new IllegalArgumentException( \\\"Cannot interpret \
-tuples as DenseVector when they contain values with classes other than \
-Int/Long/Float/Double/Complex\\\" )\\n      }\\n    }\\n  }\\n  case class \
-EnrichedTuple22( tuple: Tuple22[Any, Any, Any, Any, Any, Any, Any, Any, Any, \
-Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any] ) extends \
-EnrichedTupleBase {\\n    def v() = {\\n      val temp = \
-tuple.productIterator.map( valueCode(_) )\\n      if(temp.forall( _ > 0 \
-)){\\n        max( temp ) match {\\n          case 1 => DenseVector( \
-tuple.productIterator.map( anyToInt(_) ).toArray )\\n          case 2 => \
-DenseVector( tuple.productIterator.map( anyToLong(_) ).toArray )\\n          \
-case 3 => DenseVector( tuple.productIterator.map( anyToFloat(_) ).toArray \
-)\\n          case 4 => DenseVector( tuple.productIterator.map( \
-anyToDouble(_) ).toArray )\\n          case 5 => DenseVector( \
-tuple.productIterator.map( anyToComplex(_) ).toArray )\\n        }\\n      } \
-else {\\n        throw new IllegalArgumentException( \\\"Cannot interpret \
-tuples as DenseVector when they contain values with classes other than \
-Int/Long/Float/Double/Complex\\\" )\\n      }\\n    }\\n  }\\n\"\>"], "Output",
- CellChangeTimes->{3.6034517571738205`*^9, 3.6034517906307344`*^9, 
-  3.603451888432328*^9}]
+Cell[BoxData["\<\"  class EnrichedTuple1(tuple: Tuple1[Any]) extends \
+EnrichedTupleBase {\\n    def v() = arrayToDenseVector( anyToArray(tuple) \
+)\\n    def m() = arrayArrayToDenseMatrix( tuple.productIterator.map( \
+anyToArray(_) ).toArray )\\n  }\\n\\n  class EnrichedTuple2(tuple: \
+Tuple2[Any, Any]) extends EnrichedTupleBase {\\n    def v() = \
+arrayToDenseVector( anyToArray(tuple) )\\n    def m() = \
+arrayArrayToDenseMatrix( tuple.productIterator.map( anyToArray(_) ).toArray )\
+\\n  }\\n\\n  class EnrichedTuple3(tuple: Tuple3[Any, Any, Any]) extends \
+EnrichedTupleBase {\\n    def v() = arrayToDenseVector( anyToArray(tuple) \
+)\\n    def m() = arrayArrayToDenseMatrix( tuple.productIterator.map( \
+anyToArray(_) ).toArray )\\n  }\\n\\n  class EnrichedTuple4(tuple: \
+Tuple4[Any, Any, Any, Any]) extends EnrichedTupleBase {\\n    def v() = \
+arrayToDenseVector( anyToArray(tuple) )\\n    def m() = \
+arrayArrayToDenseMatrix( tuple.productIterator.map( anyToArray(_) ).toArray )\
+\\n  }\\n\\n  class EnrichedTuple5(tuple: Tuple5[Any, Any, Any, Any, Any]) \
+extends EnrichedTupleBase {\\n    def v() = arrayToDenseVector( \
+anyToArray(tuple) )\\n    def m() = arrayArrayToDenseMatrix( \
+tuple.productIterator.map( anyToArray(_) ).toArray )\\n  }\\n\\n  class \
+EnrichedTuple6(tuple: Tuple6[Any, Any, Any, Any, Any, Any]) extends \
+EnrichedTupleBase {\\n    def v() = arrayToDenseVector( anyToArray(tuple) \
+)\\n    def m() = arrayArrayToDenseMatrix( tuple.productIterator.map( \
+anyToArray(_) ).toArray )\\n  }\\n\\n  class EnrichedTuple7(tuple: \
+Tuple7[Any, Any, Any, Any, Any, Any, Any]) extends EnrichedTupleBase {\\n    \
+def v() = arrayToDenseVector( anyToArray(tuple) )\\n    def m() = \
+arrayArrayToDenseMatrix( tuple.productIterator.map( anyToArray(_) ).toArray )\
+\\n  }\\n\\n  class EnrichedTuple8(tuple: Tuple8[Any, Any, Any, Any, Any, \
+Any, Any, Any]) extends EnrichedTupleBase {\\n    def v() = \
+arrayToDenseVector( anyToArray(tuple) )\\n    def m() = \
+arrayArrayToDenseMatrix( tuple.productIterator.map( anyToArray(_) ).toArray )\
+\\n  }\\n\\n  class EnrichedTuple9(tuple: Tuple9[Any, Any, Any, Any, Any, \
+Any, Any, Any, Any]) extends EnrichedTupleBase {\\n    def v() = \
+arrayToDenseVector( anyToArray(tuple) )\\n    def m() = \
+arrayArrayToDenseMatrix( tuple.productIterator.map( anyToArray(_) ).toArray )\
+\\n  }\\n\\n  class EnrichedTuple10(tuple: Tuple10[Any, Any, Any, Any, Any, \
+Any, Any, Any, Any, Any]) extends EnrichedTupleBase {\\n    def v() = \
+arrayToDenseVector( anyToArray(tuple) )\\n    def m() = \
+arrayArrayToDenseMatrix( tuple.productIterator.map( anyToArray(_) ).toArray )\
+\\n  }\\n\\n  class EnrichedTuple11(tuple: Tuple11[Any, Any, Any, Any, Any, \
+Any, Any, Any, Any, Any, Any]) extends EnrichedTupleBase {\\n    def v() = \
+arrayToDenseVector( anyToArray(tuple) )\\n    def m() = \
+arrayArrayToDenseMatrix( tuple.productIterator.map( anyToArray(_) ).toArray )\
+\\n  }\\n\\n  class EnrichedTuple12(tuple: Tuple12[Any, Any, Any, Any, Any, \
+Any, Any, Any, Any, Any, Any, Any]) extends EnrichedTupleBase {\\n    def v() \
+= arrayToDenseVector( anyToArray(tuple) )\\n    def m() = \
+arrayArrayToDenseMatrix( tuple.productIterator.map( anyToArray(_) ).toArray )\
+\\n  }\\n\\n  class EnrichedTuple13(tuple: Tuple13[Any, Any, Any, Any, Any, \
+Any, Any, Any, Any, Any, Any, Any, Any]) extends EnrichedTupleBase {\\n    \
+def v() = arrayToDenseVector( anyToArray(tuple) )\\n    def m() = \
+arrayArrayToDenseMatrix( tuple.productIterator.map( anyToArray(_) ).toArray )\
+\\n  }\\n\\n  class EnrichedTuple14(tuple: Tuple14[Any, Any, Any, Any, Any, \
+Any, Any, Any, Any, Any, Any, Any, Any, Any]) extends EnrichedTupleBase {\\n  \
+  def v() = arrayToDenseVector( anyToArray(tuple) )\\n    def m() = \
+arrayArrayToDenseMatrix( tuple.productIterator.map( anyToArray(_) ).toArray )\
+\\n  }\\n\\n  class EnrichedTuple15(tuple: Tuple15[Any, Any, Any, Any, Any, \
+Any, Any, Any, Any, Any, Any, Any, Any, Any, Any]) extends EnrichedTupleBase \
+{\\n    def v() = arrayToDenseVector( anyToArray(tuple) )\\n    def m() = \
+arrayArrayToDenseMatrix( tuple.productIterator.map( anyToArray(_) ).toArray )\
+\\n  }\\n\\n  class EnrichedTuple16(tuple: Tuple16[Any, Any, Any, Any, Any, \
+Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any]) extends \
+EnrichedTupleBase {\\n    def v() = arrayToDenseVector( anyToArray(tuple) \
+)\\n    def m() = arrayArrayToDenseMatrix( tuple.productIterator.map( \
+anyToArray(_) ).toArray )\\n  }\\n\\n  class EnrichedTuple17(tuple: \
+Tuple17[Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, \
+Any, Any, Any]) extends EnrichedTupleBase {\\n    def v() = \
+arrayToDenseVector( anyToArray(tuple) )\\n    def m() = \
+arrayArrayToDenseMatrix( tuple.productIterator.map( anyToArray(_) ).toArray )\
+\\n  }\\n\\n  class EnrichedTuple18(tuple: Tuple18[Any, Any, Any, Any, Any, \
+Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any]) extends \
+EnrichedTupleBase {\\n    def v() = arrayToDenseVector( anyToArray(tuple) \
+)\\n    def m() = arrayArrayToDenseMatrix( tuple.productIterator.map( \
+anyToArray(_) ).toArray )\\n  }\\n\\n  class EnrichedTuple19(tuple: \
+Tuple19[Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, \
+Any, Any, Any, Any, Any]) extends EnrichedTupleBase {\\n    def v() = \
+arrayToDenseVector( anyToArray(tuple) )\\n    def m() = \
+arrayArrayToDenseMatrix( tuple.productIterator.map( anyToArray(_) ).toArray )\
+\\n  }\\n\\n  class EnrichedTuple20(tuple: Tuple20[Any, Any, Any, Any, Any, \
+Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any]) \
+extends EnrichedTupleBase {\\n    def v() = arrayToDenseVector( \
+anyToArray(tuple) )\\n    def m() = arrayArrayToDenseMatrix( \
+tuple.productIterator.map( anyToArray(_) ).toArray )\\n  }\\n\\n  class \
+EnrichedTuple21(tuple: Tuple21[Any, Any, Any, Any, Any, Any, Any, Any, Any, \
+Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any]) extends \
+EnrichedTupleBase {\\n    def v() = arrayToDenseVector( anyToArray(tuple) \
+)\\n    def m() = arrayArrayToDenseMatrix( tuple.productIterator.map( \
+anyToArray(_) ).toArray )\\n  }\\n\\n  class EnrichedTuple22(tuple: \
+Tuple22[Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, \
+Any, Any, Any, Any, Any, Any, Any, Any]) extends EnrichedTupleBase {\\n    \
+def v() = arrayToDenseVector( anyToArray(tuple) )\\n    def m() = \
+arrayArrayToDenseMatrix( tuple.productIterator.map( anyToArray(_) ).toArray )\
+\\n  }\\n\\n\"\>"], "Output",
+ CellChangeTimes->{
+  3.6034517571738205`*^9, 3.6034517906307344`*^9, 3.603451888432328*^9, 
+   3.603457205606453*^9, 3.6034575754156046`*^9, 3.603457660502472*^9, 
+   3.603468874689886*^9, {3.6034689823060417`*^9, 3.6034689905675144`*^9}}]
 }, Open  ]],
 
 Cell[CellGroupData[{
@@ -571,7 +529,10 @@ Cell[BoxData[
  CellChangeTimes->{{3.603451893415613*^9, 3.6034519015320773`*^9}}],
 
 Cell[BoxData["\<\"temp2.txt\"\>"], "Output",
- CellChangeTimes->{3.6034519019961042`*^9}]
+ CellChangeTimes->{
+  3.6034519019961042`*^9, 3.603457219510248*^9, 3.603457583111045*^9, {
+   3.603457663380636*^9, 3.6034576706610527`*^9}, 3.603468912467047*^9, 
+   3.6034689946657486`*^9}]
 }, Open  ]],
 
 Cell[CellGroupData[{
@@ -581,7 +542,7 @@ Cell[BoxData[
  CellChangeTimes->{{3.603451903921214*^9, 3.603451905587309*^9}}],
 
 Cell[BoxData["\<\"C:\\\\Users\\\\Kenta\\\\Documents\"\>"], "Output",
- CellChangeTimes->{3.603451905761319*^9}]
+ CellChangeTimes->{3.603451905761319*^9, 3.6034689131380854`*^9}]
 }, Open  ]]
 }, Open  ]]
 },
@@ -601,42 +562,56 @@ CellTagsIndex->{}
 *)
 (*NotebookFileOutline
 Notebook[{
-Cell[557, 20, 732, 20, 92, "Input"],
 Cell[CellGroupData[{
-Cell[1314, 44, 164, 3, 31, "Input"],
-Cell[1481, 49, 121, 1, 31, "Output"]
+Cell[579, 22, 256, 3, 79, "Section"],
+Cell[838, 27, 732, 20, 92, "Input"],
+Cell[CellGroupData[{
+Cell[1595, 51, 164, 3, 31, "Input"],
+Cell[1762, 56, 121, 1, 31, "Output"]
 }, Open  ]],
 Cell[CellGroupData[{
-Cell[1639, 55, 165, 3, 31, "Input"],
-Cell[1807, 60, 82, 1, 31, "Output"]
-}, Open  ]],
-Cell[1904, 64, 780, 14, 52, "Input"],
-Cell[CellGroupData[{
-Cell[2709, 82, 435, 9, 31, "Input"],
-Cell[3147, 93, 4948, 75, 632, "Output"]
+Cell[1920, 62, 165, 3, 31, "Input"],
+Cell[2088, 67, 82, 1, 31, "Output"]
+}, Open  ]]
 }, Open  ]],
 Cell[CellGroupData[{
-Cell[8132, 173, 103, 1, 79, "Section"],
-Cell[8238, 176, 645, 12, 31, "Input"],
+Cell[2219, 74, 213, 3, 79, "Section"],
+Cell[2435, 79, 780, 14, 52, "Input"],
 Cell[CellGroupData[{
-Cell[8908, 192, 321, 8, 31, "Input"],
-Cell[9232, 202, 1976, 26, 504, "Output"]
+Cell[3240, 97, 435, 9, 31, "Input"],
+Cell[3678, 108, 4146, 58, 492, "Output"]
+}, Open  ]]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[7873, 172, 245, 3, 79, "Section"],
+Cell[8121, 177, 631, 12, 52, "Input"],
+Cell[CellGroupData[{
+Cell[8777, 193, 460, 10, 31, "Input"],
+Cell[9240, 205, 2288, 30, 472, "Output"]
+}, Open  ]]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[11577, 241, 103, 1, 79, "Section"],
+Cell[11683, 244, 645, 12, 31, "Input"],
+Cell[CellGroupData[{
+Cell[12353, 260, 321, 8, 31, "Input"],
+Cell[12677, 270, 1976, 26, 504, "Output"]
 }, Open  ]]
 }, Closed]],
 Cell[CellGroupData[{
-Cell[11257, 234, 114, 1, 49, "Section"],
-Cell[11374, 237, 1411, 21, 352, "Input"],
+Cell[14702, 302, 114, 1, 49, "Section"],
+Cell[14819, 305, 5307, 107, 792, "Input"],
 Cell[CellGroupData[{
-Cell[12810, 262, 355, 9, 31, "Input"],
-Cell[13168, 273, 21463, 289, 7072, "Output"]
+Cell[20151, 416, 355, 9, 31, "Input"],
+Cell[20509, 427, 6739, 93, 2232, "Output"]
 }, Open  ]],
 Cell[CellGroupData[{
-Cell[34668, 567, 175, 3, 31, "Input"],
-Cell[34846, 572, 88, 1, 31, "Output"]
+Cell[27285, 525, 175, 3, 31, "Input"],
+Cell[27463, 530, 237, 4, 87, "Output"]
 }, Open  ]],
 Cell[CellGroupData[{
-Cell[34971, 578, 123, 2, 31, "Input"],
-Cell[35097, 582, 110, 1, 31, "Output"]
+Cell[27737, 539, 123, 2, 31, "Input"],
+Cell[27863, 543, 134, 1, 31, "Output"]
 }, Open  ]]
 }, Open  ]]
 }
