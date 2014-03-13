@@ -74,20 +74,32 @@ final class DenseMatrix[@specialized(Int, Float, Double) V](val rows: Int,
   DenseMatrix.init()
 
   /** Calculates the index into the data array for row and column */
-  final def linearIndex(row: Int, col: Int): Int = {
+  def linearIndex(row: Int, col: Int): Int = {
     if(isTranspose)
       offset + col + row * majorStride
     else
       offset + row + col * majorStride
   }
 
-  def update(row: Int, col: Int, v: V) {
+  def rowColumnFromLinearIndex(index: Int) = {
+    val r = (index - offset)%majorStride
+    val c = (index - offset)/majorStride
+    if(isTranspose) {
+      (c, r)
+    } else {
+      (r,c)
+    }
+  }
+
+  def update(row: Int, col: Int, v: V) = {
     if(row < - rows || row >= rows) throw new IndexOutOfBoundsException((row,col) + " not in [-"+rows+","+rows+") x [-"+cols+"," + cols+")")
     if(col < - cols || col >= cols) throw new IndexOutOfBoundsException((row,col) + " not in [-"+rows+","+rows+") x [-"+cols+"," + cols+")")
     val trueRow = if(row<0) row + rows else row
     val trueCol = if(col<0) col + cols else col
     data(linearIndex(trueRow, trueCol)) = v
   }
+
+  def unsafeUpdate(row: Int, col: Int, v: V) = { data(linearIndex(row, col)) = v }
 
   /** Converts this matrix to a DenseVector (column-major) */
   def toDenseVector: DenseVector[V] = {
@@ -168,6 +180,7 @@ final class DenseMatrix[@specialized(Int, Float, Double) V](val rows: Int,
   def activeKeysIterator = keysIterator
 
   /** Computes the sum along the diagonal. */
+  @deprecated("use trace(dm) instead", "0.6")
   def trace(implicit numeric: Numeric[V]) = diag(this:DenseMatrix[V]).sum
 
   override def equals(p1: Any) = p1 match {
@@ -181,6 +194,8 @@ final class DenseMatrix[@specialized(Int, Float, Double) V](val rows: Int,
   def activeSize = data.length
 
   def valueAt(i: Int) = data(i)
+  def valueAt(row: Int, col: Int) = apply(row,col)
+  def unsafeValueAt(row: Int, col: Int) = data(linearIndex(row, col))
 
   def indexAt(i: Int) = i
 
@@ -547,6 +562,39 @@ with MatrixConstructors[DenseMatrix] {
     }
   }
 
+  implicit def canTraverseKeyValuePairs[V]:CanTraverseKeyValuePairs[DenseMatrix[V], (Int, Int), V] = {
+    new CanTraverseKeyValuePairs[DenseMatrix[V], (Int, Int), V] {
+      def isTraversableAgain(from: DenseMatrix[V]): Boolean = true
+
+      /** Iterates all key-value pairs from the given collection. */
+      def traverse(from: DenseMatrix[V], fn: CanTraverseKeyValuePairs.KeyValuePairsVisitor[(Int, Int), V]): Unit = {
+        import from._
+        val idealMajorStride = if(isTranspose) cols else rows
+
+        if(majorStride == idealMajorStride) {
+          fn.visitArray(from.rowColumnFromLinearIndex, data, offset, rows*cols, 1)
+        } else if(!from.isTranspose) {
+          var j = 0
+          while (j < from.cols) {
+            fn.visitArray(from.rowColumnFromLinearIndex, data, offset + j * majorStride, rows, 1)
+            j += 1
+          }
+        } else {
+          var j = 0
+          while (j < from.cols) {
+            var i = 0
+            while(i < from.rows) {
+              fn.visit((i,j), from(i, j))
+              i += 1
+            }
+            j += 1
+          }
+        }
+      }
+
+    }
+  }
+
 
   implicit def canTransformValues[V]:CanTransformValues[DenseMatrix[V], V, V] = {
     new CanTransformValues[DenseMatrix[V], V, V] {
@@ -834,7 +882,3 @@ with MatrixConstructors[DenseMatrix] {
   @noinline
   private def init() = {}
 }
-
-
-
-
