@@ -3,6 +3,7 @@ package breeze.generic
 import breeze.linalg.support._
 import breeze.linalg.{BroadcastedColumns, Axis}
 import breeze.generic.UFunc.{InPlaceImpl2, UImpl2}
+import scala.annotation.implicitNotFound
 
 /*
  Copyright 2012 David Hall
@@ -64,11 +65,17 @@ trait UFunc {
   final def inPlace[V, V2, V3](v: V, v2: V2, v3: V3)(implicit impl: UFunc.InPlaceImpl3[this.type, V, V2, V3]) = impl(v, v2, v3)
 
 
+  @implicitNotFound("Could not find an implicit implementation for this UFunc with arguments ${V}")
   type Impl[V, VR] = UFunc.UImpl[this.type, V, VR]
+  @implicitNotFound("Could not find an implicit implementation for this UFunc with arguments ${V1}, ${V2}")
   type Impl2[V1, V2, VR] = UFunc.UImpl2[this.type, V1, V2, VR]
+  @implicitNotFound("Could not find an implicit implementation for this UFunc with arguments ${V1}, ${V2}, ${V3}")
   type Impl3[V1, V2, V3, VR] = UFunc.UImpl3[this.type, V1, V2, V3, VR]
+  @implicitNotFound("Could not find an implicit inplace implementation for this UFunc with arguments ${V}")
   type InPlaceImpl[V] = UFunc.InPlaceImpl[this.type, V]
+  @implicitNotFound("Could not find an inplace implicit implementation for this UFunc with arguments ${V1}, ${V2}")
   type InPlaceImpl2[V1, V2] = UFunc.InPlaceImpl2[this.type, V1, V2]
+  @implicitNotFound("Could not find an inplace implicit implementation for this UFunc with arguments ${V1}, ${V2}, ${V3}")
   type InPlaceImpl3[V1, V2, V3] = UFunc.InPlaceImpl3[this.type, V1, V2, V3]
 
 
@@ -80,10 +87,18 @@ trait UFunc {
   }
 }
 
+trait VariableUFunc[U <: UFunc, T <: VariableUFunc[U,T]] { self:T =>
+  final def apply[@specialized(Int, Double, Float) V,
+                  @specialized(Int, Double, Float) VR]
+                  (v: V)(implicit impl: UFunc.UImpl2[U,T,V,VR]):VR = impl(self, v)
+
+  final def apply[@specialized(Int, Double, Float) V1,
+                  @specialized(Int, Double, Float) V2,
+                  @specialized(Int, Double, Float) VR]
+                   (v1: V1, v2: V2)(implicit impl: UFunc.UImpl3[U,T,V1, V2, VR]):VR = impl(self, v1, v2)
+}
+
 trait MappingUFunc extends UFuncX { this: UFunc =>
-
-
-
 }
 
 trait UFuncX extends UFuncZ { this: UFunc =>
@@ -117,14 +132,17 @@ trait UFuncZ { this: UFunc =>
 }
 
 object UFunc {
+  @implicitNotFound("Could not find an implicit implementation for ${Tag} with arguments ${V}")
   trait UImpl[Tag, @specialized(Int, Double, Float) V, @specialized(Int, Double, Float) +VR] {
     def apply(v: V):VR
   }
 
+  @implicitNotFound("Could not find an implicit implementation for ${Tag} with arguments ${V1}, ${V2}")
   trait UImpl2[Tag, @specialized(Int, Double, Float) V1, @specialized(Int, Double, Float) V2, @specialized(Int, Double, Float) +VR] {
     def apply(v: V1, v2: V2):VR
   }
 
+  @implicitNotFound("Could not find an implicit implementation for ${Tag} with arguments ${V1}, ${V2}, ${V3}")
   trait UImpl3[Tag, @specialized(Int, Double, Float) V1,
                     @specialized(Int, Double, Float) V2,
                     @specialized(Int, Double, Float) V3,
@@ -132,15 +150,18 @@ object UFunc {
     def apply(v: V1, v2: V2, v3: V3):VR
   }
 
+  @implicitNotFound("Could not find an implicit inplace implementation for ${Tag} with arguments ${V}")
   trait InPlaceImpl[Tag, V] {
     def apply(v: V)
   }
 
+  @implicitNotFound("Could not find an implicit inplace implementation for ${Tag} with arguments ${V}, ${V2}")
   trait InPlaceImpl2[Tag, V,  @specialized(Int, Double, Float) V2] {
     def apply(v: V, v2: V2)
   }
 
-  trait InPlaceImpl3[Tag, V,  V2, V3] {
+  @implicitNotFound("Could not find an implicit inplace implementation for ${Tag} with arguments ${V}, ${V2}, ${V3}")
+  trait InPlaceImpl3[Tag, V, V2, V3] {
     def apply(v: V, v2: V2, v3: V3)
   }
 
@@ -171,5 +192,3 @@ object UFunc {
   }
 
 }
-
-
