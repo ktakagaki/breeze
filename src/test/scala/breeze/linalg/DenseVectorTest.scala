@@ -112,6 +112,7 @@ class DenseVectorTest extends FunSuite with Checkers {
   test("MulInner") {
     val a = DenseVector(0.56390, 0.36231, 0.14601, 0.60294, 0.14535)
     val b = DenseVector(0.15951, 0.83671, 0.56002, 0.57797, 0.54450)
+    assertClose(a.t * b, .90249)
     assertClose(a dot b, .90249)
   }
 
@@ -198,15 +199,6 @@ class DenseVectorTest extends FunSuite with Checkers {
 
     val emptySlice = x(2 until 2)
     assert(emptySlice === DenseVector[Float]())
-  }
-
-  test("Transpose") {
-    val x: DenseVector[Double] = DenseVector(1, 2, 3)
-
-    // test static type and write-through of transpose
-    val y = x.t
-    y(0, 0) = 0
-    assert(x === DenseVector(0.0, 2.0, 3.0))
   }
 
   test("Transpose Complex") {
@@ -374,6 +366,12 @@ class DenseVectorTest extends FunSuite with Checkers {
     assert(util.Arrays.equals(a.toArray, a.data))
     assert(util.Arrays.equals(a(0 until 3 by 2).toArray, Array(1,3)))
     assert(util.Arrays.equals(a(1 until 3 by 1).toArray, Array(2,3)))
+
+    val b = DenseVector(1d*breeze.math.i, 0d*breeze.math.i, 2d*breeze.math.i).toArray
+    //assert( util.Arrays.equals( b.toArray, Array(1d*breeze.math.i, 0d, 2d)) )
+    assert(b(0) == Complex(0, 1))
+    assert(b(1) == Complex(0, 0))
+    assert(b(2) == Complex(0, 2))
   }
 
   test("OpEq and friends") {
