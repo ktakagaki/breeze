@@ -1,17 +1,14 @@
 package breeze.graphics.primitives
 
 import scalafx.scene.paint.Color
-import breeze.linalg.{DenseVector, DenseMatrix}
+import breeze.linalg.{convert, DenseVector, DenseMatrix}
 
 object Primitive {
-  //ToDo 3: Make generic.
+
   implicit def implicitItoD(i: Int) = i.toDouble
-//  implicit def implicitItoD[Int](dv: DenseVector[Int]): DenseVector[Double] = {
-//    new DenseVector[Double](dv.toArray)
-//  }
-//  implicit def implicitItoD[Int](dm: DenseMatrix[Int]): DenseMatrix[Double] = {
-//    new DenseMatrix[Double](dm.toArray)
-//  }
+  implicit def implicitDvItoD(i: DenseVector[Int]) = convert( i, Double )
+  implicit def implicitDmItoD(i: DenseMatrix[Int]) = convert( i, Double )
+
 }
 
 /**

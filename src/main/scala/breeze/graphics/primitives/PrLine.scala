@@ -12,7 +12,7 @@ object PrLine{
  * @author ktakagaki
  * @date 1/31/14.
  */
-class PrLine(var points: DenseMatrix[Double]) {
+class PrLine(var points: DenseMatrix[Double]) extends Primitive {
 
 
 
