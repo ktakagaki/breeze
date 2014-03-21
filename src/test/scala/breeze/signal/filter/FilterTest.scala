@@ -3,11 +3,14 @@ package breeze.signal
 import org.scalatest.FunSuite
 import breeze.signal._
 import breeze.linalg.{norm, DenseVector}
+import org.junit.runner.RunWith
+import org.scalatest.junit.JUnitRunner
 
 /**
  * @author ktakagaki
  * @date 2/11/14.
  */
+@RunWith(classOf[JUnitRunner])
 class FilterTest  extends FunSuite {
 
   test("BP filtering tested against output from scipy.signal.firwin/ifilter (0.13.2-1)") {
@@ -29,7 +32,7 @@ class FilterTest  extends FunSuite {
     val firwin1 = designFilterFirwin[Double](11, DenseVector(0.25, 0.5), zeroPass = false )
     assert( norm( spFirwin1 - firwin1.kernel) < testNormThreshold, "generated kernel is incorrect!" )
 
-    val filtered1 = filterBP( testSignal, (0.25, 0.5), 11, overhang = OptOverhang.PreserveLength, padding = OptPadding.Zero )
+    val filtered1 = filterBP( testSignal, (0.25, 0.5), 2d, 11, overhang = OptOverhang.PreserveLength, padding = OptPadding.Zero )
     assert( norm( filtered1(0 to -6) - spTestSignalFiltered1(5 to -1)) < testNormThreshold, "filtered result is incorrect!" )
 
 

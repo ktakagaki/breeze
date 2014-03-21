@@ -29,7 +29,6 @@ import breeze.macros.expand
 import scala.math.BigInt
 import scala.collection.mutable.ArrayBuffer
 import CanTraverseValues.ValuesVisitor
-import breeze.signal.JavaArrayOps
 
 /**
  * A DenseMatrix is a matrix with all elements found in an array. It is column major unless isTranspose is true,
