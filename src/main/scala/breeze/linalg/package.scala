@@ -16,7 +16,8 @@ package breeze
 */
 import io.{CSVWriter, CSVReader}
 import linalg.operators._
-import breeze.linalg.support.CanCopy
+import breeze.linalg.support.{LiteralRow, CanAxpy, CanCopy}
+import breeze.linalg.support.enrichedTuple._
 import math.Semiring
 import storage.DefaultArrayValue
 import java.io.{File, FileReader}
