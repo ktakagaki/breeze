@@ -8,7 +8,7 @@ import breeze.macros.expand
 import breeze.linalg._
 import breeze.signal._
 import breeze.signal.OptRange.RangeOpt
-import breeze.numerics.isOdd
+import breeze.numerics.{ceil, isOdd}
 import breeze.signal.OptRange.RangeOpt
 import scala.reflect.ClassTag
 import com.typesafe.scalalogging.slf4j.Logging
@@ -43,22 +43,29 @@ trait CanConvolve[Input, KernelType, Output] {
  */
 object CanConvolve extends Logging {
 
+  // <editor-fold defaultstate="collapsed" desc=" DenseVector/FIRKernel1D convolution ">
+
   @expand
   @expand.valify
   implicit def dvT1DConvolve[@expand.args(Int, Long, Float, Double) T]: CanConvolve[DenseVector[T],DenseVector[T], DenseVector[T]] = {
-    new CanConvolve[DenseVector[T],DenseVector[T], DenseVector[T]] {
+    new CanConvolve[DenseVector[T], DenseVector[T], DenseVector[T]] {
       def apply(data: DenseVector[T], kernel: DenseVector[T], range: OptRange,
                 correlate: Boolean,
                 overhang: OptOverhang,
                 padding: OptPadding,
                 method: OptMethod): DenseVector[T] = {
 
+        val cm = ClassTag[T]
 
-        //val parsedOptMethod =
-        method match {
-          case OptMethod.Automatic => require(true)
-          case _ => require(false, "currently, only loop convolutions are supported.")
-        }
+        val useFFTConvolve =
+          method match {
+            case OptMethod.Automatic => {
+              if( cm == ClassTag[Double] ) true
+              else false
+            }
+            case OptMethod.FFT => true
+            case OptMethod.Loop => false
+          }
 
         //ToDo 3: optimize -- padding is not necessary if kernel does not overhang data
         val kl = kernel.length
@@ -135,6 +142,24 @@ object CanConvolve extends Logging {
     }
   }
 
+  //Implementation for a FIRKernel1D objects (instead of kernel: DenseVector)
+  @expand
+  @expand.valify
+  implicit def dvTKernel1DConvolve[@expand.args(Int, Long, Float, Double) T]: CanConvolve[DenseVector[T], FIRKernel1D[T], DenseVector[T]] = {
+    new CanConvolve[DenseVector[T], FIRKernel1D[T], DenseVector[T]] {
+      def apply(data: DenseVector[T], kernel: FIRKernel1D[T], range: OptRange,
+                correlateVal: Boolean,
+                overhang: OptOverhang,
+                padding: OptPadding,
+                method: OptMethod): DenseVector[T] =
+      //this is to be expanded to use the fft results within the FIRKernel1D, when using fft convolution
+        if(correlateVal) correlate(data, kernel.kernel, range, overhang, padding, method)
+        else convolve(data, kernel.kernel, range, overhang, padding, method)
+    }
+  }
+
+  // </editor-fold>
+
 //  Bad idea, causes ambiguous implicit references when result types are not specified
 //  @expand
 //  @expand.valify
@@ -152,36 +177,22 @@ object CanConvolve extends Logging {
 //    }
 //  }
 
-  @expand
-  @expand.valify
-  implicit def dvTKernel1DConvolve[@expand.args(Int, Long, Float, Double) T]: CanConvolve[DenseVector[T], FIRKernel1D[T], DenseVector[T]] = {
-    new CanConvolve[DenseVector[T], FIRKernel1D[T], DenseVector[T]] {
-      def apply(data: DenseVector[T], kernel: FIRKernel1D[T], range: OptRange,
-                correlateVal: Boolean,
-                overhang: OptOverhang,
-                padding: OptPadding,
-                method: OptMethod): DenseVector[T] =
-        //this is to be expanded to use the fft results within the FIRKernel1D, when using fft convolution
-        if(correlateVal) correlate(data, kernel.kernel, range, overhang, padding, method)
-        else convolve(data, kernel.kernel, range, overhang, padding, method)
-    }
-  }
 
+  // <editor-fold defaultstate="collapsed" desc=" Loop convolution implementations ">
 
-
-  trait CanCorrelateNoOverhang[Input, KernelType, Output] {
+  private trait CanCorrelateLoopNoOverhang[Input, KernelType, Output] {
     def apply(data: Input, kernel: KernelType, range: Range): Output
   }
 
-  def correlateLoopNoOverhang[Input, KernelType, Output](data: Input, kernel: KernelType, range: Range)
-                                                        (implicit canCorrelateNoOverhang: CanCorrelateNoOverhang[Input, KernelType, Output]): Output =
+  private def correlateLoopNoOverhang[Input, KernelType, Output](data: Input, kernel: KernelType, range: Range)
+                                                        (implicit canCorrelateNoOverhang: CanCorrelateLoopNoOverhang[Input, KernelType, Output]): Output =
     canCorrelateNoOverhang(data, kernel, range)
 
 
   @expand
   @expand.valify
-  implicit def correlateLoopNoOverhangRangeT[@expand.args(Double, Float, Long) T]: CanCorrelateNoOverhang[DenseVector[T], DenseVector[T], DenseVector[T]] =
-    new CanCorrelateNoOverhang[DenseVector[T], DenseVector[T], DenseVector[T]] {
+  implicit def correlateLoopNoOverhangT[@expand.args(Double, Float, Long) T]: CanCorrelateLoopNoOverhang[DenseVector[T], DenseVector[T], DenseVector[T]] =
+    new CanCorrelateLoopNoOverhang[DenseVector[T], DenseVector[T], DenseVector[T]] {
       def apply(data: DenseVector[T], kernel: DenseVector[T], range: Range): DenseVector[T] = {
         require( data.length * kernel.length != 0, "data and kernel must be non-empty DenseVectors")
         require( data.length >= kernel.length, "kernel (" + kernel.length + ") cannot be longer than data(" + data.length + ") to be convolved/correlated!")
@@ -211,8 +222,8 @@ object CanConvolve extends Logging {
       }
     }
 
-  implicit val correlateLoopNoOverhangRangeInt : CanCorrelateNoOverhang[DenseVector[Int], DenseVector[Int], DenseVector[Int]] =
-    new CanCorrelateNoOverhang[DenseVector[Int], DenseVector[Int], DenseVector[Int]] {
+  implicit val correlateLoopNoOverhangInt : CanCorrelateLoopNoOverhang[DenseVector[Int], DenseVector[Int], DenseVector[Int]] =
+    new CanCorrelateLoopNoOverhang[DenseVector[Int], DenseVector[Int], DenseVector[Int]] {
       def apply(data: DenseVector[Int], kernel: DenseVector[Int], range: Range): DenseVector[Int] = {
         require( data.length * kernel.length != 0, "data and kernel must be non-empty DenseVectors")
         require( data.length >= kernel.length, "kernel cannot be longer than data to be convolved/corelated!")
@@ -237,27 +248,70 @@ object CanConvolve extends Logging {
           }
         ).toArray
         DenseVector[Int]( tempArr )
-//        val tempRangeVect = range.toVector
-//        val tempArr = Array[Int](tempRangeVect.length)
-//
-//        var count = 0
-//        while( count < tempRangeVect.length ){
-//          var ki: Int = 0
-//          var sum: Long = 0L
-//          val startTap = tempRangeVect(count)
-//          while(ki < kernel.length){
-//            sum +=  dataL( startTap + ki ) * kernelL(ki)
-//            ki += 1
-//          }
-//          tempArr(count) = sum.toInt
-//          count += 1
-//        }
-//
-//        DenseVector(tempArr)
       }
     }
 
+  // </editor-fold>
+
+  // <editor-fold defaultstate="collapsed" desc=" FFT convolution implementations ">
+
+  private trait CanCorrelateFFTNoOverhang[Input, KernelType, Output] {
+    def apply(data: Input, kernel: KernelType, range: Range): Output
+  }
+
+  private def correlateFFTNoOverhang[Input, KernelType, Output](data: Input, kernel: KernelType, range: Range)
+                                                                (implicit canCorrelateFFTNoOverhang: CanCorrelateFFTNoOverhang[Input, KernelType, Output]): Output =
+    canCorrelateFFTNoOverhang(data, kernel, range)
+
+  implicit val correlateLoopNoOverhangDouble: CanCorrelateFFTNoOverhang[DenseVector[Double], DenseVector[Double], DenseVector[Double]] =
+    new CanCorrelateLoopNoOverhang[DenseVector[Double], DenseVector[Double], DenseVector[Double]] {
+      def apply(data: DenseVector[Double], kernel: DenseVector[Double], range: Range): DenseVector[Double] = {
+        require( data.length * kernel.length != 0, "data and kernel must be non-empty DenseVectors")
+        require( data.length >= kernel.length, "kernel (" + kernel.length + ") cannot be longer than data(" + data.length + ") to be convolved/correlated!")
+        require( range.start >= 0 && range.last <= (data.length - kernel.length + 1),
+          logger.error("range (start {}, end {}, step {}, inclusive {}) is OOB for data (length {}) and kernel (length {})!",
+            range.start.toString, range.end.toString, range.step.toString, range.isInclusive.toString, data.length.toString, kernel.length.toString )
+        )
+
+        val dataL  = data.length
+        val filterL  = kernel.length
+        //ToDo 2: how to set FFT length?
+        //set FFT length
+        val n = nextPower2( dataL + filterL - 1 )
+        val L = n - filterL + 1
+        val B = fourierTr(kernel, n)
+        val R = ceil(dataL / L).toInt
+        val y = DenseVector.zeros[Double](dataL)
+
+
+          //
+          //    for(int r=1; r<=R; r++){
+          //      int lo  = (r - 1) * L;// + 1;
+          //      int hi  = K.min(r * L, dataL) -1;
+          //      ComplexArray tempfft = KKJTransforms.fft(K.copy(data, K.r(lo, hi)), n);
+          //      tempfft.multiply(B);
+          //      double[] tmp = KKJTransforms.ifft( tempfft ).getRealArray();
+          //      //            double[] tmp = K.real(
+          //      //                    K.ifft( K.multiply( K.fft( K.copy(data, K.r(lo, hi)), n), B)  )
+          //      //                    );
+          //      hi  = K.min(lo+N-1, dataL - 1);
+          //      K.putTo(y, K.r(lo, hi),
+          //        K.add(
+          //          K.copy(y, K.r(lo, hi)),
+          //          K.copy(tmp, K.r(0, hi-lo))
+          //        )
+          //      );
+          //      //y(lo:hi) = y (lo:hi) + tmp (1:(hi-lo+1));
+          //    }
+          //    return y;
+          //
+      }
+    }
+
+  // </editor-fold>
+
 }
+
 
 
 

@@ -48,13 +48,16 @@ object JavaArrayOps {
 
   def arrayToDv[@specialized(Int, Double) V: ClassTag](array: Array[V]): DenseVector[V] = new DenseVector(array)
 
-  /** Constructs DenseMatrix from Array[Array[V]] input. Input is in row-major like
+  /** Constructs a DenseMatrix from Array[Array[V]] input. Input is in row-major like
     * format, similar to DenseMatrix( (1,2 3), (4,5,6),... ) syntax, which is defined in [[breeze.linalg.Matrix]].
-    * This constructor was written for JavaCompatible.
+    * For implementing JavaCompatible classes, to access breeze from plain Java.
     * @param values
-    * @return
     */
   def array2ToDm[@specialized(Int, Double) V: ClassTag](values: Array[Array[V]]): DenseMatrix[V] = {
+
+    require(values != null, "cannot convert a null array!")
+    require(values.length > 0, "cannot convert an empty array!")
+    require(values(0).length > 0, "cannot convert an array with empty rows!")
 
     val tempRows= values.length
     val tempCols = values(0).length

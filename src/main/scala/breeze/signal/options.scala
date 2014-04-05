@@ -94,6 +94,7 @@ object OptMethod{
   /**Option value: Convolve using FFT.*/
   case object FFT extends OptMethod
   /**Option value: Convolve using for loop.*/
+  case object Loop extends OptMethod
 }
 
 abstract class OptDesignMethod extends Opt

@@ -24,8 +24,10 @@ import breeze.numerics.{sin, cos}
  */
 object fourierTr extends UFunc {
 
+  // <editor-fold defaultstate="collapsed" desc=" DenseVector FFTs ">
+
   implicit val dvDouble1DFFT : fourierTr.Impl[DenseVector[Double], DenseVector[Complex]] = {
-    new fourierTr.Impl[DenseVector[Double], DenseVector[Complex]] {
+    new Impl[DenseVector[Double], DenseVector[Complex]] {
       def apply(v: DenseVector[Double]) = {
         //reformat for input: note difference in format for input to complex fft
         val tempArr = denseVectorDToTemp(v)
@@ -40,21 +42,23 @@ object fourierTr extends UFunc {
     }
   }
 
-  implicit def dvDT1DFFT_Float: Impl[DenseVector[Float], DenseVector[Complex]] = {
-    new Impl[DenseVector[Float], DenseVector[Complex]] {
-      def apply(v: DenseVector[Float]) = fourierTr( v.map( _.toDouble) )
+  implicit val dvDouble1DFFTN : fourierTr.Impl2[DenseVector[Double], Int, DenseVector[Complex]] = {
+    new Impl2[DenseVector[Double], Int, DenseVector[Complex]] {
+      def apply(v: DenseVector[Double], n: Int) = {
+        val len = v.length
+        dvDouble1DFFT(
+          if(len == n)     v
+          else if(len > n) v(0 to n)
+          else             DenseVector.vertcat( v, DenseVector.zeros[Double]( n-len ) )
+        )
+      }
     }
   }
 
-  implicit def dvDT1DFFT_Int: Impl[DenseVector[Int], DenseVector[Complex]] = {
-    new Impl[DenseVector[Int], DenseVector[Complex]] {
-      def apply(v: DenseVector[Int]) = fourierTr( v.map( _.toDouble) )
-    }
-  }
-
-  implicit def dvDT1DFFT_Long: Impl[DenseVector[Long], DenseVector[Complex]] = {
-    new Impl[DenseVector[Long], DenseVector[Complex]] {
-      def apply(v: DenseVector[Long]) = fourierTr( v.map( _.toDouble) )
+  @expand
+  implicit def dvDT1DFFTT[@expand.args(Float, Int, Long) T]: Impl[DenseVector[T], DenseVector[Complex]] = {
+    new Impl[DenseVector[T], DenseVector[Complex]] {
+      def apply(v: DenseVector[T]) = fourierTr( convert(v, Double) )
     }
   }
 
@@ -73,6 +77,10 @@ object fourierTr extends UFunc {
       }
     }
   }
+
+  // </editor-fold>
+
+  // <editor-fold defaultstate="collapsed" desc=" DenseMatrix FFTs ">
 
   implicit val dmComplex2DFFT : fourierTr.Impl[DenseMatrix[Complex], DenseMatrix[Complex]] = {
     new fourierTr.Impl[DenseMatrix[Complex], DenseMatrix[Complex]] {
@@ -107,6 +115,9 @@ object fourierTr extends UFunc {
     }
   }
 
+  // </editor-fold>
+
+  // <editor-fold defaultstate="collapsed" desc=" Fourier extracting only specified taps ">
 
   implicit val dvDouble1DFourierRange: Impl2[DenseVector[Double], Range, DenseVector[Complex]] = {
     new Impl2[DenseVector[Double], Range, DenseVector[Complex]] {
@@ -129,5 +140,7 @@ object fourierTr extends UFunc {
       }
     }
   }
+
+  // </editor-fold>
 
 }

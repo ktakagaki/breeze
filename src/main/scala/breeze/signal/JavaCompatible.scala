@@ -10,9 +10,8 @@ import breeze.util.JavaArrayOps._
  */
 object JavaCompatible {
 
-
-  def convolve(data: Array[Double], kernel: Array[Double]) = dvDToArray( breeze.signal.convolve(arrayDToDv(data), arrayDToDv(kernel)) )
-  def correlate(data: Array[Double], kernel: Array[Double]) = dvDToArray( breeze.signal.correlate(arrayDToDv(data), arrayDToDv(kernel)) )
+  def convolveD(data: Array[Double], kernel: Array[Double]) = dvDToArray( breeze.signal.convolve(arrayDToDv(data), arrayDToDv(kernel)) )
+  def correlateD(data: Array[Double], kernel: Array[Double]) = dvDToArray( breeze.signal.correlate(arrayDToDv(data), arrayDToDv(kernel)) )
 
   // <editor-fold defaultstate="collapsed" desc=" discrete Fourier transforms ">
 
