@@ -13,18 +13,26 @@ object JavaArrayOps {
   def dvCToArray(data: DenseVector[Complex]): Array[Complex] = data.toArray
   def dvDToArray(data: DenseVector[Double]): Array[Double] = data.toArray
   def dvIToArray(data: DenseVector[Int]): Array[Int] = data.toArray
+  //Float is provided for classes other than JavaCompatible
+  def dvFToArray(data: DenseVector[Float]): Array[Float] = data.toArray
 
   def dmCToArray2(data: DenseMatrix[Complex]): Array[Array[Complex]] = dmToArray2(data)
   def dmDToArray2(data: DenseMatrix[Double]): Array[Array[Double]] = dmToArray2(data)
   def dmIToArray2(data: DenseMatrix[Int]): Array[Array[Int]] = dmToArray2(data)
+  //Float is provided for classes other than JavaCompatible
+  def dmFToArray2(data: DenseMatrix[Float]): Array[Array[Float]] = dmToArray2(data)
 
   def arrayCToDv(array: Array[Complex]): DenseVector[Complex] = arrayToDv( array )
   def arrayDToDv(array: Array[Double]): DenseVector[Double] = arrayToDv( array )
   def arrayIToDv(array: Array[Int]): DenseVector[Int] = arrayToDv( array )
+  //Float is provided for classes other than JavaCompatible
+  def arrayFToDv(array: Array[Float]): DenseVector[Float] = arrayToDv( array )
 
   def array2CToDm(array: Array[Array[Complex]]): DenseMatrix[Complex] = array2ToDm( array )
   def array2DToDm(array: Array[Array[Double]]): DenseMatrix[Double] = array2ToDm( array )
   def array2IToDm(array: Array[Array[Int]]): DenseMatrix[Int] = array2ToDm( array )
+  //Float is provided for classes other than JavaCompatible
+  def array2FToDm(array: Array[Array[Float]]): DenseMatrix[Float] = array2ToDm( array )
 
   // <editor-fold defaultstate="collapsed" desc=" implementations ">
 

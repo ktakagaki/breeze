@@ -8,7 +8,7 @@ import breeze.signal.support.JTransformsSupport._
 import breeze.macros.expand
 import breeze.numerics.{sin, cos}
 
-
+//when updating, be sure to update relevant portions of sinTr and cosTr as well
 /**
  * Returns the discrete fourier transform of a DenseVector or DenseMatrix. Currently,
  * DenseVector/DenseMatrix types of Double and Complex are supported. Scaling
@@ -24,6 +24,8 @@ import breeze.numerics.{sin, cos}
  */
 object fourierTr extends UFunc {
 
+  //ToDo 2: Provide Float implementation wrapper for JTransforms? But need to return Complex, no ComplexFloat class
+
   // <editor-fold defaultstate="collapsed" desc=" DenseVector FFTs ">
 
   implicit val dvDouble1DFFT : fourierTr.Impl[DenseVector[Double], DenseVector[Complex]] = {
@@ -33,7 +35,7 @@ object fourierTr extends UFunc {
         val tempArr = denseVectorDToTemp(v)
 
         //actual action
-        val fft_instance = getD1DInstance(v.length)
+        val fft_instance = getDoubleFFT1DInst(v.length)
         fft_instance.realForwardFull( tempArr ) //does operation in place
 
         //reformat for output
@@ -55,6 +57,8 @@ object fourierTr extends UFunc {
     }
   }
 
+
+
   @expand
   implicit def dvDT1DFFTT[@expand.args(Float, Int, Long) T]: Impl[DenseVector[T], DenseVector[Complex]] = {
     new Impl[DenseVector[T], DenseVector[Complex]] {
@@ -69,7 +73,7 @@ object fourierTr extends UFunc {
         val tempArr = denseVectorCToTemp(v)
 
         //actual action
-        val fft_instance = getD1DInstance(v.length)
+        val fft_instance = getDoubleFFT1DInst(v.length)
         fft_instance.complexForward( tempArr ) //does operation in place
 
         //reformat for output
@@ -89,7 +93,7 @@ object fourierTr extends UFunc {
         val tempMat = denseMatrixCToTemp(v)
 
         //actual action
-        val fft_instance = getD2DInstance(v.rows, v.cols)
+        val fft_instance = getDoubleFFT2DInst(v.rows, v.cols)
         fft_instance.complexForward( tempMat ) //does operation in place
 
         //reformat for output
@@ -105,7 +109,7 @@ object fourierTr extends UFunc {
         val tempMat = denseMatrixDToTemp(v)
 
         //actual action
-        val fft_instance = getD2DInstance(v.rows, v.cols)
+        val fft_instance = getDoubleFFT2DInst(v.rows, v.cols)
         fft_instance.complexForward( tempMat ) //does operation in place
         //ToDo this could be optimized to use realFullForward for speed, but only if the indexes are powers of two
 

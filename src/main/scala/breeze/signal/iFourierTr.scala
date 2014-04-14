@@ -26,7 +26,7 @@ object iFourierTr extends UFunc {
         val tempArr = denseVectorDToTemp(v)
 
         //actual action
-        val fft_instance = getD1DInstance(v.length)
+        val fft_instance = getDoubleFFT1DInst(v.length)
         fft_instance.realInverseFull( tempArr, true ) //does operation in place
 
         //reformat for output
@@ -45,7 +45,7 @@ object iFourierTr extends UFunc {
         val tempArr = denseVectorCToTemp(v)
 
         //actual action
-        val fft_instance = getD1DInstance(v.length)
+        val fft_instance = getDoubleFFT1DInst(v.length)
         fft_instance.complexInverse( tempArr, true ) //does operation in place
 
         //reformat for output
@@ -64,7 +64,7 @@ object iFourierTr extends UFunc {
         val tempMat = denseMatrixCToTemp(v)
 
         //actual action
-        val fft_instance = getD2DInstance(v.rows, v.cols)
+        val fft_instance = getDoubleFFT2DInst(v.rows, v.cols)
         fft_instance.complexInverse( tempMat , true) //does operation in place
 
         //reformat for output
@@ -83,7 +83,7 @@ object iFourierTr extends UFunc {
         val tempMat = denseMatrixDToTemp(v)
 
         //actual action
-        val fft_instance = getD2DInstance(v.rows, v.cols)
+        val fft_instance = getDoubleFFT2DInst(v.rows, v.cols)
         fft_instance.complexInverse( tempMat , true) //does operation in place
         //ToDo this could be optimized to use realInverseFull for speed, but only if the indexes are powers of two
 
