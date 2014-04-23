@@ -449,7 +449,7 @@ trait DenseMatrixOps { this: DenseMatrix.type =>
   implicit def op_DM_S[@expand.args(Int, Long, Float, Double, BigInt, Complex) T,
                        @expand.args(OpAdd, OpSub, OpMulScalar, OpMulMatrix, OpMod, OpDiv, OpPow) Op]: Op.Impl2[DenseMatrix[T], T, DenseMatrix[T]] = {
 
-    val uop: Op.InPlaceImpl2[DenseMatrix[T], T] = implicitly[Op.InPlaceImpl2[DenseMatrix[T], T]]
+    val uop = implicitly[Op.InPlaceImpl2[DenseMatrix[T], T]]
 
     new Op.Impl2[DenseMatrix[T], T, DenseMatrix[T]] {
       override def apply(a : DenseMatrix[T], b: T): DenseMatrix[T] = {
@@ -499,7 +499,7 @@ trait DenseMatrixOps { this: DenseMatrix.type =>
   implicit def op_DM_DM[@expand.args(Int, Long, Float, Double, BigInt, Complex) T,
                         @expand.args(OpAdd, OpSub, OpMulScalar, OpMod, OpDiv, OpPow) Op]: Op.Impl2[DenseMatrix[T], DenseMatrix[T], DenseMatrix[T]] = {
 
-    val uop: Op.InPlaceImpl2[DenseMatrix[T], DenseMatrix[T]] = implicitly[Op.InPlaceImpl2[DenseMatrix[T], DenseMatrix[T]]]
+    val uop = implicitly[Op.InPlaceImpl2[DenseMatrix[T], DenseMatrix[T]]]
 
     new Op.Impl2[DenseMatrix[T], DenseMatrix[T], DenseMatrix[T]] {
       override def apply(a : DenseMatrix[T], b: DenseMatrix[T]): DenseMatrix[T] = {
