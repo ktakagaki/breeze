@@ -3,9 +3,11 @@ organization := "org.scalanlp"
 // lazy val breeze = project in file("core")
 name := "breeze-benchmark"
 
-scalaVersion := "2.10.3"
+scalaVersion := "2.11.0"
 
-addCompilerPlugin("org.scala-lang.plugins" % "macro-paradise" % "2.0.0-SNAPSHOT" cross CrossVersion.full)
+crossScalaVersions  := Seq("2.11.0", "2.10.3")
+
+addCompilerPlugin("org.scalamacros" %% "paradise" % "2.0.0-M8" cross CrossVersion.full)
 
 publishMavenStyle := true
 
@@ -44,7 +46,7 @@ onLoad in Global ~= { previous => state =>
         // return a state with javaOptionsPatched = true and javaOptions set correctly
         val extracted = Project.extract(state)
         val set = for(proj <- extracted.structure.allProjectRefs) yield {
-          val classPath = Project.runTask(fullClasspath in Runtime in proj, state).get._2.toEither.right.get.files.mkString(":")
+          val classPath = Project.runTask(fullClasspath in Runtime in proj, state).get._2.toEither.right.map(_.files.mkString(":")).right.getOrElse("")
           javaOptions in (proj, Runtime) ++= Seq("-cp", classPath)
         }
         extracted.append(set, state.put(k, true))
@@ -87,13 +89,7 @@ scalacOptions ++= Seq("-deprecation","-language:_")
   javacOptions ++= Seq("-target", "1.6", "-source","1.6")
 
 
-// see https://github.com/typesafehub/scalalogging/issues/23
-testOptions in Test += Tests.Setup(classLoader =>
-  classLoader
-    .loadClass("org.slf4j.LoggerFactory")
-    .getMethod("getLogger", classLoader.loadClass("java.lang.String"))
-    .invoke(null, "ROOT")
-)
+
 
 resolvers ++= Seq(
     Resolver.mavenLocal,

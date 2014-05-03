@@ -2,7 +2,7 @@
 
 Breeze is a library for numerical processing. It aims to be generic, clean, and powerful without sacrificing (much) efficiency.
 
-The current version is 0.7-SNAPSHOT. The latest release is 0.6.1.
+The current version is 0.8-SNAPSHOT. The latest release is 0.7.
 ## Documentation
 
 * https://github.com/scalanlp/breeze/wiki/Quickstart
@@ -10,13 +10,15 @@ The current version is 0.7-SNAPSHOT. The latest release is 0.6.1.
 * https://github.com/scalanlp/breeze/wiki/UserGuide
 * [Scaladoc](http://www.scalanlp.org/api/breeze/)
 
-Note:  
+Note:
 
 Breeze used to have more components, but they are getting sharded out to different libraries. Their new homes are described below:
 
 * breeze-viz: a (barely maintained) visualization library in its own repository. It is available at [https://github.com/scalanlp/breeze-viz](https://github.com/scalanlp/breeze-viz).
 * breeze-learn (machine learning) is now in [Nak](https://github.com/scalanlp/nak).
 * breeze-process (natural language processing) has become [Chalk](https://github.com/scalanlp/chalk).
+
+There is also the [scala-breeze google group](https://groups.google.com/forum/#!forum/scala-breeze) for general questions and discussion.
 
 ## Using Breeze
 
@@ -33,15 +35,15 @@ For **SBT**, Add these lines to your SBT project definition:
 ```scala
 libraryDependencies  ++= Seq(
             // other dependencies here
-            "org.scalanlp" % "breeze_2.10" % "0.7-SNAPSHOT",
-            // native libraries are not included by default. add this if you want them (as of 0.7-SNAPSHOT)
+            "org.scalanlp" % "breeze_2.10" % "0.7",
+            // native libraries are not included by default. add this if you want them (as of 0.7)
             // native libraries greatly improve performance, but increase jar sizes.
-            "org.scalanlp" % "breeze-natives_2.10" % "0.7-SNAPSHOT",
+            "org.scalanlp" % "breeze-natives_2.10" % "0.7",
 )
 
 resolvers ++= Seq(
             // other resolvers here
-            // if you want to use snapshot builds (currently 0.7-SNAPSHOT), use this.
+            // if you want to use snapshot builds (currently 0.8-SNAPSHOT), use this.
             "Sonatype Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots/",
             "Sonatype Releases" at "https://oss.sonatype.org/content/repositories/releases/"
 )
@@ -94,6 +96,7 @@ Contributions from:
 * Devon Bryant (@devonbryant)
 * Kentaroh Takagaki (@ktakagaki)
 * Sam Halliday (@fommil)
+* Chris Stucchio (@stucchio)
+* Xiangrui Meng (@mengxr)
 
 And others (contact David Hall if you've contributed code and aren't listed).
-
