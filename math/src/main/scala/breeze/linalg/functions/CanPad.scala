@@ -6,6 +6,10 @@ import breeze.stats.{median, mean}
 import scala.reflect.ClassTag
 import breeze.math.Semiring
 
+//ToDo 2: refactor right and left code to decrease redundancy
+//ToDo 2: change padding DenseVector with DenseVector to allow more than one structure padded
+//ToDo 3: create padding DenseMatrix with given DenseMatrix
+
 /**
  * @author ktakagaki
  * @date 04/16/2014.
