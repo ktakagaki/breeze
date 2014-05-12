@@ -29,6 +29,7 @@ import breeze.macros.expand
 import scala.math.BigInt
 import scala.collection.mutable.ArrayBuffer
 import CanTraverseValues.ValuesVisitor
+import breeze.linalg.Axis._1
 
 /**
  * A DenseMatrix is a matrix with all elements found in an array. It is column major unless isTranspose is true,
@@ -103,10 +104,10 @@ final class DenseMatrix[@specialized(Int, Float, Double) V](val rows: Int,
 
   def unsafeUpdate(row: Int, col: Int, v: V): Unit = { data(linearIndex(row, col)) = v }
 
-  /** Converts this matrix to a DenseVector (column-major) */
-  def toDenseVector: DenseVector[V] = {
+  /** Converts this matrix to a flat Array (column-major) */
+  def toArray: Array[V] = {
     implicit val man = ClassTag[V](data.getClass.getComponentType.asInstanceOf[Class[V]])
-    val ret = DenseVector(new Array[V](rows * cols))
+    val ret = new Array[V](rows * cols)
     var i = 0
     while (i < cols) {
       var j = 0
@@ -118,6 +119,9 @@ final class DenseMatrix[@specialized(Int, Float, Double) V](val rows: Int,
     }
     ret
   }
+
+  /** Converts this matrix to a DenseVector (column-major) */
+  def toDenseVector: DenseVector[V] = DenseVector( toArray )
 
   /** Converts this matrix to a DenseVector (column-major)
     * If view = true (or View.Require), throws an exception if we cannot return a view. otherwise returns a view.
@@ -505,7 +509,7 @@ with MatrixConstructors[DenseMatrix] {
     }
   }
 
-  implicit def canMapValues[V, R:ClassTag] = {
+  implicit def canMapValues[V, R:ClassTag]: CanMapValues[DenseMatrix[V], V, R, DenseMatrix[R]] = {
     new CanMapValues[DenseMatrix[V],V,R,DenseMatrix[R]] {
       override def map(from : DenseMatrix[V], fn : (V=>R)): DenseMatrix[R] = {
         val data = new Array[R](from.size)
@@ -741,7 +745,7 @@ with MatrixConstructors[DenseMatrix] {
    * @tparam V value type
    * @return
    */
-  implicit def canMapCols[V:ClassTag:DefaultArrayValue] = new CanCollapseAxis[DenseMatrix[V], Axis._1.type, DenseVector[V], DenseVector[V], DenseMatrix[V]] {
+  implicit def canMapCols[V:ClassTag:DefaultArrayValue]: CanCollapseAxis[DenseMatrix[V], _1.type, DenseVector[V], DenseVector[V], DenseMatrix[V]]  = new CanCollapseAxis[DenseMatrix[V], Axis._1.type, DenseVector[V], DenseVector[V], DenseMatrix[V]] {
     def apply(from: DenseMatrix[V], axis: Axis._1.type)(f: (DenseVector[V]) => DenseVector[V]): DenseMatrix[V] = {
       var result:DenseMatrix[V] = null
       import from.{rows, cols}

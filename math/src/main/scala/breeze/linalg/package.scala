@@ -204,6 +204,8 @@ package object linalg {
     }
   }
 
+
+
   /**
    * A generic function (based on the R function of the same name) whose
    * default method centers and/or scales the columns of a numeric matrix.
@@ -242,6 +244,28 @@ package object linalg {
     (xc.t * xc) /= xc.rows - 1.0
   }
 
+  // <editor-fold defaultstate="collapsed" desc=" functions declared using the CanXXX idiom (this allows calling parameters by name, etc.) ">
+
+  import breeze.linalg.Options._
+  def padRight[T]( v: DenseVector[T], dimensions: Dimensions1)
+                 (implicit canPad: CanPadRight[DenseVector[T], Dimensions1, DenseVector[T]]): DenseVector[T] =  canPad(v, dimensions, Zero)
+  def padRight[T]( v: DenseVector[T], dimensions: Dimensions1, mode: OptPadMode)
+                 (implicit canPad: CanPadRight[DenseVector[T], Dimensions1, DenseVector[T]]): DenseVector[T] =  canPad(v, dimensions, mode)
+  def padRight[T]( v: DenseMatrix[T], dimensions: Dimensions1)
+                 (implicit canPad: CanPadRight[DenseMatrix[T], Dimensions1, DenseMatrix[T]]): DenseMatrix[T] =  canPad(v, dimensions, Zero)
+  def padRight[T]( v: DenseMatrix[T], dimensions: Dimensions2, mode: OptPadMode)
+                 (implicit canPad: CanPadRight[DenseMatrix[T], Dimensions2, DenseMatrix[T]]): DenseMatrix[T] =  canPad(v, dimensions, mode)
+  def padLeft[T]( v: DenseVector[T], dimensions: Dimensions1)
+                 (implicit canPad: CanPadLeft[DenseVector[T], Dimensions1, DenseVector[T]]): DenseVector[T] =  canPad(v, dimensions, Zero)
+  def padLeft[T]( v: DenseVector[T], dimensions: Dimensions1, mode: OptPadMode)
+                 (implicit canPad: CanPadLeft[DenseVector[T], Dimensions1, DenseVector[T]]): DenseVector[T] =  canPad(v, dimensions, mode)
+  def padLeft[T]( v: DenseMatrix[T], dimensions: Dimensions1)
+                 (implicit canPad: CanPadLeft[DenseMatrix[T], Dimensions1, DenseMatrix[T]]): DenseMatrix[T] =  canPad(v, dimensions, Zero)
+  def padLeft[T]( v: DenseMatrix[T], dimensions: Dimensions2, mode: OptPadMode)
+                 (implicit canPad: CanPadLeft[DenseMatrix[T], Dimensions2, DenseMatrix[T]]): DenseMatrix[T] =  canPad(v, dimensions, mode)
+
+
+  // </editor-fold>
 
 
 
@@ -252,4 +276,8 @@ package object linalg {
   private def columnRMS(x: DenseMatrix[Double]): DenseVector[Double] =
     (sum(x:*x,Axis._0) / (x.rows-1.0)).map( scala.math.sqrt _ ).toDenseVector
 
+
+  /** Alias for randomDouble */
+  val rand: randomDouble.type = randomDouble
 }
+
