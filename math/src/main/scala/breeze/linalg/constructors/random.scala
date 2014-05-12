@@ -26,9 +26,6 @@ object randomDouble extends RandomGeneratorUFunc[Double] {
   protected val _classTag: ClassTag[Double] = scala.reflect.classTag[Double]
   protected val _dav = DefaultArrayValue[Double](0.0)
 
-  //necessary to make randomDouble() work... why?
-  def apply(): Double = super.apply()
-
 }
 
 /**Gives a random Int.
@@ -54,9 +51,6 @@ object randomInt extends RandomGeneratorUFunc[Int] {
   protected val _classTag: ClassTag[Int] = scala.reflect.classTag[Int]
   protected val _dav = DefaultArrayValue[Int](0)
 
-  //necessary to make randomInt() work... why?
-  def apply(): Double = super.apply()
-
 }
 
 
@@ -76,9 +70,6 @@ object randn extends RandomGeneratorUFunc[Double] {
 
   protected val _classTag: ClassTag[Double] = scala.reflect.classTag[Double]
   protected val _dav = DefaultArrayValue[Double](0.0)
-
-  //necessary to make randn() work... why?
-  def apply(): Double = super.apply()
 
 }
 
