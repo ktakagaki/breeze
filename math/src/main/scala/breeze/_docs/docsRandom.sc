@@ -1,10 +1,8 @@
 //for wiki random docs
 
 import breeze.linalg._
+import breeze.stats.distributions.Rand
 
-//Shuffle
-val dv = breeze.linalg.DenseVector(0,1,2,3,4,5)
-shuffle(dv)
 //Random
 val randD1 = randomDouble()  //Create a random double in [0, 1]
 val randD2 = randomDouble(2)  //Create a 2-element DenseVector[Double]
@@ -16,3 +14,6 @@ val randI2 = randomInt(4)  //Create a 4-element DenseVector[Int]
 val randI4 = randomInt(3, (10, 11))  //Sample between [10, 11]
 val randn2 = randn((1,3))  //Gaussian sampling
 
+//Shuffle
+val dv = breeze.linalg.DenseVector(0,1,2,3,4,5)
+shuffle(dv)
