@@ -186,6 +186,7 @@ class DenseVectorTest extends FunSuite with Checkers {
   }
 
 
+
   test("Slice and Transpose Float") {
     val x = DenseVector[Float](1, 2, 3, 4, 5)
 
@@ -206,6 +207,13 @@ class DenseVectorTest extends FunSuite with Checkers {
     val y = x.t
     val expected = new DenseMatrix(1, 2, Array(Complex(1, -1), Complex(1, 1)))
     assert(y === expected)
+  }
+
+
+  test("Transpose Apply") {
+    val x = DenseVector(1, 2, 3)
+    val xt = x.t
+    assert(xt(1) === 2)
   }
 
   test("Map(Active)Pairs Double") {
@@ -458,6 +466,27 @@ class DenseVectorOps_IntTest extends TensorSpaceTestBase[DenseVector[Int], Int, 
   }
 
   def genScalar: Arbitrary[Int] = Arbitrary(Arbitrary.arbitrary[Int].map{ _ % 1000 })
+}
+
+@RunWith(classOf[JUnitRunner])
+class DenseVectorOps_ComplexTest extends TensorSpaceTestBase[DenseVector[Complex], Int, Complex] {
+  val space: TensorSpace[DenseVector[Complex], Int, Complex] = implicitly
+
+  val N = 30
+  implicit def genTriple: Arbitrary[(DenseVector[Complex], DenseVector[Complex], DenseVector[Complex])] = {
+    Arbitrary {
+      for{x <- Arbitrary.arbitrary[Complex]
+          y <- Arbitrary.arbitrary[Complex]
+          z <- Arbitrary.arbitrary[Complex]
+      } yield {
+        (DenseVector.fill(N)(math.random * x),
+          DenseVector.fill(N)(math.random * y),
+          DenseVector.fill(N)(math.random * z))
+      }
+    }
+  }
+
+  implicit def genScalar: Arbitrary[Complex] = Arbitrary{for(r  <- Arbitrary.arbitrary[Double]; i <- Arbitrary.arbitrary[Double]) yield Complex(r % 100,i % 100)}
 }
 
 @RunWith(classOf[JUnitRunner])
