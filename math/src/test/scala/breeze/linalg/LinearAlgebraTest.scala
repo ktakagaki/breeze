@@ -22,7 +22,6 @@ import org.scalatest.prop._
 import org.junit.runner.RunWith
 import breeze.util.DoubleImplicits
 import breeze.numerics._
-import breeze.math.{Complex}
 import breeze.stats.{mean, median, meanAndVariance}
 import breeze.{math => bmath}
 
@@ -198,35 +197,6 @@ class LinearAlgebraTest extends FunSuite with Checkers with Matchers with Double
     assert(max(abs(_QQ * _RR - ap)) < 1E-8)
   }
 
-  test("complex mean") {
-    import breeze.{math=>bmath}
-    import breeze.math.Complex
-    val data =  DenseVector[Complex]( (0.0 + 1.0 * bmath.i), (1.0 + 0.0 * bmath.i), (2.0 + 2.0 * bmath.i) )
-    assert( mean(data) === (1.0 + 1.0 * bmath.i))
-  }
-
-  test("mean and variance") {
-    val r = new Random(0)
-    val data =  Array.fill(100000)(r.nextGaussian)
-    val mav = meanAndVariance(data)
-    val mav2 = meanAndVariance(data.iterator)
-    assert(breeze.numerics.closeTo(mav.mean,0.0,1E-2), mav.mean + " should be 0")
-    assert(breeze.numerics.closeTo(mav.variance,1.0,1E-2), mav.variance + " should be 1")
-    assert(mav == mav2)
-  }
-
-//  test("complex mean") {
-//    val data =  DenseVector[Complex]( (0.0 + 1.0 * bmath.i), (1.0 + 0.0 * bmath.i), (2.0 + 2.0 * bmath.i) )
-//    assert( mean(data) == (1.0 + 1.0 * bmath.i), "complex mean incorrect")
-//  }
-
-  test("median") {
-    val dataOdd =  DenseVector(0,1,2,3,400000)
-    val dataEven =  DenseVector(0f,1f,2f,100f)
-
-    assert( median(dataOdd)==2, "median (odd length) should be 2 instead of "+ median(dataOdd))
-    assert( median(dataEven)==1.5f, "median (even length) should be 1.5f instead of "+ median(dataOdd))
-  }
 
   test("simple eig test") {
     val (w, _, v) = eig(diag(DenseVector(1.0, 2.0, 3.0)))
@@ -265,16 +235,32 @@ class LinearAlgebraTest extends FunSuite with Checkers with Matchers with Double
   }
 
   test("csc svd"){
-    val m1 = DenseMatrix((2.0,4.0),(1.0,3.0),(0.0,0.0),(0.0,0.0))
-    val m2 = CSCMatrix((2.0,4.0),(1.0,3.0),(0.0,0.0),(0.0,0.0))
+    val m1 = DenseMatrix((2.0,4.0,0.0,1.0,2.0),(1.0,0.0,2.0,1.0,0.0),
+      (1.0,3.0,2.0,1.0,9.0),(0.0,0.0,2.0,0.0,5.0),(0.0,1.5,0.0,0.0,5.0),(1.5,0.0,2.0,0.0,5.0))
+    val m2 = CSCMatrix((2.0,4.0,0.0,1.0,2.0),(1.0,0.0,2.0,1.0,0.0),
+      (1.0,3.0,2.0,1.0,9.0),(0.0,0.0,2.0,0.0,5.0),(0.0,1.5,0.0,0.0,5.0),(1.5,0.0,2.0,0.0,5.0))
+
+    def checkCols(m1 : DenseMatrix[Double], m2 : DenseMatrix[Double]) = {
+      for (i <- 0 until m1.cols) {
+        val v1 = if (m1(::,i).valueAt(0) > 0) m1(::,i) else -m1(::,i)
+        val v2 = if (m2(::,i).valueAt(0) > 0) m2(::,i) else -m2(::,i)
+        assert(max(abs(v1 - v2)) < 1E-5)
+        assert(abs(norm(v1) - 1.0) < 1E-5)
+        assert(abs(norm(v2) - 1.0) < 1E-5)
+      }
+    }
 
     val (u1, s1, vt1) = svd(m1)
+    val (u2, s2, vt2) = svd(m2,2)
+    assert(max(abs(s1.slice(0,2) - s2)) < 1E-5)
+    checkCols(u1(::, 0 until 2), u2)
+    checkCols(vt1(0 until 2, ::).t, vt2.t)
 
-    val (u2,s2,vt2) = svd(m2,2)
-    //println(s1)
-   // println(s2)
-    val w = s1-s2
-    assert(max(abs((s1-s2))) < 1E-5)
+    val (u1t, s1t, vt1t) = svd(m1.t)
+    val (u2t, s2t, vt2t) = svd(m2.t,2)
+    assert(max(abs(s1t.slice(0,2) - s2t)) < 1E-5)
+    checkCols(u1t(::, 0 until 2), u2t)
+    checkCols(vt1t(0 until 2, ::).t, vt2t.t)
   }
 
   test("small pow test") {

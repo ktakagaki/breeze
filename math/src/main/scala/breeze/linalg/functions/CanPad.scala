@@ -87,7 +87,7 @@ object CanPadRight {
           case Zero     => padRight2ImplZero( m, optDim )
           case Max      => padRight2ImplFixed( m, optDim, max(m) )
           case Min      => padRight2ImplFixed( m, optDim, min(m) )
-          case Mean     => padRight2ImplFixed( m, optDim, convert( mean( convert(m.toDenseVector, Double) ), T)  )
+          case Mean     => padRight2ImplFixed( m, optDim, convert( mean(convert(m.toDenseVector, Double)), T)  )
           case Median   => padRight2ImplFixed( m, optDim, convert( median(convert(m.toDenseVector, Double)), T)  )
           case Value(n: T)    => padRight2ImplFixed( m, optDim, n )
 
