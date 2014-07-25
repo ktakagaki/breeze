@@ -2,7 +2,7 @@
 
 Breeze is a library for numerical processing. It aims to be generic, clean, and powerful without sacrificing (much) efficiency.
 
-The current version is 0.8-SNAPSHOT. The latest release is 0.7.
+The current version is 0.8.1 The latest release is 0.8.1.
 ## Documentation
 
 * https://github.com/scalanlp/breeze/wiki/Quickstart
@@ -10,13 +10,15 @@ The current version is 0.8-SNAPSHOT. The latest release is 0.7.
 * https://github.com/scalanlp/breeze/wiki/UserGuide
 * [Scaladoc](http://www.scalanlp.org/api/breeze/)
 
-Note:  
+Note:
 
 Breeze used to have more components, but they are getting sharded out to different libraries. Their new homes are described below:
 
 * breeze-viz: a (barely maintained) visualization library in its own repository. It is available at [https://github.com/scalanlp/breeze-viz](https://github.com/scalanlp/breeze-viz).
 * breeze-learn (machine learning) is now in [Nak](https://github.com/scalanlp/nak).
 * breeze-process (natural language processing) has become [Chalk](https://github.com/scalanlp/chalk).
+
+There is also the [scala-breeze google group](https://groups.google.com/forum/#!forum/scala-breeze) for general questions and discussion.
 
 ## Using Breeze
 
@@ -33,10 +35,10 @@ For **SBT**, Add these lines to your SBT project definition:
 ```scala
 libraryDependencies  ++= Seq(
             // other dependencies here
-            "org.scalanlp" % "breeze_2.10" % "0.7",
+            "org.scalanlp" %% "breeze" % "0.8.1",
             // native libraries are not included by default. add this if you want them (as of 0.7)
             // native libraries greatly improve performance, but increase jar sizes.
-            "org.scalanlp" % "breeze-natives_2.10" % "0.7",
+            "org.scalanlp" %% "breeze-natives" % "0.8.1"
 )
 
 resolvers ++= Seq(
@@ -58,8 +60,8 @@ Maven looks like this:
 ```xml
 <dependency>
   <groupId>org.scalanlp</groupId>
-	<artifactId>breeze_2.10</artifactId>
-	<version>0.6.1</version>
+	<artifactId>breeze_2.10</artifactId> <!-- or 2.11 -->
+	<version>0.8.1</version>
 </dependency>
 ```
 
@@ -98,4 +100,3 @@ Contributions from:
 * Xiangrui Meng (@mengxr)
 
 And others (contact David Hall if you've contributed code and aren't listed).
-
