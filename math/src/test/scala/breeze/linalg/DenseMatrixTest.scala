@@ -24,7 +24,7 @@ import org.scalatest.matchers.ShouldMatchers
 import breeze.util.DoubleImplicits
 
 @RunWith(classOf[JUnitRunner])
-class DenseMatrixTest extends FunSuite with Checkers with ShouldMatchers with DoubleImplicits {
+class DenseMatrixTest extends FunSuite with Checkers with Matchers with DoubleImplicits {
 
   test("Slicing") {
     val m = DenseMatrix((0,1,2),
@@ -173,6 +173,9 @@ class DenseMatrixTest extends FunSuite with Checkers with ShouldMatchers with Do
 
     val b2 : DenseMatrix[Double] = a.mapValues(_ + 1.0)
     assert(b2 === DenseMatrix((2.0,1.0,1.0),(3.0,4.0,0.0)))
+
+    val b3 = a.t.mapValues(_ + 1)
+    assert(b3 === DenseMatrix((2,3), (1,4), (1,0)))
   }
 
   /*
@@ -545,9 +548,7 @@ class DenseMatrixTest extends FunSuite with Checkers with ShouldMatchers with Do
         val z = DenseVector.zeros[Double](5)
         (z + one)
       """
-
     }
-
   }
 
   test("ensure we don't crash on weird strides") {
@@ -592,11 +593,25 @@ class DenseMatrixTest extends FunSuite with Checkers with ShouldMatchers with Do
   }
 
 
+  test("#265: slices of :: and IndexedSeq") {
+    val dm = DenseMatrix( (0, 1, 2), (3, 4, 5))
+    assert(dm(::, IndexedSeq(2,1, 0)).toDenseMatrix === fliplr(dm))
+    assert(dm(IndexedSeq(1, 0), ::).toDenseMatrix === flipud(dm))
+  }
+
+  test("#278: don't crash on solve when majorStride == 0") {
+    val d = DenseVector[Double]()
+    val m = DenseMatrix.tabulate(0,0) { case x => 0.0 }
+    assert( m \ d  === d)
+
+  }
+
 
 
   def matricesNearlyEqual(A: DenseMatrix[Double], B: DenseMatrix[Double], threshold: Double = 1E-6) {
     for(i <- 0 until A.rows; j <- 0 until A.cols)
       A(i,j) should be (B(i, j) +- threshold)
+
   }
 
 
