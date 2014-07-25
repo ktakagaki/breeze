@@ -24,7 +24,7 @@ import org.scalatest.matchers.ShouldMatchers
 import breeze.util.DoubleImplicits
 
 @RunWith(classOf[JUnitRunner])
-class DenseMatrixTest extends FunSuite with Checkers with ShouldMatchers with DoubleImplicits {
+class DenseMatrixTest extends FunSuite with Checkers with Matchers with DoubleImplicits {
 
   test("Slicing") {
     val m = DenseMatrix((0,1,2),
@@ -173,6 +173,9 @@ class DenseMatrixTest extends FunSuite with Checkers with ShouldMatchers with Do
 
     val b2 : DenseMatrix[Double] = a.mapValues(_ + 1.0)
     assert(b2 === DenseMatrix((2.0,1.0,1.0),(3.0,4.0,0.0)))
+
+    val b3 = a.t.mapValues(_ + 1)
+    assert(b3 === DenseMatrix((2,3), (1,4), (1,0)))
   }
 
   /*
@@ -322,6 +325,7 @@ class DenseMatrixTest extends FunSuite with Checkers with ShouldMatchers with Do
   }
 
   test("Multiply Complex") {
+
     val a = DenseMatrix((Complex(1,1), Complex(2,2), Complex(3,3)),
                         (Complex(4,4), Complex(5,5), Complex(6,6)))
     val b = DenseMatrix((Complex(7,7), Complex(-2,-2), Complex(8,8)),
@@ -329,7 +333,8 @@ class DenseMatrixTest extends FunSuite with Checkers with ShouldMatchers with Do
                         (Complex(12,12), Complex(0,0), Complex(5,5)))
     val c = DenseVector(Complex(6,0), Complex(2,0), Complex(3,0))
     val cs = SparseVector(Complex(6,0), Complex(2,0), Complex(3,0))
-    assert(a * b === DenseMatrix((Complex(0,74), Complex(0,-16), Complex(0,50)),
+    val value: DenseMatrix[Complex] = a * b
+    assert(value === DenseMatrix((Complex(0,74), Complex(0,-16), Complex(0,50)),
                                  (Complex(0,170), Complex(0,-46), Complex(0,134))))
     assert(b * c === DenseVector(Complex(62,62), Complex(-21,-21), Complex(87,87)))
     assert(b * cs === DenseVector(Complex(62,62), Complex(-21,-21), Complex(87,87)))
@@ -543,9 +548,7 @@ class DenseMatrixTest extends FunSuite with Checkers with ShouldMatchers with Do
         val z = DenseVector.zeros[Double](5)
         (z + one)
       """
-
     }
-
   }
 
   test("ensure we don't crash on weird strides") {
@@ -590,11 +593,25 @@ class DenseMatrixTest extends FunSuite with Checkers with ShouldMatchers with Do
   }
 
 
+  test("#265: slices of :: and IndexedSeq") {
+    val dm = DenseMatrix( (0, 1, 2), (3, 4, 5))
+    assert(dm(::, IndexedSeq(2,1, 0)).toDenseMatrix === fliplr(dm))
+    assert(dm(IndexedSeq(1, 0), ::).toDenseMatrix === flipud(dm))
+  }
+
+  test("#278: don't crash on solve when majorStride == 0") {
+    val d = DenseVector[Double]()
+    val m = DenseMatrix.tabulate(0,0) { case x => 0.0 }
+    assert( m \ d  === d)
+
+  }
+
 
 
   def matricesNearlyEqual(A: DenseMatrix[Double], B: DenseMatrix[Double], threshold: Double = 1E-6) {
     for(i <- 0 until A.rows; j <- 0 until A.cols)
       A(i,j) should be (B(i, j) +- threshold)
+
   }
 
 

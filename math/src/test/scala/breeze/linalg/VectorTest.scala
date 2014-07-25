@@ -5,7 +5,7 @@ import org.scalatest._
 import org.scalatest.junit._
 import org.scalatest.prop._
 import org.junit.runner.RunWith
-import breeze.math.{DoubleValuedTensorSpaceTestBase, TensorSpace, TensorSpaceTestBase}
+import breeze.math._
 
 
 /**
@@ -43,7 +43,7 @@ class VectorTest extends FunSuite {
  */
 @RunWith(classOf[JUnitRunner])
 class VectorOps_DoubleTest extends DoubleValuedTensorSpaceTestBase[Vector[Double], Int] {
- val space: TensorSpace[Vector[Double], Int, Double] = implicitly
+ val space: MutableTensorField[Vector[Double], Int, Double] = Vector.space[Double]
 
 
   val N = 30
@@ -71,7 +71,7 @@ class VectorOps_DoubleTest extends DoubleValuedTensorSpaceTestBase[Vector[Double
 
 @RunWith(classOf[JUnitRunner])
 class VectorOps_FloatTest extends TensorSpaceTestBase[Vector[Float], Int, Float] {
- val space: TensorSpace[Vector[Float], Int, Float] = implicitly
+ val space: MutableTensorField[Vector[Float], Int, Float] = Vector.space[Float]
 
   override val TOL: Double = 1E-2
   val N = 30
@@ -99,7 +99,7 @@ class VectorOps_FloatTest extends TensorSpaceTestBase[Vector[Float], Int, Float]
 
 @RunWith(classOf[JUnitRunner])
 class VectorOps_IntTest extends TensorSpaceTestBase[Vector[Int], Int, Int] {
- val space: TensorSpace[Vector[Int], Int, Int] = implicitly
+ val space: MutableTensorField[Vector[Int], Int, Int] = Vector.space[Int]
 
   val N = 30
   implicit def genTriple: Arbitrary[(Vector[Int], Vector[Int], Vector[Int])] = {
@@ -122,4 +122,32 @@ class VectorOps_IntTest extends TensorSpaceTestBase[Vector[Int], Int, Int] {
   }
 
   def genScalar: Arbitrary[Int] = Arbitrary(Arbitrary.arbitrary[Int].map{ _ % 1000 })
+}
+
+@RunWith(classOf[JUnitRunner])
+class VectorOps_ComplexTest extends TensorSpaceTestBase[Vector[Complex], Int, Complex] {
+  val space: MutableTensorField[Vector[Complex], Int, Complex] = Vector.space[Complex]
+
+
+  val N = 30
+  implicit def genTriple: Arbitrary[(Vector[Complex], Vector[Complex], Vector[Complex])] = {
+    Arbitrary {
+      for{x <- Arbitrary.arbitrary[Complex]
+          bx <- Arbitrary.arbitrary[Boolean]
+          xl <- Arbitrary.arbitrary[List[Int]]
+          y <- Arbitrary.arbitrary[Complex]
+          by <- Arbitrary.arbitrary[Boolean]
+          yl <- Arbitrary.arbitrary[List[Int]]
+          z <- Arbitrary.arbitrary[Complex]
+          bz <- Arbitrary.arbitrary[Boolean]
+          zl <- Arbitrary.arbitrary[List[Int]]
+      } yield {
+        (if(bx) DenseVector.fill(N)(math.random * x ) else SparseVector(N)( xl.map(i => (i % N).abs -> (math.random * x )):_*),
+          if(by) DenseVector.fill(N)(math.random * y ) else SparseVector(N)( yl.map(i => (i % N).abs -> (math.random * y )):_*),
+          if(bz) DenseVector.fill(N)(math.random * z ) else SparseVector(N)( zl.map(i => (i % N).abs ->(math.random * z )):_*))
+      }
+    }
+  }
+
+  implicit def genScalar: Arbitrary[Complex] = Arbitrary{for(r  <- Arbitrary.arbitrary[Double]; i <- Arbitrary.arbitrary[Double]) yield Complex(r % 100,i % 100)}
 }

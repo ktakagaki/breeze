@@ -179,7 +179,11 @@ trait TensorLike[@spec(Int) K, @specialized(Int, Float, Double) V, +This<:Tensor
   }
 
   /** Returns true if and only if the given predicate is true for all elements. */
-  def forallValues(fn : V => Boolean) : Boolean = {
+  @deprecated("Please use 'forall' with the same arguments, which is more in accordance with scala.collections syntax", "0.8")
+  def forallValues(fn : V => Boolean) : Boolean = forall(fn)
+
+  /** Returns true if and only if the given predicate is true for all elements. */
+  def forall(fn : V => Boolean) : Boolean = {
     foreachValue(v => if (!fn(v)) return false)
     true
   }
@@ -226,7 +230,7 @@ object Tensor {
     def apply(from: Tensor[K, V], slice: Seq[K]): SliceVector[K, V] = new SliceVector(from, slice.toIndexedSeq)
   }
 
-  implicit def canSliceTensor2[K1, K2, V:ClassTag]:CanSlice2[Tensor[(K1,K2),V], Seq[K1], Seq[K2], SliceMatrix[K1, K2, V]] = {
+  implicit def canSliceTensor2[K1, K2, V:Semiring:ClassTag]:CanSlice2[Tensor[(K1,K2),V], Seq[K1], Seq[K2], SliceMatrix[K1, K2, V]] = {
     new CanSlice2[Tensor[(K1,K2),V], Seq[K1], Seq[K2], SliceMatrix[K1, K2, V]] {
       def apply(from: Tensor[(K1, K2), V], slice: Seq[K1], slice2: Seq[K2]): SliceMatrix[K1, K2, V] = {
         new SliceMatrix(from, slice.toIndexedSeq, slice2.toIndexedSeq)

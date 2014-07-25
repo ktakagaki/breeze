@@ -1,6 +1,7 @@
 package breeze.signal
 
 import breeze.linalg.DenseVector
+import breeze.util.Opt
 
 /**Specifies all possible option objects for the breeze.signal package
   *
@@ -9,10 +10,6 @@ import breeze.linalg.DenseVector
 
 
 ///General options-related
-
-
-/**Base class for all options*/
-abstract class Opt
 
 //Generic options with implicit specialization cannot be employed for case objects
 // (they can for parameterless case classes)
@@ -39,6 +36,12 @@ abstract class OptWindowFunction extends Opt
 object OptWindowFunction {
   case class Hamming(alpha: Double = 0.54, beta: Double = 0.46) extends OptWindowFunction {
     override def toString = "Hamming window ("+ alpha + ", " + beta + ")"
+  }
+  case class Hanning(alpha: Double = 0.5, beta: Double = 0.5) extends OptWindowFunction {
+    override def toString = "Hanning window ("+ alpha + "," + beta + ")"
+  }
+  case class Blackman(a0: Double = 0.42, a1: Double  = 0.5, a2: Double = 0.08) extends OptWindowFunction {
+    override def toString = "Blackman window ("+ a0 + a1 + a2 + ")"
   }
   case class User(dv: DenseVector[Double]) extends OptWindowFunction {
     override def toString = "user-specified window"

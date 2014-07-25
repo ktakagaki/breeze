@@ -18,7 +18,7 @@ import io.{CSVWriter, CSVReader}
 import linalg.operators._
 import breeze.linalg.support.{RangeExtender, CanCopy}
 import math.Semiring
-import storage.DefaultArrayValue
+import storage.Zero
 import java.io.{File, FileReader}
 import scala.reflect.ClassTag
 import breeze.linalg.DenseMatrix.canMapValues
@@ -167,7 +167,7 @@ package object linalg {
    * The lower triangular portion of the given real quadratic matrix X. Note
    * that no check will be performed regarding the symmetry of X.
    */
-  def lowerTriangular[T: Semiring: ClassTag:DefaultArrayValue](X: Matrix[T]): DenseMatrix[T] = {
+  def lowerTriangular[T: Semiring: ClassTag:Zero](X: Matrix[T]): DenseMatrix[T] = {
     val N = X.rows
     DenseMatrix.tabulate(N, N)( (i, j) =>
       if(j <= i) X(i,j)
@@ -179,7 +179,7 @@ package object linalg {
    * The upper triangular portion of the given real quadratic matrix X. Note
    * that no check will be performed regarding the symmetry of X.
    */
-  def upperTriangular[T: Semiring: ClassTag: DefaultArrayValue](X: Matrix[T]): DenseMatrix[T] = {
+  def upperTriangular[T: Semiring: ClassTag: Zero](X: Matrix[T]): DenseMatrix[T] = {
     val N = X.rows
     DenseMatrix.tabulate(N, N)( (i, j) =>
       if(j >= i) X(i,j)
@@ -203,6 +203,8 @@ package object linalg {
       case None => new PCA(x, cov(x))
     }
   }
+
+
 
   /**
    * A generic function (based on the R function of the same name) whose
@@ -242,6 +244,28 @@ package object linalg {
     (xc.t * xc) /= xc.rows - 1.0
   }
 
+  // <editor-fold defaultstate="collapsed" desc=" functions declared using the CanXXX idiom (this allows calling parameters by name, etc.) ">
+
+  import breeze.linalg.Options.{Zero => OZero, _}
+  def padRight[T]( v: DenseVector[T], dimensions: Dimensions1)
+                 (implicit canPad: CanPadRight[DenseVector[T], Dimensions1, DenseVector[T]]): DenseVector[T] =  canPad(v, dimensions, OZero)
+  def padRight[T]( v: DenseVector[T], dimensions: Dimensions1, mode: OptPadMode)
+                 (implicit canPad: CanPadRight[DenseVector[T], Dimensions1, DenseVector[T]]): DenseVector[T] =  canPad(v, dimensions, mode)
+  def padRight[T]( v: DenseMatrix[T], dimensions: Dimensions1)
+                 (implicit canPad: CanPadRight[DenseMatrix[T], Dimensions1, DenseMatrix[T]]): DenseMatrix[T] =  canPad(v, dimensions, OZero)
+  def padRight[T]( v: DenseMatrix[T], dimensions: Dimensions2, mode: OptPadMode)
+                 (implicit canPad: CanPadRight[DenseMatrix[T], Dimensions2, DenseMatrix[T]]): DenseMatrix[T] =  canPad(v, dimensions, mode)
+  def padLeft[T]( v: DenseVector[T], dimensions: Dimensions1)
+                 (implicit canPad: CanPadLeft[DenseVector[T], Dimensions1, DenseVector[T]]): DenseVector[T] =  canPad(v, dimensions, OZero)
+  def padLeft[T]( v: DenseVector[T], dimensions: Dimensions1, mode: OptPadMode)
+                 (implicit canPad: CanPadLeft[DenseVector[T], Dimensions1, DenseVector[T]]): DenseVector[T] =  canPad(v, dimensions, mode)
+  def padLeft[T]( v: DenseMatrix[T], dimensions: Dimensions1)
+                 (implicit canPad: CanPadLeft[DenseMatrix[T], Dimensions1, DenseMatrix[T]]): DenseMatrix[T] =  canPad(v, dimensions, OZero)
+  def padLeft[T]( v: DenseMatrix[T], dimensions: Dimensions2, mode: OptPadMode)
+                 (implicit canPad: CanPadLeft[DenseMatrix[T], Dimensions2, DenseMatrix[T]]): DenseMatrix[T] =  canPad(v, dimensions, mode)
+
+
+  // </editor-fold>
 
 
 
@@ -252,4 +276,8 @@ package object linalg {
   private def columnRMS(x: DenseMatrix[Double]): DenseVector[Double] =
     (sum(x:*x,Axis._0) / (x.rows-1.0)).map( scala.math.sqrt _ ).toDenseVector
 
+
+  /** Alias for randomDouble */
+  val rand: randomDouble.type = randomDouble
 }
+

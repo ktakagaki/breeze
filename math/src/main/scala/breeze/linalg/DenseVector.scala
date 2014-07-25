@@ -19,9 +19,9 @@ import scala.{specialized=>spec}
 import breeze.generic._
 import breeze.linalg.support._
 import breeze.linalg.operators._
-import breeze.math.{Complex, TensorSpace, Semiring, Ring}
+import breeze.math._
 import breeze.util.{ArrayUtil, Isomorphism}
-import breeze.storage.DefaultArrayValue
+import breeze.storage.Zero
 import scala.reflect.ClassTag
 import com.github.fommil.netlib.BLAS.{getInstance => blas}
 import breeze.macros.expand
@@ -195,7 +195,7 @@ class DenseVector[@spec(Double, Int, Float) E](val data: Array[E],
 
 
 
-  override def toArray(implicit cm: ClassTag[E]) = if(stride == 1){
+  override def toArray(implicit cm: ClassTag[E]): Array[E] = if(stride == 1){
     ArrayUtil.copyOfRange(data, offset, offset + length)
   } else {
     val arr = new Array[E](length)
@@ -227,10 +227,10 @@ object DenseVector extends VectorConstructors[DenseVector] with DenseVector_Gene
                       with DenseVector_OrderingOps
                       with DenseVector_SpecialOps {
 
-  def zeros[@spec(Double, Float, Int) V: ClassTag : DefaultArrayValue](size: Int): DenseVector[V] = {
+  def zeros[@spec(Double, Float, Int) V: ClassTag : Zero](size: Int): DenseVector[V] = {
     val data = new Array[V](size)
-    if(size != 0 && data(0) != implicitly[DefaultArrayValue[V]].value)
-      ArrayUtil.fill(data, 0, data.length, implicitly[DefaultArrayValue[V]].value)
+    if(size != 0 && data(0) != implicitly[Zero[V]].zero)
+      ArrayUtil.fill(data, 0, data.length, implicitly[Zero[V]].zero)
     new DenseVector(data)
   }
 
@@ -250,7 +250,7 @@ object DenseVector extends VectorConstructors[DenseVector] with DenseVector_Gene
    * Horizontal concatenation of two or more vectors into one matrix.
    * @throws IllegalArgumentException if vectors have different sizes
    */
-  def horzcat[V: ClassTag:DefaultArrayValue](vectors: DenseVector[V]*): DenseMatrix[V] = {
+  def horzcat[V: ClassTag:Zero](vectors: DenseVector[V]*): DenseMatrix[V] = {
     val size = vectors.head.size
     if (!(vectors forall (_.size == size)))
       throw new IllegalArgumentException("All vectors must have the same size!")
@@ -263,7 +263,7 @@ object DenseVector extends VectorConstructors[DenseVector] with DenseVector_Gene
   /**
    * Vertical concatenation of two or more column vectors into one large vector.
    */
-  def vertcat[V](vectors: DenseVector[V]*)(implicit canSet: OpSet.InPlaceImpl2[DenseVector[V], DenseVector[V]], vman: ClassTag[V], dav: DefaultArrayValue[V]): DenseVector[V] = {
+  def vertcat[V](vectors: DenseVector[V]*)(implicit canSet: OpSet.InPlaceImpl2[DenseVector[V], DenseVector[V]], vman: ClassTag[V], zero: Zero[V]): DenseVector[V] = {
     val size = vectors.foldLeft(0)(_ + _.size)
     val result = zeros[V](size)
     var offset = 0
@@ -276,31 +276,22 @@ object DenseVector extends VectorConstructors[DenseVector] with DenseVector_Gene
 
   // capabilities
 
-  implicit def canCreateZerosLike[V:ClassTag:DefaultArrayValue]:CanCreateZerosLike[DenseVector[V], DenseVector[V]] =
+  implicit def canCreateZerosLike[V:ClassTag:Zero]:CanCreateZerosLike[DenseVector[V], DenseVector[V]] =
   new CanCreateZerosLike[DenseVector[V], DenseVector[V]] {
     def apply(v1: DenseVector[V]): DenseVector[V] = {
       zeros[V](v1.length)
     }
   }
 
-  implicit def canCopyDenseVector[V:ClassTag]: CanCopy[DenseVector[V]] =
-  new CanCopy[DenseVector[V]] {
-    def apply(v1: DenseVector[V]): DenseVector[V] = {
-      v1.copy
-    }
-  }
-
-  def binaryOpFromUpdateOp[Op<:OpType, V, Other]
-  (implicit copy: CanCopy[DenseVector[V]], op: UFunc.InPlaceImpl2[Op, DenseVector[V], Other], man: ClassTag[V]):
-  UFunc.UImpl2[Op, DenseVector[V], Other, DenseVector[V]] = {
-    new UFunc.UImpl2[Op, DenseVector[V], Other, DenseVector[V]] {
-      override def apply(a : DenseVector[V], b : Other): DenseVector[V] = {
-        val c = copy(a)
-        op(c, b)
-        c
+  implicit def canCopyDenseVector[V:ClassTag]: CanCopy[DenseVector[V]] = {
+    new CanCopy[DenseVector[V]] {
+      def apply(v1: DenseVector[V]): DenseVector[V] = {
+        v1.copy
       }
     }
   }
+
+
 
   implicit def negFromScale[V](implicit scale: OpMulScalar.Impl2[DenseVector[V], V, DenseVector[V]], field: Ring[V]) = {
     new OpNeg.Impl[DenseVector[V], DenseVector[V]] {
@@ -461,16 +452,6 @@ object DenseVector extends VectorConstructors[DenseVector] with DenseVector_Gene
 //    }
 //  }
 
-  /*
-  implicit def canTranspose[V]: CanTranspose[DenseVector[V], DenseMatrix[V]] = {
-    new CanTranspose[DenseVector[V], DenseMatrix[V]] {
-      def apply(from: DenseVector[V]) = {
-        new DenseMatrix(data = from.data, offset = from.offset, cols = from.length, rows = 1, majorStride = from.stride)
-      }
-    }
-  }
-  */
-
   implicit def canTransposeComplex: CanTranspose[DenseVector[Complex], DenseMatrix[Complex]] = {
     new CanTranspose[DenseVector[Complex], DenseMatrix[Complex]] {
       def apply(from: DenseVector[Complex]): DenseMatrix[Complex] = {
@@ -501,10 +482,10 @@ object DenseVector extends VectorConstructors[DenseVector] with DenseVector_Gene
   }
 
 
-  implicit def zipMap[V, R:ClassTag] = new CanZipMapValuesDenseVector[V, R]
-  implicit val zipMap_d = new CanZipMapValuesDenseVector[Double, Double]
-  implicit val zipMap_f = new CanZipMapValuesDenseVector[Float, Float]
-  implicit val zipMap_i = new CanZipMapValuesDenseVector[Int, Int]
+  implicit def zipMap[V, R:ClassTag]: CanZipMapValuesDenseVector[V, R] = new CanZipMapValuesDenseVector[V, R]
+  implicit val zipMap_d: CanZipMapValuesDenseVector[Double, Double] = new CanZipMapValuesDenseVector[Double, Double]
+  implicit val zipMap_f: CanZipMapValuesDenseVector[Float, Float] = new CanZipMapValuesDenseVector[Float, Float]
+  implicit val zipMap_i: CanZipMapValuesDenseVector[Int, Int] = new CanZipMapValuesDenseVector[Int, Int]
 
   implicit val canAddIntoD: OpAdd.InPlaceImpl2[DenseVector[Double], DenseVector[Double]] = {
     new OpAdd.InPlaceImpl2[DenseVector[Double], DenseVector[Double]] {
@@ -583,7 +564,6 @@ object DenseVector extends VectorConstructors[DenseVector] with DenseVector_Gene
     implicitly[BinaryUpdateRegistry[Vector[Double], Vector[Double], OpSet.type]].register(this)
   }
 
-
   /*
   TODO: scaladoc crashes on this. I don't know why. It makes me want to die a little.
   Returns the k-norm of this Vector.
@@ -647,9 +627,15 @@ object DenseVector extends VectorConstructors[DenseVector] with DenseVector_Gene
     }
   }
 
-  implicit val space_d = TensorSpace.make[DenseVector[Double], Int, Double]
-  implicit val space_f = TensorSpace.make[DenseVector[Float], Int, Float]
-  implicit val space_i = TensorSpace.make[DenseVector[Int], Int, Int]
+  implicit def canDim[E]: dim.Impl[DenseVector[E],Int] = new dim.Impl[DenseVector[E],Int] {
+    def apply(v: DenseVector[E]): Int = v.length
+  }
+
+  implicit def space[E](implicit field: Field[E], man: ClassTag[E]): MutableRestrictedDomainTensorField[DenseVector[E],Int,E] = {
+    import field._
+    implicit val cmv = canMapValues[E,E]
+    MutableRestrictedDomainTensorField.make[DenseVector[E],Int,E]
+  }
 
   object TupleIsomorphisms {
     implicit object doubleIsVector extends Isomorphism[Double,DenseVector[Double]] {

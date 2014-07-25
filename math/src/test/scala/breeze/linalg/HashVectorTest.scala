@@ -3,7 +3,7 @@ package breeze.linalg
 import org.scalatest._
 import org.scalatest.junit._
 import org.junit.runner.RunWith
-import breeze.math.{TensorSpaceTestBase, TensorSpace, DoubleValuedTensorSpaceTestBase}
+import breeze.math._
 import breeze.stats.mean
 import org.scalacheck.Arbitrary
 
@@ -240,7 +240,7 @@ class HashVectorTest extends FunSuite {
  */
 @RunWith(classOf[JUnitRunner])
 class HashVectorOps_DoubleTest extends DoubleValuedTensorSpaceTestBase[HashVector[Double], Int] {
- val space: TensorSpace[HashVector[Double], Int, Double] = implicitly
+ val space: MutableTensorField[HashVector[Double], Int, Double] = HashVector.space[Double]
 
   val N = 30
   implicit def genTriple: Arbitrary[(HashVector[Double], HashVector[Double], HashVector[Double])] = {
@@ -268,7 +268,7 @@ class HashVectorOps_DoubleTest extends DoubleValuedTensorSpaceTestBase[HashVecto
  */
 @RunWith(classOf[JUnitRunner])
 class HashVectorOps_FloatTest extends TensorSpaceTestBase[HashVector[Float], Int, Float] {
- val space: TensorSpace[HashVector[Float], Int, Float] = implicitly
+ val space: MutableTensorField[HashVector[Float], Int, Float] = HashVector.space[Float]
 
   override val TOL: Double = 1E-2
   val N = 30
@@ -297,7 +297,7 @@ class HashVectorOps_FloatTest extends TensorSpaceTestBase[HashVector[Float], Int
  */
 @RunWith(classOf[JUnitRunner])
 class HashVectorOps_IntTest extends TensorSpaceTestBase[HashVector[Int], Int, Int] {
- val space: TensorSpace[HashVector[Int], Int, Int] = implicitly
+ val space: MutableTensorField[HashVector[Int], Int, Int] = HashVector.space[Int]
 
   val N = 100
   implicit def genTriple: Arbitrary[(HashVector[Int], HashVector[Int], HashVector[Int])] = {
@@ -317,4 +317,29 @@ class HashVectorOps_IntTest extends TensorSpaceTestBase[HashVector[Int], Int, In
   }
 
   def genScalar: Arbitrary[Int] = Arbitrary(Arbitrary.arbitrary[Int].map{ _ % 1000 })
+}
+
+@RunWith(classOf[JUnitRunner])
+class HashVectorOps_ComplexTest extends TensorSpaceTestBase[HashVector[Complex], Int, Complex] {
+  val space: MutableTensorField[HashVector[Complex], Int, Complex] = HashVector.space[Complex]
+
+
+  val N = 30
+  implicit def genTriple: Arbitrary[(HashVector[Complex], HashVector[Complex], HashVector[Complex])] = {
+    Arbitrary {
+      for{x <- Arbitrary.arbitrary[Complex]
+          xl <- Arbitrary.arbitrary[List[Int]]
+          y <- Arbitrary.arbitrary[Complex]
+          yl <- Arbitrary.arbitrary[List[Int]]
+          z <- Arbitrary.arbitrary[Complex]
+          zl <- Arbitrary.arbitrary[List[Int]]
+      } yield {
+        ( HashVector(N)( xl.map(i => (i % N).abs -> (math.random * x )):_*),
+          HashVector(N)( yl.map(i => (i % N).abs -> (math.random * y )):_*),
+          HashVector(N)( zl.map(i => (i % N).abs ->(math.random * z )):_*))
+      }
+    }
+  }
+
+  implicit def genScalar: Arbitrary[Complex] = Arbitrary{for(r  <- Arbitrary.arbitrary[Double]; i <- Arbitrary.arbitrary[Double]) yield Complex(r % 100,i % 100)}
 }

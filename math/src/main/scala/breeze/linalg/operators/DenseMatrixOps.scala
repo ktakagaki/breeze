@@ -5,18 +5,13 @@ import breeze.linalg._
 import org.netlib.util.intW
 import com.github.fommil.netlib.LAPACK.{getInstance=>lapack}
 import breeze.macros.expand
-import breeze.math.{Semiring, Complex}
-import scala.math.BigInt
+import breeze.math.{Field, Semiring}
 import breeze.linalg.support.{CanCollapseAxis, CanSlice2}
 import breeze.util.ArrayUtil
-import breeze.storage.DefaultArrayValue
+import breeze.storage.Zero
 import scala.reflect.ClassTag
 
-
-
-
-
-trait DenseMatrixMultiplyStuff extends DenseMatrixOps with DenseMatrixMultOps { this: DenseMatrix.type =>
+trait DenseMatrixMultiplyStuff extends DenseMatrixOps with DenseMatrixMultOps with LowPriorityDenseMatrix { this: DenseMatrix.type =>
 
   // <editor-fold defaultstate="collapsed" desc=" OpMulMatrix implementations ">
 
@@ -26,6 +21,15 @@ trait DenseMatrixMultiplyStuff extends DenseMatrixOps with DenseMatrixMultOps { 
     new OpMulMatrix.Impl2[Transpose[DenseVector[T]], DenseMatrix[T], Transpose[DenseVector[T]]] {
       override def apply(v: Transpose[DenseVector[T]], v2: DenseMatrix[T]): Transpose[DenseVector[T]] = {
         (v.inner.asDenseMatrix * v2) apply (0, ::)
+      }
+    }
+
+  implicit def implOpMulMatrix_DVT_DMT_eq_DMT[T](implicit op: OpMulMatrix.Impl2[DenseMatrix[T],DenseMatrix[T],DenseMatrix[T]]): OpMulMatrix.Impl2[DenseVector[T],DenseMatrix[T],DenseMatrix[T]] =
+    new OpMulMatrix.Impl2[DenseVector[T],DenseMatrix[T],DenseMatrix[T]] {
+      def apply(v: DenseVector[T], v2: DenseMatrix[T]): DenseMatrix[T] = {
+        require(v2.rows == 1)
+        val dm = new DenseMatrix[T](v.length,1,v.data,v.offset,v.length)
+        op(dm,v2)
       }
     }
 
@@ -105,7 +109,9 @@ trait DenseMatrixMultiplyStuff extends DenseMatrixOps with DenseMatrixMultOps { 
     override def apply(A : DenseMatrix[Double], V : DenseMatrix[Double]): DenseMatrix[Double] = {
       require(A.rows == V.rows, "Non-conformant matrix sizes")
 
-      if (A.rows == A.cols) {
+      if (A.size == 0) {
+        DenseMatrix.zeros[Double](0, 0)
+      } else if (A.rows == A.cols) {
         // square: LUSolve
         val X = DenseMatrix.zeros[Double](V.rows, V.cols)
         X := V
@@ -298,7 +304,9 @@ trait DenseMatrixFloatMultiplyStuff extends DenseMatrixOps with DenseMatrixMultO
     override def apply(A : DenseMatrix[Float], V: DenseMatrix[Float]) = {
       require(A.rows == V.rows, "Non-conformant matrix sizes")
 
-      if (A.rows == A.cols) {
+      if (A.size == 0) {
+        DenseMatrix.zeros[Float](0, 0)
+      } else if (A.rows == A.cols) {
         // square: LUSolve
         val X = DenseMatrix.zeros[Float](V.rows, V.cols)
         X := V
@@ -415,15 +423,13 @@ trait DenseMatrixFloatMultiplyStuff extends DenseMatrixOps with DenseMatrixMultO
 
 trait DenseMatrixOps { this: DenseMatrix.type =>
 
-  import breeze.math.PowImplicits._
-
   // <editor-fold defaultstate="collapsed" desc=" implicit implementations for OpXXX.InPlaceImpl2[DenseMatrix[T], DenseMatrix[T]] ">
+  // don't remove
+  import breeze.math.PowImplicits._
 
   @expand
   @expand.valify
-  @expand.exclude(Complex, OpMod)
-  @expand.exclude(BigInt, OpPow)
-  implicit def dm_dm_UpdateOp[@expand.args(Int, Double, Float, Long, BigInt, Complex) T,
+  implicit def dm_dm_UpdateOp[@expand.args(Int, Double, Float, Long) T,
                               @expand.args(OpAdd, OpSub, OpMulScalar, OpDiv, OpSet, OpMod, OpPow) Op <: OpType]
   (implicit @expand.sequence[Op]({_ + _},  {_ - _}, {_ * _}, {_ / _}, {(a,b) => b}, {_ % _}, {_ pow _}) op: Op.Impl2[T, T, T]):
   Op.InPlaceImpl2[DenseMatrix[T], DenseMatrix[T]] =
@@ -453,15 +459,44 @@ trait DenseMatrixOps { this: DenseMatrix.type =>
     implicitly[BinaryUpdateRegistry[Matrix[T], Matrix[T], Op.type]].register(this)
   }
 
+  @expand
+  implicit def dm_dm_UpdateOp[@expand.args(OpAdd, OpSub, OpMulScalar, OpDiv, OpMod, OpPow) Op <: OpType, T:Field:Zero:ClassTag]
+  (implicit @expand.sequence[Op]({f.+(_,_)}, {f.-(_,_)}, {f.*(_,_)}, {f./(_,_)}, {f.%(_,_)},{f.pow(_,_)}) op: Op.Impl2[T,T,T]):
+  Op.InPlaceImpl2[DenseMatrix[T], DenseMatrix[T]] = {
+    val f = implicitly[Field[T]]
+    new Op.InPlaceImpl2[DenseMatrix[T], DenseMatrix[T]] {
+      def apply(a: DenseMatrix[T], b: DenseMatrix[T]): Unit = {
+        val ad = a.data
+        val bd = b.data
+        var c = 0
+
+        if (a.overlaps(b)) {
+          val ac = a.copy
+          apply(ac, b)
+          a := ac
+        } else {
+          while (c < a.cols) {
+            var r = 0
+            while (r < a.rows) {
+              ad(a.linearIndex(r, c)) = op(ad(a.linearIndex(r, c)), bd(b.linearIndex(r, c)))
+              r += 1
+            }
+            c += 1
+          }
+        }
+
+      }
+
+      implicitly[BinaryUpdateRegistry[Matrix[T], Matrix[T], Op.type]].register(this)
+    }
+  }
   // </editor-fold>
 
   // <editor-fold defaultstate="collapsed" desc=" implicit implementations for OpXXX.InPlaceImpl2[DenseMatrix[T], T] ">
 
   @expand
   @expand.valify
-  @expand.exclude(Complex, OpMod)
-  @expand.exclude(BigInt, OpPow)
-  implicit def dm_s_UpdateOp[@expand.args(Int, Double, Float, Long, BigInt, Complex) T,
+  implicit def dm_s_UpdateOp[@expand.args(Int, Double, Float, Long) T,
                              @expand.args(OpAdd, OpSub, OpMulScalar, OpMulMatrix, OpDiv, OpSet, OpMod, OpPow) Op <: OpType]
   (implicit @expand.sequence[Op]({_ + _},  {_ - _}, {_ * _}, {_ * _}, {_ / _}, {(a,b) => b}, {_ % _}, {_ pow _}) op: Op.Impl2[T, T, T]):
   Op.InPlaceImpl2[DenseMatrix[T], T] =
@@ -484,16 +519,51 @@ trait DenseMatrixOps { this: DenseMatrix.type =>
     implicitly[BinaryUpdateRegistry[Matrix[T], T, Op.type]].register(this)
   }
 
+  @expand
+  implicit def opUpdate_DM_S[@expand.args(OpAdd, OpSub, OpMulScalar, OpMulMatrix, OpDiv, OpMod, OpPow) Op <: OpType, T:Field:Zero:ClassTag]
+  (implicit @expand.sequence[Op]({f.+(_,_)}, {f.-(_,_)}, {f.*(_,_)}, {f.*(_,_)}, {f./(_,_)}, {f.%(_,_)},{f.pow(_,_)}) op: Op.Impl2[T,T,T]):
+  Op.InPlaceImpl2[DenseMatrix[T], T] = {
+    val f = implicitly[Field[T]]
+    new Op.InPlaceImpl2[DenseMatrix[T], T] {
+      override def apply(a : DenseMatrix[T], b: T) = {
+        val ad: Array[T] = a.data
+        var c = 0
+
+        while(c < a.cols) {
+          var r = 0
+          while(r < a.rows) {
+            ad(a.linearIndex(r, c)) = op(ad(a.linearIndex(r,c)), b)
+            r += 1
+          }
+          c += 1
+        }
+      }
+      implicitly[BinaryUpdateRegistry[Matrix[T], T, Op.type]].register(this)
+    }
+  }
   // </editor-fold>
 
   // <editor-fold defaultstate="collapsed" desc=" implicit implementations for OpXXX.Impl2[DenseMatrix[T], T, DenseMatrix[T]] ">
 
   @expand
   @expand.valify
-  @expand.exclude(Complex, OpMod)
-  @expand.exclude(BigInt, OpPow)
-  implicit def op_DM_S[@expand.args(Int, Long, Float, Double, BigInt, Complex) T,
+  implicit def op_DM_S[@expand.args(Int, Long, Float, Double) T,
                        @expand.args(OpAdd, OpSub, OpMulScalar, OpMulMatrix, OpMod, OpDiv, OpPow) Op]:
+  Op.Impl2[DenseMatrix[T], T, DenseMatrix[T]] = {
+    val uop = implicitly[Op.InPlaceImpl2[DenseMatrix[T], T]]
+    new Op.Impl2[DenseMatrix[T], T, DenseMatrix[T]] {
+      override def apply(a : DenseMatrix[T], b: T) = {
+        val c = copy(a)
+        uop(c, b)
+        c
+      }
+      implicitly[BinaryRegistry[Matrix[T], T, Op.type, Matrix[T]]].register(this)
+    }
+  }
+
+  @expand
+  implicit def op_DM_S[@expand.args(OpAdd, OpSub, OpMulScalar, OpMulMatrix, OpDiv, OpMod, OpPow) Op <: OpType, T:Field:Zero:ClassTag]:
+//  (implicit @expand.sequence[Op]({f.+(_,_)}, {f.-(_,_)}, {f.*(_,_)}, {f.*(_,_)}, {f./(_,_)}, {f.%(_,_)},{f.pow(_,_)}) op: Op.Impl2[T,T,T]):
   Op.Impl2[DenseMatrix[T], T, DenseMatrix[T]] = {
     val uop = implicitly[Op.InPlaceImpl2[DenseMatrix[T], T]]
     new Op.Impl2[DenseMatrix[T], T, DenseMatrix[T]] {
@@ -512,9 +582,7 @@ trait DenseMatrixOps { this: DenseMatrix.type =>
 
   @expand
   @expand.valify
-  @expand.exclude(Complex, OpMod)
-  @expand.exclude(BigInt, OpPow)
-  implicit def s_dm_op[@expand.args(Int, Double, Float, Long, BigInt, Complex) T,
+  implicit def s_dm_op[@expand.args(Int, Double, Float, Long) T,
                        @expand.args(OpAdd, OpSub, OpMulScalar, OpMulMatrix, OpDiv, OpMod, OpPow) Op <: OpType]
   (implicit @expand.sequence[Op]({_ + _},  {_ - _}, {_ * _}, {_ * _}, {_ / _}, {_ % _}, {_ pow _}) op: Op.Impl2[T, T, T]):
   Op.Impl2[T, DenseMatrix[T], DenseMatrix[T]] =
@@ -549,9 +617,7 @@ trait DenseMatrixOps { this: DenseMatrix.type =>
 
   @expand
   @expand.valify
-  @expand.exclude(Complex, OpMod)
-  @expand.exclude(BigInt, OpPow)
-  implicit def op_DM_DM[@expand.args(Int, Long, Float, Double, BigInt, Complex) T,
+  implicit def op_DM_DM[@expand.args(Int, Long, Float, Double) T,
                         @expand.args(OpAdd, OpSub, OpMulScalar, OpMod, OpDiv, OpPow) Op]:
   Op.Impl2[DenseMatrix[T], DenseMatrix[T], DenseMatrix[T]] = {
     val uop = implicitly[Op.InPlaceImpl2[DenseMatrix[T], DenseMatrix[T]]]
@@ -578,15 +644,14 @@ trait DenseMatrixOpsLowPrio { this: DenseMatrixOps =>
   // LOL, if we explicitly annotate the type, then the implicit resolution thing will load this recursively.
   // If we don't, then everything works ok.
 
-  @expand
-  implicit def canMulM_V_def[@expand.args(Int, Float, Double, Long, Complex, BigInt) T, A, B](implicit bb :  B <:< Vector[T]) = (
-    implicitly[OpMulMatrix.Impl2[DenseMatrix[T], Vector[T], DenseVector[T]]].asInstanceOf[breeze.linalg.operators.OpMulMatrix.Impl2[A, B, DenseVector[T]]]
+  implicit def canMulM_V_def[T, B <: Vector[T]](implicit bb :  B <:< Vector[T], op: OpMulMatrix.Impl2[DenseMatrix[T], Vector[T], DenseVector[T]]) = (
+    implicitly[OpMulMatrix.Impl2[DenseMatrix[T], Vector[T], DenseVector[T]]].asInstanceOf[breeze.linalg.operators.OpMulMatrix.Impl2[DenseMatrix[T], B, DenseVector[T]]]
     )
 
   // ibid.
-  @expand
-  implicit def canMulM_M_def[@expand.args(Int, Float, Double, Long, Complex, BigInt) T, B](implicit bb :  B <:< Matrix[T]) = (
-    implicitly[OpMulMatrix.Impl2[DenseMatrix[T], Matrix[T], DenseMatrix[T]]].asInstanceOf[OpMulMatrix.Impl2[DenseMatrix[T], B, DenseMatrix[T]]]
+  implicit def canMulM_M_def[T, B  <: Matrix[T]](implicit bb :  B <:< Matrix[T],
+                                                 op: OpMulMatrix.Impl2[DenseMatrix[T], Matrix[T], DenseMatrix[T]]) = (
+     op.asInstanceOf[OpMulMatrix.Impl2[DenseMatrix[T], B, DenseMatrix[T]]]
     )
 
 }
@@ -598,14 +663,13 @@ trait DenseMatrixOpsLowPrio { this: DenseMatrixOps =>
 trait DenseMatrixMultOps extends DenseMatrixOps with DenseMatrixOpsLowPrio { this: DenseMatrix.type =>
   // I don't know why this import is necessary to make the DefaultArrayValue do the right thing.
   // If I remove the import breeze.storage.DefaultArrayValue._, everything breaks, for some reason.
-  import breeze.math.Complex.ComplexDefaultArrayValue
 
 
   // <editor-fold defaultstate="collapsed" desc=" implicit implementations for BinaryRegistry ">
 
   @expand
   @expand.valify
-  implicit def op_DM_V[@expand.args(Int, Long, Float, Double, BigInt, Complex) T]:
+  implicit def op_DM_V[@expand.args(Int, Long, Float, Double) T]:
   BinaryRegistry[DenseMatrix[T], Vector[T], OpMulMatrix.type, DenseVector[T]] =
 
   new BinaryRegistry[DenseMatrix[T], Vector[T], OpMulMatrix.type, DenseVector[T]] {
@@ -634,7 +698,7 @@ trait DenseMatrixMultOps extends DenseMatrixOps with DenseMatrixOpsLowPrio { thi
 
   @expand
   @expand.valify
-  implicit def op_DM_M[@expand.args(Int, Long, Float, Double, BigInt, Complex) T]:
+  implicit def op_DM_M[@expand.args(Int, Long, Float, Double) T]:
   BinaryRegistry[DenseMatrix[T], Matrix[T], OpMulMatrix.type, DenseMatrix[T]] =
 
   new BinaryRegistry[DenseMatrix[T], Matrix[T], OpMulMatrix.type, DenseMatrix[T]] {
@@ -677,7 +741,7 @@ trait DenseMatrixMultOps extends DenseMatrixOps with DenseMatrixOpsLowPrio { thi
 
   // <editor-fold defaultstate="collapsed" desc=" implicit implementations for OpMulMatrix ">
 
-  implicit def op_DM_DM_Semiring[T:Semiring:ClassTag:DefaultArrayValue]:
+  implicit def op_DM_DM_Semiring[T:Semiring:ClassTag:Zero]:
   OpMulMatrix.Impl2[DenseMatrix[T], DenseMatrix[T], DenseMatrix[T]] =
 
   new OpMulMatrix.Impl2[DenseMatrix[T], DenseMatrix[T], DenseMatrix[T]] {
@@ -713,7 +777,7 @@ trait DenseMatrixMultOps extends DenseMatrixOps with DenseMatrixOpsLowPrio { thi
 
   @expand
   @expand.valify
-  implicit def op_DM_DM[@expand.args(Int, Long, Float, Double, BigInt, Complex) T]:
+  implicit def op_DM_DM[@expand.args(Int, Long, Float, Double) T]:
   OpMulMatrix.Impl2[DenseMatrix[T], DenseMatrix[T], DenseMatrix[T]] =
 
   new OpMulMatrix.Impl2[DenseMatrix[T], DenseMatrix[T], DenseMatrix[T]] {
@@ -768,10 +832,18 @@ trait DenseMatrixMultOps extends DenseMatrixOps with DenseMatrixOpsLowPrio { thi
 
 trait LowPriorityDenseMatrix extends LowPriorityDenseMatrix1 {
 
-  implicit def canSliceWeirdRows[V]: CanSlice2[DenseMatrix[V], Seq[Int], ::.type, SliceMatrix[Int, Int, V]] = {
+  implicit def canSliceWeirdRows[V:Semiring:ClassTag]: CanSlice2[DenseMatrix[V], Seq[Int], ::.type, SliceMatrix[Int, Int, V]] = {
     new CanSlice2[DenseMatrix[V], Seq[Int], ::.type, SliceMatrix[Int, Int, V]] {
       def apply(from: DenseMatrix[V], slice: Seq[Int], slice2: ::.type): SliceMatrix[Int, Int, V] = {
         new SliceMatrix(from, slice.toIndexedSeq, (0 until from.cols))
+      }
+    }
+  }
+
+  implicit def canSliceWeirdCols[V:Semiring:ClassTag]: CanSlice2[DenseMatrix[V], ::.type, Seq[Int], SliceMatrix[Int, Int, V]] = {
+    new CanSlice2[DenseMatrix[V], ::.type, Seq[Int], SliceMatrix[Int, Int, V]] {
+      def apply(from: DenseMatrix[V], slice2: ::.type, slice: Seq[Int]): SliceMatrix[Int, Int, V] = {
+        new SliceMatrix(from, (0 until from.rows), slice.toIndexedSeq)
       }
     }
   }
@@ -857,6 +929,30 @@ trait LowPriorityDenseMatrix extends LowPriorityDenseMatrix1 {
   implicit def setDMS[V]:  OpSet.InPlaceImpl2[DenseMatrix[V], V] = new SetMSOp[V]
 
   // </editor-fold>
+
+  implicit def op_DM_V_Semiring[T](implicit ring: Semiring[T], ct: ClassTag[T]):
+  BinaryRegistry[DenseMatrix[T], Vector[T], OpMulMatrix.type, DenseVector[T]] =
+
+    new BinaryRegistry[DenseMatrix[T], Vector[T], OpMulMatrix.type, DenseVector[T]] {
+      override def bindingMissing(a: DenseMatrix[T], b: Vector[T]): DenseVector[T] = {
+
+        require(a.cols == b.length)
+        val res: DenseVector[T] = DenseVector.zeros[T](a.rows)
+        var c = 0
+        while(c < a.cols) {
+          var r = 0
+          while (r < a.rows) {
+            val v = a(r, c)
+            res(r) = ring.+(res(r), ring.*(v, b(c)))
+            r += 1
+          }
+          c += 1
+        }
+
+        res
+      }
+
+    }
 }
 
 trait LowPriorityDenseMatrix1 {
@@ -867,7 +963,7 @@ trait LowPriorityDenseMatrix1 {
    * @tparam R
    * @return
    */
-  implicit def canCollapseRows[V, R:ClassTag:DefaultArrayValue]: CanCollapseAxis[DenseMatrix[V], Axis._0.type, DenseVector[V], R, DenseMatrix[R]]  =
+  implicit def canCollapseRows[V, R:ClassTag:Zero]: CanCollapseAxis[DenseMatrix[V], Axis._0.type, DenseVector[V], R, DenseMatrix[R]]  =
 
   new CanCollapseAxis[DenseMatrix[V], Axis._0.type, DenseVector[V], R, DenseMatrix[R]] {
     def apply(from: DenseMatrix[V], axis: Axis._0.type)(f: (DenseVector[V]) => R): DenseMatrix[R] = {
@@ -885,7 +981,7 @@ trait LowPriorityDenseMatrix1 {
    * @tparam R
    * @return
    */
-  implicit def canCollapseCols[V, R:ClassTag:DefaultArrayValue] =
+  implicit def canCollapseCols[V, R:ClassTag:Zero] =
 
   new CanCollapseAxis[DenseMatrix[V], Axis._1.type, DenseVector[V], R, DenseVector[R]] {
     def apply(from: DenseMatrix[V], axis: Axis._1.type)(f: (DenseVector[V]) => R): DenseVector[R] = {

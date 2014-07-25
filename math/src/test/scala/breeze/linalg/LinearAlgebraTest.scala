@@ -14,15 +14,14 @@ package breeze.linalg
  See the License for the specific language governing permissions and
  limitations under the License.
 */
-import org.scalacheck.{Arbitrary,Gen}
-import scala.util.Random
+
+import org.scalacheck.{Arbitrary,Gen,Prop}
 import org.scalatest._
 import org.scalatest.junit._
 import org.scalatest.prop._
 import org.junit.runner.RunWith
 import breeze.util.DoubleImplicits
 import breeze.numerics._
-import breeze.math.{Complex}
 import breeze.stats.{mean, median, meanAndVariance}
 import breeze.{math => bmath}
 
@@ -198,35 +197,6 @@ class LinearAlgebraTest extends FunSuite with Checkers with Matchers with Double
     assert(max(abs(_QQ * _RR - ap)) < 1E-8)
   }
 
-  test("complex mean") {
-    import breeze.{math=>bmath}
-    import breeze.math.Complex
-    val data =  DenseVector[Complex]( (0.0 + 1.0 * bmath.i), (1.0 + 0.0 * bmath.i), (2.0 + 2.0 * bmath.i) )
-    assert( mean(data) === (1.0 + 1.0 * bmath.i))
-  }
-
-  test("mean and variance") {
-    val r = new Random(0)
-    val data =  Array.fill(100000)(r.nextGaussian)
-    val mav = meanAndVariance(data)
-    val mav2 = meanAndVariance(data.iterator)
-    assert(breeze.numerics.closeTo(mav.mean,0.0,1E-2), mav.mean + " should be 0")
-    assert(breeze.numerics.closeTo(mav.variance,1.0,1E-2), mav.variance + " should be 1")
-    assert(mav == mav2)
-  }
-
-//  test("complex mean") {
-//    val data =  DenseVector[Complex]( (0.0 + 1.0 * bmath.i), (1.0 + 0.0 * bmath.i), (2.0 + 2.0 * bmath.i) )
-//    assert( mean(data) == (1.0 + 1.0 * bmath.i), "complex mean incorrect")
-//  }
-
-  test("median") {
-    val dataOdd =  DenseVector(0,1,2,3,400000)
-    val dataEven =  DenseVector(0f,1f,2f,100f)
-
-    assert( median(dataOdd)==2, "median (odd length) should be 2 instead of "+ median(dataOdd))
-    assert( median(dataEven)==1.5f, "median (even length) should be 1.5f instead of "+ median(dataOdd))
-  }
 
   test("simple eig test") {
     val (w, _, v) = eig(diag(DenseVector(1.0, 2.0, 3.0)))
@@ -265,16 +235,32 @@ class LinearAlgebraTest extends FunSuite with Checkers with Matchers with Double
   }
 
   test("csc svd"){
-    val m1 = DenseMatrix((2.0,4.0),(1.0,3.0),(0.0,0.0),(0.0,0.0))
-    val m2 = CSCMatrix((2.0,4.0),(1.0,3.0),(0.0,0.0),(0.0,0.0))
+    val m1 = DenseMatrix((2.0,4.0,0.0,1.0,2.0),(1.0,0.0,2.0,1.0,0.0),
+      (1.0,3.0,2.0,1.0,9.0),(0.0,0.0,2.0,0.0,5.0),(0.0,1.5,0.0,0.0,5.0),(1.5,0.0,2.0,0.0,5.0))
+    val m2 = CSCMatrix((2.0,4.0,0.0,1.0,2.0),(1.0,0.0,2.0,1.0,0.0),
+      (1.0,3.0,2.0,1.0,9.0),(0.0,0.0,2.0,0.0,5.0),(0.0,1.5,0.0,0.0,5.0),(1.5,0.0,2.0,0.0,5.0))
+
+    def checkCols(m1 : DenseMatrix[Double], m2 : DenseMatrix[Double]) = {
+      for (i <- 0 until m1.cols) {
+        val v1 = if (m1(::,i).valueAt(0) > 0) m1(::,i) else -m1(::,i)
+        val v2 = if (m2(::,i).valueAt(0) > 0) m2(::,i) else -m2(::,i)
+        assert(max(abs(v1 - v2)) < 1E-5)
+        assert(abs(norm(v1) - 1.0) < 1E-5)
+        assert(abs(norm(v2) - 1.0) < 1E-5)
+      }
+    }
 
     val (u1, s1, vt1) = svd(m1)
+    val (u2, s2, vt2) = svd(m2,2)
+    assert(max(abs(s1.slice(0,2) - s2)) < 1E-5)
+    checkCols(u1(::, 0 until 2), u2)
+    checkCols(vt1(0 until 2, ::).t, vt2.t)
 
-    val (u2,s2,vt2) = svd(m2,2)
-    //println(s1)
-   // println(s2)
-    val w = s1-s2
-    assert(max(abs((s1-s2))) < 1E-5)
+    val (u1t, s1t, vt1t) = svd(m1.t)
+    val (u2t, s2t, vt2t) = svd(m2.t,2)
+    assert(max(abs(s1t.slice(0,2) - s2t)) < 1E-5)
+    checkCols(u1t(::, 0 until 2), u2t)
+    checkCols(vt1t(0 until 2, ::).t, vt2t.t)
   }
 
   test("small pow test") {
@@ -299,6 +285,61 @@ class LinearAlgebraTest extends FunSuite with Checkers with Matchers with Double
     assert( reverse(xDouble) == DenseVector(.8, .3, .2, .7)  )
     val xEmpty = DenseVector[Long]()
     assert( reverse(xEmpty) == DenseVector[Long]() )
+
+    val a = SparseVector.tabulate(5)(identity)
+    val b = SparseVector.zeros[Double](5)
+    assert(reverse(a) === SparseVector.tabulate(5)((i: Int) => 4 - i))
+    assert(reverse(b) === b)
+    b(2) = 2.0
+    assert(reverse(b) === b)
+    b(0) = 0.1
+    assert(reverse(b) === SparseVector[Double](5)((2,2.0),(4,0.1)))
+    b(4) = 4.0
+    assert(reverse(b) === SparseVector[Double](5)((0,4.0),(2,2.0),(4,0.1)))
+  }
+
+  test("reshape test") {
+
+    val asv = SparseVector.tabulate(6)(identity(_) + 1)
+    assert(reshape(asv,2,3) === CSCMatrix((1,2,3),(4,5,6)))
+    assert(reshape(asv,3,2) === CSCMatrix((1,2),(3,4),(5,6)))
+
+    val bsv = SparseVector.zeros[Double](6)
+    assert(reshape(bsv,2,3) === CSCMatrix.zeros[Double](2,3))
+
+    val acsc = CSCMatrix.tabulate(2,3)((i,j) => (i+1) * (j+1) + (i+1))
+    val ad = DenseMatrix.tabulate(2,3)((i,j) => (i+1) * (j+1) + (i+1))
+    assert(reshape(acsc,3,2).toDense == reshape(ad,3,2))
+    assert(reshape(acsc,1,6).toDense == reshape(ad,1,6))
+    assert(reshape(acsc,6,1).toDense == reshape(ad,6,1))
+
+    val bcsc = CSCMatrix.zeros[Int](5,3)
+    val rcsc = CSCMatrix.zeros[Int](3,5)
+    val colRowGen = for {
+      r <- Gen.choose(0,4)
+      c <- Gen.choose(0,2)
+    } yield (r,c)
+
+    val pcLists = Prop.forAll(colRowGen){ case (r: Int,c: Int) =>
+      val dld = c * 5 + r
+      bcsc(r, c) = dld
+      rcsc(dld % 3, dld / 3) = dld
+      reshape(bcsc, 3, 5) === rcsc &&
+        reshape(rcsc, 5, 3) === bcsc
+    }
+    check(pcLists)
+  }
+
+  test("diag test") {
+    val testDV = DenseVector(0.1,1.1,2.1,3.1,4.1)
+    val testDM = DenseMatrix.tabulate[Double](5,5)((r,c) => if (r == c) r.toDouble + 0.1 else 0.0)
+    val testCSC = CSCMatrix.tabulate[Double](5,5)((r,c) => if (r == c) r.toDouble + 0.1 else 0.0)
+    val testSV = SparseVector(0.1,1.1,2.1,3.1,4.1)
+
+    assert(diag(testDV) === testDM)
+    assert(diag(testDM) === testDV)
+    assert(diag(testSV) === testCSC)
+    assert(diag(testCSC) === testSV)
   }
 
   test("accumulate test") {
