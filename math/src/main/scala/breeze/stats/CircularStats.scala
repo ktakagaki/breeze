@@ -1,6 +1,7 @@
 package breeze.stats
 
 import breeze.generic.UFunc
+import breeze.linalg.DenseVector
 
 /**
  * @author ktakagaki
@@ -24,7 +25,7 @@ object CircularStats {
 
   //</editor-fold>
 
-  //<editor-fold defaultstate="collapsed" desc=" circularMinus ">
+  //<editor-fold defaultstate="collapsed" desc=" circularMinus/circularPlus ">
 
   // Takes a two phases and returns the circular distance.
   // Returns a value (-Pi, Pi].
@@ -36,32 +37,28 @@ object CircularStats {
 
   }
 
-  // </editor-fold>
-
-  //<editor-fold defaultstate="collapsed" desc=" circularSum ">
-
-  object circularMinus extends UFunc{
+  object circularPlus extends UFunc{
 
     implicit val impl = new Impl2[Double, Double, Double]{
-      def apply(ph1: Double, ph2: Double) = circularWrap( ph1 - ph2 )
+      def apply(ph1: Double, ph2: Double) = circularWrap( ph1 + ph2 )
     }
 
   }
-  /**Accumulates the data circularly (i.e., the phases will be summed along the unit circle,
-    * with no phase wrap).
-    * @param circData
-    */
-  public static double[] circularAccumulate(double[] circData){
-    double[] tempret = new double[circData.length];
-    tempret[0]=circData[0];
-    double sum=circData[0];
-    if(circData.length>1){
-      for(int n=1; n<circData.length; n++){
-        sum+=circularSubtract(circData[n], circData[n-1]);
-        tempret[n] = sum;
+
+
+  object circularAccumulate extends UFunc{
+
+    //Accumulates the data circularly (i.e., the phases will be summed along the unit circle,
+    //with no phase wrap.
+    implicit val impl = new Impl[DenseVector[Double], DenseVector[Double]]{
+      def apply(v: DenseVector[Double]) = {
+        val tempret = new Array[Double](v.length)
+        tempret(0) = v(0)
+        if( v.length > 1 ) for( n <- 1 until v.length ) tempret(n)= circularPlus( tempret(n-1), v(n) )
+        DenseVector(tempret)
       }
     }
-    return tempret;
+
   }
 
   //public class Kc {
