@@ -2,6 +2,7 @@ package breeze.stats
 
 import breeze.generic.UFunc
 import breeze.linalg.DenseVector
+import breeze.numerics.{atan2, sin, cos}
 
 /**
  * @author ktakagaki
@@ -61,22 +62,26 @@ object CircularStats {
 
   }
 
+  object circularMean extends UFunc{
+
+    //Takes a list of angles and returns the mean direction.
+    //Elements of the input vector can exceed the range (-Pi, Pi].
+    implicit val impl = new Impl[DenseVector[Double], Double]{
+      def apply(v: DenseVector[Double]) = {
+        var cosSum = 0d
+        var sinSum = 0d
+        for( elem <- v ) {
+          cosSum += cos( elem )
+          sinSum += sin( elem )
+        }
+        atan2(sinSum, cosSum)
+      }
+    }
+
+  }
+
   //public class Kc {
-  //
-   //
-  //  //<editor-fold defaultstate="collapsed" desc=" circularMean ">
-  //  /**Takes a list of angles and returns the mean direction.
-  //    * Elements of the vector can exceed the range (-Pi, Pi].
-  //    */
-  //  public static double circularMean(double[] vector){
-  //    double cosSum = 0d, sinSum = 0d;
-  //    for(int k=0; k<vector.length; k++){
-  //      cosSum += K.cos(vector[k]);
-  //      sinSum += K.sin(vector[k]);
-  //    }
-  //    return K.arcTan(cosSum, sinSum);
-  //  }
-  //  //</editor-fold>
+
   //  //<editor-fold defaultstate="collapsed" desc=" circularResultantLength ">
   //  /**Takes a list of phases and returns the resultant length.
   //    */
