@@ -85,6 +85,16 @@ class DenseVectorTest extends FunSuite with Checkers {
     assert(max(v) === 3)
   }
 
+  test("elemenwise max") {
+    val v = DenseVector(2, 0, 3, 2, -1)
+    val v2 = DenseVector(3, -1, 3, 4, -4)
+
+    assert(max(v, v2) === DenseVector(3, 0, 3, 4, -1))
+    assert(max(v, 2) === DenseVector(2, 2, 3, 2, 2))
+
+    assert(min(v, 2) === DenseVector(2, 0, 2, 2, -1))
+  }
+
   test("Topk") {
     val v = DenseVector(2, 0, 3, 4, -1)
 
@@ -100,13 +110,13 @@ class DenseVectorTest extends FunSuite with Checkers {
 
   test("Norm") {
     val v = DenseVector(-0.4326, -1.6656, 0.1253, 0.2877, -1.1465)
-    assertClose(v.norm(1), 3.6577)
-    assertClose(v.norm(2), 2.0915)
-    assertClose(v.norm(3), 1.8405)
-    assertClose(v.norm(4), 1.7541)
-    assertClose(v.norm(5), 1.7146)
-    assertClose(v.norm(6), 1.6940)
-    assertClose(v.norm(Double.PositiveInfinity), 1.6656)
+    assertClose(norm(v, 1), 3.6577)
+    assertClose(norm(v, 2), 2.0915)
+    assertClose(norm(v, 3), 1.8405)
+    assertClose(norm(v, 4), 1.7541)
+    assertClose(norm(v, 5), 1.7146)
+    assertClose(norm(v, 6), 1.6940)
+    assertClose(norm(v, Double.PositiveInfinity), 1.6656)
   }
 
   test("MulInner") {
@@ -443,7 +453,7 @@ class DenseVectorTest extends FunSuite with Checkers {
  */
 @RunWith(classOf[JUnitRunner])
 class DenseVectorOps_DoubleTest extends DoubleValuedTensorSpaceTestBase[DenseVector[Double], Int] {
- val space: MutableTensorField[DenseVector[Double], Int, Double] = DenseVector.space[Double]
+ val space = DenseVector.space[Double]
 
   val N = 30
   implicit def genTriple: Arbitrary[(DenseVector[Double], DenseVector[Double], DenseVector[Double])] = {
@@ -464,7 +474,7 @@ class DenseVectorOps_DoubleTest extends DoubleValuedTensorSpaceTestBase[DenseVec
 
 @RunWith(classOf[JUnitRunner])
 class DenseVectorOps_IntTest extends TensorSpaceTestBase[DenseVector[Int], Int, Int] {
- val space: MutableTensorField[DenseVector[Int], Int, Int] = DenseVector.space[Int]
+ val space = DenseVector.space[Int]
 
   val N = 30
   implicit def genTriple: Arbitrary[(DenseVector[Int], DenseVector[Int], DenseVector[Int])] = {
@@ -485,7 +495,7 @@ class DenseVectorOps_IntTest extends TensorSpaceTestBase[DenseVector[Int], Int, 
 
 @RunWith(classOf[JUnitRunner])
 class DenseVectorOps_ComplexTest extends TensorSpaceTestBase[DenseVector[Complex], Int, Complex] {
-  val space: MutableTensorField[DenseVector[Complex], Int, Complex] = DenseVector.space[Complex]
+  val space = DenseVector.space[Complex]
 
   val N = 30
   implicit def genTriple: Arbitrary[(DenseVector[Complex], DenseVector[Complex], DenseVector[Complex])] = {
@@ -506,7 +516,7 @@ class DenseVectorOps_ComplexTest extends TensorSpaceTestBase[DenseVector[Complex
 
 @RunWith(classOf[JUnitRunner])
 class DenseVectorOps_FloatTest extends TensorSpaceTestBase[DenseVector[Float], Int, Float] {
- val space: MutableTensorField[DenseVector[Float], Int, Float] = DenseVector.space[Float]
+ val space = DenseVector.space[Float]
 
   val N = 30
   implicit def genTriple: Arbitrary[(DenseVector[Float], DenseVector[Float], DenseVector[Float])] = {
