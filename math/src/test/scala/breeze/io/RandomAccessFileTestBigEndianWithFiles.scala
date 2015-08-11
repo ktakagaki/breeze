@@ -321,7 +321,7 @@ class RandomAccessFileTestBigEndianWithFiles extends FunSuite {
   test("writeUInt64"){
     val stream = new RAF(fileHead + "/temp.bin", "rw")
     stream.writeUInt64( 0L)
-    stream.writeUInt64( Array[Long](1L, 32767L, 9223372036854775807L) )
+    stream.writeUInt64( Array[BigInt](1L, 32767L, 9223372036854775807L) )
     stream.writeUInt64( 9223372036854775807L )
     stream.close
 
