@@ -14,3 +14,13 @@ ULong(2) * ULong(4)
 (ULong(2) * ULong(4)).toInt
 (ULong(2) * ULong(4)).toBigInt
 
+sulLongMax.longValue()
+sulLongMax.longValue().toOctalString
+sulLongMax.toByteArray.map( Integer.toOctalString(_) )
+
+sul0.longValue()
+sul0.longValue().toOctalString
+
+sulULongMax.longValue()
+sulULongMax.longValue().toOctalString
+
