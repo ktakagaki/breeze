@@ -26,7 +26,7 @@ import scala.reflect.ClassTag
 import com.github.fommil.netlib.BLAS.{getInstance => blas}
 import breeze.macros.expand
 import scala.math.BigInt
-import spire.implicits.cfor
+import spire.syntax.cfor._
 import CanTraverseValues.ValuesVisitor
 import CanZipAndTraverseValues.PairValuesVisitor
 import java.io.ObjectStreamException
@@ -91,16 +91,7 @@ class DenseVector[@spec(Double, Int, Float, Long) V](val data: Array[V],
   override def equals(p1: Any) = p1 match {
     case y: DenseVector[_] =>
       y.length == length && ArrayUtil.nonstupidEquals(data, offset, stride, length, y.data, y.offset, y.stride, y.length)
-    case x: Vector[_] =>
-//      length == x.length && (( stride == x.stride
-//        && offset == x.offset
-//        && data.length == x.data.length
-//        && ArrayUtil.equals(data, x.data)
-//      )  ||  (
-          valuesIterator sameElements x.valuesIterator
-//        ))
-
-    case _ => false
+    case _ => super.equals(p1)
   }
 
   override def toString = {
@@ -161,12 +152,16 @@ class DenseVector[@spec(Double, Int, Float, Long) V](val data: Array[V],
    * @tparam U
    */
   override def foreach[@spec(Unit) U](fn: (V) => U): Unit = {
-    var i = offset
-    var j = 0
-    while(j < length) {
-      fn(data(i))
-      i += stride
-      j += 1
+    if (stride == 1) { // ABCE stuff
+      cforRange(offset until (offset + length)) { j =>
+        fn(data(j))
+      }
+    } else {
+      var i = offset
+      cforRange(0 until length) { j =>
+        fn(data(i))
+        i += stride
+      }
     }
   }
 
@@ -304,7 +299,7 @@ object DenseVector extends VectorConstructors[DenseVector]
   }
 
 
-  implicit def canMapValues[V, V2](implicit man: ClassTag[V2]): CanMapValues[DenseVector[V], V, V2, DenseVector[V2]] = {
+  implicit def canMapValues[@specialized(Int, Float, Double) V, @specialized(Int, Float, Double) V2](implicit man: ClassTag[V2]): CanMapValues[DenseVector[V], V, V2, DenseVector[V2]] = {
     new CanMapValues[DenseVector[V], V, V2, DenseVector[V2]] {
       /**Maps all key-value pairs from the given collection. */
       def map(from: DenseVector[V], fn: (V) => V2): DenseVector[V2] = {
@@ -314,13 +309,27 @@ object DenseVector extends VectorConstructors[DenseVector]
 
         val d = from.data
         val stride = from.stride
+        val off = from.offset
 
-        var i = 0
-        var j = from.offset
-        while(i < arr.length) {
-          arr(i) = fn(d(j))
-          i += 1
-          j += stride
+        // https://wikis.oracle.com/display/HotSpotInternals/RangeCheckElimination
+        if (stride == 1) {
+          if (off == 0) {
+            cforRange(0 until arr.length) { j =>
+              arr(j) = fn(d(j))
+            }
+          } else {
+            cforRange(0 until arr.length) { j =>
+              arr(j) = fn(d(j + off))
+            }
+          }
+        } else {
+          var i = 0
+          var j = off
+          while(i < arr.length) {
+            arr(i) = fn(d(j))
+            i += 1
+            j += stride
+          }
         }
         new DenseVector[V2](arr)
       }
@@ -378,19 +387,27 @@ object DenseVector extends VectorConstructors[DenseVector]
     }
 
 
-  implicit def canTransformValues[V]: CanTransformValues[DenseVector[V], V, V] =
+  implicit def canTransformValues[@specialized(Int, Float, Double) V]: CanTransformValues[DenseVector[V], V] =
 
-    new CanTransformValues[DenseVector[V], V, V] {
+    new CanTransformValues[DenseVector[V], V] {
       def transform(from: DenseVector[V], fn: (V) => V) {
         val d = from.data
+        val length = from.length
         val stride = from.stride
 
-        var i = 0
-        var j = from.offset
-        while(i < from.length) {
-          from.data(j) = fn(d(j))
-          i += 1
-          j += stride
+        val offset = from.offset
+        if (stride == 1)  {
+          cforRange(offset until offset + length) { j =>
+            d(j) = fn(d(j))
+          }
+        } else {
+          val end = offset + stride * length
+          var j = offset
+          while (j != end) {
+            d(j) = fn(d(j))
+            j += stride
+          }
+
         }
       }
 

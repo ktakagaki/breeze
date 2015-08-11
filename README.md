@@ -2,7 +2,7 @@
 
 Breeze is a library for numerical processing. It aims to be generic, clean, and powerful without sacrificing (much) efficiency.
 
-The current version is 0.11.2. The latest release is 0.11.2.
+The current version is 0.12-SNAPSHOT. The latest release is 0.11.2.
 
 ## Documentation
 
@@ -29,8 +29,13 @@ libraryDependencies  ++= Seq(
   // other dependencies here
   "org.scalanlp" %% "breeze" % "0.11.2",
   // native libraries are not included by default. add this if you want them (as of 0.7)
-  // native libraries greatly improve performance, but increase jar sizes.
-  "org.scalanlp" %% "breeze-natives" % "0.11.2"
+  // native libraries greatly improve performance, but increase jar sizes. 
+  // It also packages various blas implementations, which have licenses that may or may not
+  // be compatible with the Apache License. No GPL code, as best I know.
+  "org.scalanlp" %% "breeze-natives" % "0.11.2",
+  // the visualization library is distributed separately as well. 
+  // It depends on LGPL code.
+    "org.scalanlp" %% "breeze-viz" % "0.11.2"
 )
 
 resolvers ++= Seq(
@@ -61,7 +66,7 @@ Maven looks like this:
 
 ### Other build tools
 
-http://mvnrepository.com/artifact/org.scalanlp/breeze_2.10/0.10 (as an example) is a great resource for finding other configuration examples for other build tools.
+http://mvnrepository.com/artifact/org.scalanlp/breeze_2.10/0.11.2 (as an example) is a great resource for finding other configuration examples for other build tools.
 
 See documentation (linked above!) for more information on using Breeze.
 
@@ -94,6 +99,14 @@ Contributions from:
 * Xiangrui Meng (@mengxr)
 * Gabriel Schubiner (@gabeos)
 * Debasish Das (@debasish83)
+* Julien Dumazert (@DumazertJulien)
+* Matthias Langer (@bashimao)
+
+Corporate (Code) Contributors:
+* [Semantic Machines](http://www.semanticmachines.com/) (@semanticmachines)
+* [ContentSquare](http://www.contentsquare.com/en/)
+* Big Data Analytics, Verizon Lab, Palo Alto
+* [crealytics GmbH, Berlin/Passau, Germany](https://crealytics.com/)
 
 
 And others (contact David Hall if you've contributed code and aren't listed).

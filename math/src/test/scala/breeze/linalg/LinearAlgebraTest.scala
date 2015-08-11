@@ -21,6 +21,7 @@ import breeze.linalg.functions.{evdr, svdr}
 import breeze.linalg.qr.QR
 import breeze.linalg.qrp.QRP
 import breeze.linalg.svd.SVD
+import breeze.stats.distributions.{RandBasis, MultivariateGaussian}
 import org.scalacheck.{Arbitrary,Gen,Prop}
 import org.scalatest._
 import org.scalatest.junit._
@@ -746,6 +747,23 @@ class LinearAlgebraTest extends FunSuite with Checkers with Matchers with Double
     assert(diff(xInt, 3) == DenseVector(-2))
   }
 
+
+  test("diff slice vector test") {
+    val testThreshold = 1.0E-15
+    val xDouble = {
+      val temp = DenseVector( .7, .2, .3, .8)
+      temp(IndexedSeq(0,1,2,3))
+    }
+    assert( norm( diff(xDouble) - DenseVector(-0.5, 0.1, 0.5) ) < testThreshold)
+    val x1 = DenseVector( .7)
+    assert(diff(x1) == DenseVector[Double]())
+
+    val vec = DenseVector(1,2,3,4,5,6,7,8,9,10)
+    val seq = vec.findAll(_ % 2 == 0) //Even Numbers
+    val slice = new SliceVector(vec,seq) //Note: No companion object, requires new
+    val difference = diff(slice)
+  }
+
   test("reverse test") {
     val xDouble = DenseVector( .7, .2, .3, .8)
     assert( reverse(xDouble) == DenseVector(.8, .3, .2, .7)  )
@@ -922,6 +940,22 @@ class LinearAlgebraTest extends FunSuite with Checkers with Matchers with Double
     assert( xInt( rangeExcl ) == DenseVector(0, 1, 2, 3, 4), "range exclusive" )
     intercept[IllegalArgumentException]{ xInt(rangeExclN1) }
     intercept[IllegalArgumentException]{ xInt(rangeExclN2) }
+  }
+
+  test("#356 symmetric matrix sensitivity") {
+    val n = 20
+    val q = DenseVector.rand[Double](n, RandBasis.mt0.uniform)
+    val A = DenseMatrix.eye[Double](n) + q * q.t
+    val B = inv(A)
+    val u = DenseVector.zeros[Double](n)
+
+    // this throws the error
+    val D = MultivariateGaussian(u, B)
+  }
+
+  test("#410 sum colls") {
+    val dvs = Iterator.tabulate(100)(i => DenseVector(i))
+    assert(sum(dvs) == DenseVector((0 until 100).sum))
   }
 
 }
