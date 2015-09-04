@@ -14,6 +14,9 @@ package breeze
  See the License for the specific language governing permissions and
  limitations under the License.
 */
+
+import breeze.linalg.DenseMatrix
+import breeze.numerics.abs
 import io.{CSVWriter, CSVReader}
 import linalg.operators._
 import breeze.linalg.support.{RangeExtender, CanCopy}
@@ -21,7 +24,7 @@ import math.Semiring
 import storage.Zero
 import java.io.{File, FileReader}
 import scala.reflect.ClassTag
-import breeze.linalg.DenseMatrix.canMapValues
+import DenseMatrix.canMapValues
 
 
 /**
@@ -97,12 +100,14 @@ package object linalg {
   import math.Ring
   import com.github.fommil.netlib.LAPACK.{getInstance=>lapack}
 
+  // implicits for lifting scalars with appropriate operators
+  implicit class InjectNumericOps[T](val repr: T) extends AnyVal with ImmutableNumericOps[T]
+
 /**
  * Basic linear algebraic operations.
  *
  * @author dlwh,dramage,retronym,afwlehmann,lancelet
  */
-  //  import breeze.linalg._
 
   private[linalg] def requireNonEmptyMatrix[V](mat: Matrix[V]): Unit =
     if (mat.cols == 0 || mat.rows == 0)
@@ -112,11 +117,11 @@ package object linalg {
     if (mat.rows != mat.cols)
       throw new MatrixNotSquareException
 
-  private[linalg] def requireSymmetricMatrix[V](mat: Matrix[V]): Unit = {
+  private[linalg] def requireSymmetricMatrix(mat: Matrix[Double], tol: Double = 1e-7): Unit = {
     requireSquareMatrix(mat)
 
     for (i <- 0 until mat.rows; j <- 0 until i)
-      if (mat(i,j) != mat(j,i))
+      if (abs(mat(i,j) -  mat(j,i)) > abs(mat(i,j)) * tol )
         throw new MatrixNotSymmetricException
   }
 
@@ -176,6 +181,18 @@ package object linalg {
   }
 
   /**
+   * The lower triangular portion of the given real quadratic matrix X with
+   * the diagnal elements is zero!
+   */
+  def strictlyLowerTriangular[T: Semiring: ClassTag:Zero](X: Matrix[T]): DenseMatrix[T] = {
+    val N = X.rows
+    DenseMatrix.tabulate(N, N)( (i, j) =>
+      if(j < i) X(i,j)
+      else implicitly[Semiring[T]].zero
+    )
+  }
+
+  /**
    * The upper triangular portion of the given real quadratic matrix X. Note
    * that no check will be performed regarding the symmetry of X.
    */
@@ -183,6 +200,18 @@ package object linalg {
     val N = X.rows
     DenseMatrix.tabulate(N, N)( (i, j) =>
       if(j >= i) X(i,j)
+      else implicitly[Semiring[T]].zero
+    )
+  }
+
+  /**
+   * The upper triangular portion of the given real quadratic matrix X with
+   * the diagnal elements is zero!
+   */
+  def strictlyUpperTriangular[T: Semiring: ClassTag:Zero](X: Matrix[T]): DenseMatrix[T] = {
+    val N = X.rows
+    DenseMatrix.tabulate(N, N)( (i, j) =>
+      if(j > i) X(i,j)
       else implicitly[Semiring[T]].zero
     )
   }
@@ -222,9 +251,9 @@ package object linalg {
              ): DenseMatrix[Double] = {
     import breeze.stats.{mean, stddev}
     if (center) {
-      val xc = x(*,::) - mean(x, Axis._0).toDenseVector
+      val xc = x(*,::) - mean(x, Axis._0).t
       if (scale)
-        xc(*,::) :/ stddev(x(::, *)).toDenseVector
+        xc(*,::) :/ stddev(x(::, *)).t
       else
         xc
     } else {
@@ -274,7 +303,7 @@ package object linalg {
    * matrix. Feel free to make this more general.
    */
   private def columnRMS(x: DenseMatrix[Double]): DenseVector[Double] =
-    (sum(x:*x,Axis._0) / (x.rows-1.0)).map( scala.math.sqrt _ ).toDenseVector
+    (sum(x:*x,Axis._0) / (x.rows-1.0)).t.map( scala.math.sqrt _ )
 
 
   /** Alias for randomDouble */
@@ -285,6 +314,8 @@ package object linalg {
    * val to determine if breeze is using natives or f2jblas
    */
   lazy val usingNatives = com.github.fommil.netlib.BLAS.getInstance.getClass.getName != "com.github.fommil.netlib.F2jBLAS"
+
+
 
 }
 

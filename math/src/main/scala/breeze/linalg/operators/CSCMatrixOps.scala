@@ -186,7 +186,7 @@ trait CSCMatrixOps extends CSCMatrixOps_Ring {  this: CSCMatrix.type =>
         }
         val colPtrs: Array[Int] = Array.tabulate[Int](cols + 1)((i: Int) => i * rows)
         val rowIndices: Array[Int] = Array.tabulate[Int](nData.length)((i: Int) => i % rows)
-        new CSCMatrix[T](nData,rows,cols,colPtrs,rowIndices)
+        new CSCMatrix[T](nData,rows,cols,colPtrs,nData.length,rowIndices)
       }
     }
   }
@@ -242,6 +242,89 @@ trait CSCMatrixOps extends CSCMatrixOps_Ring {  this: CSCMatrix.type =>
 
           bldr.result(true, true)
         }
+      }
+    }
+  }
+
+
+  @expand
+  @expand.valify
+  implicit def csc_dm_OpAdd[@expand.args(Int, Double, Float, Long) T]: OpAdd.Impl2[CSCMatrix[T], DenseMatrix[T], DenseMatrix[T]] = {
+    new OpAdd.Impl2[CSCMatrix[T], DenseMatrix[T], DenseMatrix[T]] {
+      def apply(a: CSCMatrix[T], b: DenseMatrix[T]): DenseMatrix[T] = {
+        require(a.rows == b.rows, "Matrix dimensions must match")
+        require(a.cols == b.cols, "Matrix dimensions must match")
+        val rows = a.rows
+        val cols = a.cols
+        if (cols == 0 || rows == 0) return DenseMatrix.zeros[T](rows, cols)
+
+
+        val res = b.copy
+        var ci = 0 // column index [0 ... cols)
+        var apStop = a.colPtrs(0) // pointer into row indices and data
+        while (ci < cols) {
+          val ci1 = ci + 1
+          var ap = apStop
+          apStop = a.colPtrs(ci1)
+          while (ap < apStop) {
+            val ari = if (ap < apStop) a.rowIndices(ap) else rows // row index [0 ... rows)
+            res(ari, ci) += a.data(ap)
+            ap += 1
+          }
+          ci = ci1
+        }
+
+        res
+      }
+    }
+  }
+
+  @expand
+  @expand.valify
+  implicit def dm_csc_OpAdd[@expand.args(Int, Double, Float, Long) T]: OpAdd.Impl2[DenseMatrix[T], CSCMatrix[T], DenseMatrix[T]] = {
+    new OpAdd.Impl2[DenseMatrix[T], CSCMatrix[T], DenseMatrix[T]] {
+      def apply(a: DenseMatrix[T], b: CSCMatrix[T]): DenseMatrix[T] = {
+        b + a
+      }
+    }
+  }
+
+
+  implicit def dm_csc_OpAdd_Semi[T:Semiring:ClassTag]: OpAdd.Impl2[DenseMatrix[T], CSCMatrix[T], DenseMatrix[T]] = {
+    new OpAdd.Impl2[DenseMatrix[T], CSCMatrix[T], DenseMatrix[T]] {
+      def apply(a: DenseMatrix[T], b: CSCMatrix[T]): DenseMatrix[T] = {
+        b + a
+      }
+    }
+  }
+
+  implicit def csc_dm_Semi[T:Semiring:ClassTag]: OpAdd.Impl2[CSCMatrix[T], DenseMatrix[T], DenseMatrix[T]] = {
+    new OpAdd.Impl2[CSCMatrix[T], DenseMatrix[T], DenseMatrix[T]] {
+      val semi = implicitly[Semiring[T]]
+      def apply(a: CSCMatrix[T], b: DenseMatrix[T]): DenseMatrix[T] = {
+        require(a.rows == b.rows, "Matrix dimensions must match")
+        require(a.cols == b.cols, "Matrix dimensions must match")
+        val rows = a.rows
+        val cols = a.cols
+        if (cols == 0 || rows == 0) return DenseMatrix.zeros[T](rows, cols)
+
+
+        val res = b.copy
+        var ci = 0 // column index [0 ... cols)
+        var apStop = a.colPtrs(0) // pointer into row indices and data
+        while (ci < cols) {
+          val ci1 = ci + 1
+          var ap = apStop
+          apStop = a.colPtrs(ci1)
+          while (ap < apStop) {
+            val ari = if (ap < apStop) a.rowIndices(ap) else rows // row index [0 ... rows)
+            res(ari, ci) = semi.+(res(ari, ci), a.data(ap))
+            ap += 1
+          }
+          ci = ci1
+        }
+
+        res
       }
     }
   }
@@ -571,6 +654,36 @@ trait CSCMatrixOps extends CSCMatrixOps_Ring {  this: CSCMatrix.type =>
   implicit def csc_csc_InPlace[@expand.args(Int,Float,Double,Long) T, @expand.args(OpAdd, OpSub, OpDiv, OpPow, OpMod, OpMulScalar) Op <: OpType]
   : Op.InPlaceImpl2[CSCMatrix[T],CSCMatrix[T]] = updateFromPure(implicitly[Op.Impl2[CSCMatrix[T],CSCMatrix[T],CSCMatrix[T]]])
 
+
+  @expand
+  @expand.valify
+  implicit def axpyCSC_DM_DM[@expand.args(Int, Float, Double, Long) T]
+  : scaleAdd.InPlaceImpl3[DenseMatrix[T], CSCMatrix[T], DenseMatrix[T]] = {
+    new scaleAdd.InPlaceImpl3[DenseMatrix[T], CSCMatrix[T], DenseMatrix[T]] {
+      override def apply(sink: DenseMatrix[T],
+                         a: CSCMatrix[T],
+                         x: DenseMatrix[T]): Unit = {
+        require(a.rows == sink.rows)
+        require(x.cols == sink.cols)
+        require(a.cols == x.rows)
+
+        var i = 0
+        while (i < x.cols) {
+          var j = 0
+          while (j < a.cols) {
+            val v = x(j, i)
+            var k = a.colPtrs(j)
+            while (k < a.colPtrs(j + 1)) {
+              sink(a.rowIndices(k), i) += v * a.data(k)
+              k += 1
+            }
+            j += 1
+          }
+          i += 1
+        }
+      }
+    }
+  }
 }
 
 trait CSCMatrixOps_Ring extends CSCMatrixOpsLowPrio with SerializableLogging {
@@ -855,6 +968,21 @@ trait CSCMatrixOps_Ring extends CSCMatrixOpsLowPrio with SerializableLogging {
   implicit def zipMapKeyVals[S, R: ClassTag : Semiring : Zero]: CanZipMapKeyValues[CSCMatrix[S], (Int, Int), S, R, CSCMatrix[R]] = new CanZipMapKeyValues[CSCMatrix[S], (Int, Int), S, R, CSCMatrix[R]] {
     /** Maps all corresponding values from the two collections. */
     override def map(a: CSCMatrix[S], b: CSCMatrix[S], fn: ((Int, Int), S, S) => R): CSCMatrix[R] = {
+      val rows = a.rows
+      val cols = a.cols
+      require(rows == b.rows, "Matrices must have same number of rows!")
+      require(cols == b.cols, "Matrices must have same number of cols!")
+
+      val builder = new CSCMatrix.Builder[R](rows, cols)
+      for (c <- 0 until cols; r <- 0 until rows) {
+        builder.add(r, c, fn((r, c), a(r, c), b(r, c)))
+      }
+
+      builder.result(true, true)
+    }
+
+    override def mapActive(a: CSCMatrix[S], b: CSCMatrix[S], fn: ((Int, Int), S, S) => R): CSCMatrix[R] = {
+      // TODO: sparsify this
       val rows = a.rows
       val cols = a.cols
       require(rows == b.rows, "Matrices must have same number of rows!")
@@ -1198,7 +1326,7 @@ trait CSCMatrixOps_Ring extends CSCMatrixOpsLowPrio with SerializableLogging {
         }
         val colPtrs: Array[Int] = Array.tabulate[Int](cols + 1)((i: Int) => i * rows)
         val rowIndices: Array[Int] = Array.tabulate[Int](nData.length)((i: Int) => i % rows)
-        new CSCMatrix[T](nData,rows,cols,colPtrs,rowIndices)
+        new CSCMatrix[T](nData,rows,cols,colPtrs,nData.length,rowIndices)
       }
     }
   }
