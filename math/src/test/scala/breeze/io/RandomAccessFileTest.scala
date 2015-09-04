@@ -1,9 +1,8 @@
 package breeze.io
 
 import org.scalatest.FunSuite
-import java.io.{File, IOException}
-import org.junit.runner.RunWith
-import org.scalatest.junit.JUnitRunner
+import java.io.{File}
+import spire.math.ULong
 
 /**
  * Created with IntelliJ IDEA.
@@ -228,22 +227,24 @@ sealed trait RandomAccessFileTest extends FunSuite {
   test("writeUInt64"){
     val file = getResource(fileHead + "UInt64")
     val stream = new RAF(file, "rw")
-    val UInt64Max = BigInt("18446744073709551615")
+    val UInt64Max = ULong("18446744073709551615")
 
-    stream.writeUInt64( 0L)
-    stream.writeUInt64( Array[BigInt](1L, 32767L, 9223372036854775807L) )
-    stream.writeUInt64( 9223372036854775807L )
+    stream.writeUInt64( ULong(0L))
+    stream.writeUInt64( Array[ULong](ULong(1L), ULong(32767L), ULong(9223372036854775807L)) )
+    stream.writeUInt64( ULong(9223372036854775807L) )
     stream.writeUInt64( Array(UInt64Max, UInt64Max ) )
     stream.close
 
     val stream2 = new RAF(file, "r")
     val result2 = stream2.readUInt64(3)
 
-    assert(result2(0) === 0L )
-    assert(result2(1) === 1L )
-    assert(result2(2) === 32767L )
-    assert(stream2.readUInt64 ===  9223372036854775807L)
-    assert(stream2.readUInt64 === 9223372036854775807L)
+    //Strange failure here of === with implicit conversion ULong => Long
+    //  needs explicit casting *.toLong just when running on Travis
+    assert(result2(0).toLong === 0L )
+    assert(result2(1).toLong === 1L )
+    assert(result2(2).toLong === 32767L )
+    assert(stream2.readUInt64.toLong ===  9223372036854775807L)
+    assert(stream2.readUInt64.toLong === 9223372036854775807L)
     //println( stream2.readUInt8(8).toList )
     assert(stream2.readUInt8(8).forall( _ == 0xFF ))
     assert(stream2.readUInt64 == UInt64Max )
