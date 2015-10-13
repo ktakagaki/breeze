@@ -25,8 +25,6 @@ object Axis {
   type Value = Axis
   case object _0 extends Axis
   case object _1 extends Axis
-  case class Axis1(axis: Int) extends Axis
-  case class Axis2(axisFrom: Int, axisTo: Int) extends Axis
 }
 
 

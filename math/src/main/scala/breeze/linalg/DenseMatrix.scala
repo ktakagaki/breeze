@@ -51,7 +51,7 @@ import scalaxy.debug._
 @SerialVersionUID(1L)
 final class DenseMatrix[@spec(Double, Int, Float, Long) V](val rows: Int,
                                                             val cols: Int,
-                                                            val internalData: Array[V],
+                                                            val data: Array[V],
                                                             val offset: Int,
                                                             val majorStride: Int,
                                                             val isTranspose: Boolean = false)
