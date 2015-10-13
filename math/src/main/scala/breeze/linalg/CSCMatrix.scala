@@ -60,7 +60,7 @@ class CSCMatrix[@spec(Double, Int, Float, Long) V: Zero](private var _data: Arra
     this(data, rows, cols, colPtrs, data.length, rowIndices)
 
   def rowIndices = _rowIndices
-  def internalData = _data
+  def data = _data
 
   // don't delete
   CSCMatrix.init()
@@ -70,37 +70,37 @@ class CSCMatrix[@spec(Double, Int, Float, Long) V: Zero](private var _data: Arra
       throw new IndexOutOfBoundsException()
     val ind = locate(row, col)
     if(ind < 0) zero
-    else internalData(ind)
+    else data(ind)
   }
 
   def update(row: Int, col: Int, v: V) {
     if(row >= rows || col >= cols || row < 0 || col < 0)
       throw new IndexOutOfBoundsException()
     val ind = locate(row, col)
-    if(ind >= 0) internalData(ind) = v
+    if(ind >= 0) data(ind) = v
     else if (v != zero) {
       val insertPos = ~ind
       used += 1
 
-      if (used > internalData.length) {
+      if (used > data.length) {
         // need to grow array
         val newLength = {
-          if      (internalData.length == 0)     { 4 }
-          else if (internalData.length < 0x0400) { internalData.length * 2 }
-          else if (internalData.length < 0x0800) { internalData.length + 0x0400 }
-          else if (internalData.length < 0x1000) { internalData.length + 0x0800 }
-          else if (internalData.length < 0x2000) { internalData.length + 0x1000 }
-          else if (internalData.length < 0x4000) { internalData.length + 0x2000 }
-          else { internalData.length + 0x4000 }
+          if      (data.length == 0)     { 4 }
+          else if (data.length < 0x0400) { data.length * 2 }
+          else if (data.length < 0x0800) { data.length + 0x0400 }
+          else if (data.length < 0x1000) { data.length + 0x0800 }
+          else if (data.length < 0x2000) { data.length + 0x1000 }
+          else if (data.length < 0x4000) { data.length + 0x2000 }
+          else { data.length + 0x4000 }
         }
 
         // allocate new arrays
         val newIndex = util.Arrays.copyOf(rowIndices, newLength)
-        val newData  = ArrayUtil.copyOf(internalData, newLength)
+        val newData  = ArrayUtil.copyOf(data, newLength)
 
         // copy existing data into new arrays
         System.arraycopy(_rowIndices, insertPos, newIndex, insertPos + 1, used - insertPos - 1)
-        System.arraycopy(internalData,  insertPos, newData,  insertPos + 1, used - insertPos - 1)
+        System.arraycopy(data,  insertPos, newData,  insertPos + 1, used - insertPos - 1)
 
         // update pointers
         _rowIndices = newIndex
@@ -108,12 +108,12 @@ class CSCMatrix[@spec(Double, Int, Float, Long) V: Zero](private var _data: Arra
       } else if (used - insertPos > 1) {
         // need to make room for new element mid-array
         System.arraycopy(_rowIndices, insertPos, _rowIndices, insertPos + 1, used - insertPos - 1)
-        System.arraycopy(internalData,  insertPos, internalData,  insertPos + 1, used - insertPos - 1)
+        System.arraycopy(data,  insertPos, data,  insertPos + 1, used - insertPos - 1)
       }
 
       // assign new value
       rowIndices(insertPos) = row
-      internalData(insertPos) = v
+      data(insertPos) = v
       for(c <- (col+1) to cols) {
         colPtrs(c) += 1
       }
@@ -123,7 +123,7 @@ class CSCMatrix[@spec(Double, Int, Float, Long) V: Zero](private var _data: Arra
   def reserve(nnz: Int) {
     if(nnz >= used && nnz != rowIndices.length)  {
       _rowIndices = util.Arrays.copyOf(rowIndices, nnz)
-      _data = ArrayUtil.copyOf(internalData, nnz)
+      _data = ArrayUtil.copyOf(data, nnz)
     }
   }
 
@@ -136,10 +136,10 @@ class CSCMatrix[@spec(Double, Int, Float, Long) V: Zero](private var _data: Arra
   }
 
   def activeIterator: Iterator[((Int, Int), V)] = {
-    for(c <- Iterator.range(0, cols); rr <- Iterator.range(colPtrs(c),colPtrs(c+1))) yield (rowIndices(rr), c) -> internalData(rr)
+    for(c <- Iterator.range(0, cols); rr <- Iterator.range(colPtrs(c),colPtrs(c+1))) yield (rowIndices(rr), c) -> data(rr)
   }
 
-  def activeValuesIterator: Iterator[V] = internalData.iterator.take(used)
+  def activeValuesIterator: Iterator[V] = data.iterator.take(used)
 
   def activeSize: Int = used
 
@@ -170,7 +170,7 @@ class CSCMatrix[@spec(Double, Int, Float, Long) V: Zero](private var _data: Arra
 
   /** just uses the data from this matrix. No copies are made. designed for temporaries */
   private[breeze] def use(matrix: CSCMatrix[V]): Unit = {
-    use(matrix.internalData, matrix.colPtrs, matrix.rowIndices, matrix.used)
+    use(matrix.data, matrix.colPtrs, matrix.rowIndices, matrix.used)
   }
 
   def use(data: Array[V],colPtrs: Array[Int], rowIndices: Array[Int], used: Int): Unit = {
@@ -192,7 +192,7 @@ class CSCMatrix[@spec(Double, Int, Float, Long) V: Zero](private var _data: Arra
     view match {
         // This seems kind of silly, since you don't save a ton of time, but for parity with DenseMatrix...
       case View.Require =>
-        val indices = new Array[Int](internalData.length)
+        val indices = new Array[Int](data.length)
         var j = 0
         var ind = 0
         while (j < cols) {
@@ -205,16 +205,16 @@ class CSCMatrix[@spec(Double, Int, Float, Long) V: Zero](private var _data: Arra
           }
           j += 1
         }
-        new SparseVector[V](indices,internalData,activeSize,rows * cols)
+        new SparseVector[V](indices,data,activeSize,rows * cols)
       case View.Copy =>
-        implicit val man = ClassTag[V](internalData.getClass.getComponentType.asInstanceOf[Class[V]])
+        implicit val man = ClassTag[V](data.getClass.getComponentType.asInstanceOf[Class[V]])
         val sv = SparseVector.zeros[V](rows * cols)
         var j = 0
         while (j < cols) {
           var ip = colPtrs(j)
           while (ip < colPtrs(j + 1)) {
             val i = rowIndices(ip)
-            sv(i * cols + j) = internalData(ip)
+            sv(i * cols + j) = data(ip)
             ip += 1
           }
           j += 1
@@ -230,13 +230,13 @@ class CSCMatrix[@spec(Double, Int, Float, Long) V: Zero](private var _data: Arra
   }
 
   def toDense:DenseMatrix[V] = {
-    implicit val ctg = ClassTag(internalData.getClass.getComponentType).asInstanceOf[ClassTag[V]]
+    implicit val ctg = ClassTag(data.getClass.getComponentType).asInstanceOf[ClassTag[V]]
     val res = DenseMatrix.zeros[V](rows, cols)
     var i = 0
     while (i < cols) {
       var j = colPtrs(i)
       while (j < colPtrs(i+1)) {
-        res(rowIndices(j), i) = internalData(j)
+        res(rowIndices(j), i) = data(j)
         j += 1
       }
       i += 1
@@ -302,7 +302,7 @@ object CSCMatrix extends MatrixConstructors[CSCMatrix]
               lastI += 1
             }
             lastI += 1
-            val v = from.internalData(ip)
+            val v = from.data(ip)
             val r = fn(v)
             if (r != z) {
               builder.add(i, j, r)
@@ -329,7 +329,7 @@ object CSCMatrix extends MatrixConstructors[CSCMatrix]
       override def apply(from : CSCMatrix[V], fn : (V=>R)) = {
         var zeroSeen = false
         def ff(v: V) = { val r = fn(v); if (r == z) zeroSeen = true; r}
-        val newData = from.internalData.map(ff)
+        val newData = from.data.map(ff)
         val r = new CSCMatrix[R](newData, from.rows, from.cols, from.colPtrs.clone(), from.activeSize, from.rowIndices.clone)
         if(zeroSeen) r.compact()
         r
@@ -347,7 +347,7 @@ object CSCMatrix extends MatrixConstructors[CSCMatrix]
       /** Iterates all key-value pairs from the given collection. */
       def traverse(from: CSCMatrix[V], fn: ValuesVisitor[V]): Unit = {
         fn.zeros(from.size - from.activeSize, from.zero)
-        fn.visitArray(from.internalData, 0, from.activeSize, 1)
+        fn.visitArray(from.data, 0, from.activeSize, 1)
       }
     }
   }
@@ -365,7 +365,7 @@ object CSCMatrix extends MatrixConstructors[CSCMatrix]
           var ip = from.colPtrs(j)
           while(ip < from.colPtrs(j+1)) {
             val i = from.rowIndices(ip)
-            transposedMtx.add(j, i, from.internalData(ip))
+            transposedMtx.add(j, i, from.data(ip))
             ip += 1
           }
           j += 1
@@ -388,7 +388,7 @@ object CSCMatrix extends MatrixConstructors[CSCMatrix]
           var ip = from.colPtrs(j)
           while(ip < from.colPtrs(j+1)) {
             val i = from.rowIndices(ip)
-            transposedMtx(j, i) = from.internalData(ip).conjugate
+            transposedMtx(j, i) = from.data(ip).conjugate
             ip += 1
           }
           j += 1
@@ -523,7 +523,7 @@ object CSCMatrix extends MatrixConstructors[CSCMatrix]
         val rrlast = matrix.colPtrs(c+1)
         while (rr < rrlast) {
           val r = matrix.rowIndices(rr)
-          bldr.add(r, c, matrix.internalData(rr))
+          bldr.add(r, c, matrix.data(rr))
           rr += 1
         }
         c += 1

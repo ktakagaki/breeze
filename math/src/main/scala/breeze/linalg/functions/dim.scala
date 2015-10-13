@@ -1,7 +1,6 @@
 package breeze.linalg
 
 import breeze.generic.UFunc
-import breeze.linalg.Matrix
 
 /**
  * breeze

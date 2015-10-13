@@ -139,7 +139,7 @@ package object linalg {
     if (mat.rows != mat.cols)
       throw new MatrixNotSquareException
 
-  private[linalg] def requireSymmetricMatrix[V](mat: Matrix[V]): Unit = {
+  private[linalg] def requireSymmetricMatrix(mat: Matrix[Double], tol: Double = 1e-7): Unit = {
     requireSquareMatrix(mat)
 
     for (i <- 0 until mat.rows; j <- 0 until i)
@@ -336,14 +336,6 @@ package object linalg {
    * val to determine if breeze is using natives or f2jblas
    */
   lazy val usingNatives = com.github.fommil.netlib.BLAS.getInstance.getClass.getName != "com.github.fommil.netlib.F2jBLAS"
-
-
-  // <editor-fold defaultstate="collapsed" desc=" for matrix_nd ">
-
-  class All()
-  object All extends All
-
-  // </editor-fold>
 
 
 

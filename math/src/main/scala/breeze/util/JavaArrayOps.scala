@@ -1,6 +1,5 @@
 package breeze.util
 
-import breeze.linalg.Matrix
 import breeze.linalg.{DenseVector, DenseMatrix}
 import scala.reflect.ClassTag
 import breeze.math.Complex
@@ -58,7 +57,7 @@ object JavaArrayOps {
   def arrayToDv[@specialized(Int, Double, Long, Float) V: ClassTag](array: Array[V]): DenseVector[V] = new DenseVector(array)
 
   /** Constructs DenseMatrix from Array[Array[V]] input. Input is in row-major like
-    * format, similar to DenseMatrix( (1,2 3), (4,5,6),... ) syntax, which is defined in [[Matrix]].
+    * format, similar to DenseMatrix( (1,2 3), (4,5,6),... ) syntax, which is defined in [[breeze.linalg.Matrix]].
     * This constructor was written for JavaCompatible.
     * @param values
     * @return

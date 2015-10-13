@@ -15,7 +15,6 @@ package breeze.linalg
  See the License for the specific language governing permissions and
  limitations under the License.
 */
-
 import org.scalatest._
 import org.scalatest.junit._
 import org.scalatest.prop._

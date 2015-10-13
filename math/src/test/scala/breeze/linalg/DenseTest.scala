@@ -25,7 +25,7 @@ import org.scalatest.matchers.ShouldMatchers
 import breeze.util.DoubleImplicits
 
 @RunWith(classOf[JUnitRunner])
-class DenseTest extends FunSuite with Checkers with Matchers with DoubleImplicits {
+class DenseMatrixTest extends FunSuite with Checkers with Matchers with DoubleImplicits {
 
   test("Slicing") {
     val m = DenseMatrix((0,1,2),
@@ -410,7 +410,7 @@ class DenseTest extends FunSuite with Checkers with Matchers with DoubleImplicit
   test("Reshape") {
     val m : DenseMatrix[Int] = DenseMatrix((1,2,3),(4,5,6))
     val r : DenseMatrix[Int] = m.reshape(3, 2, true)
-    assert(m.internalData eq r.internalData)
+    assert(m.data eq r.data)
     assert(r.rows === 3)
     assert(r.cols === 2)
     assert(r === DenseMatrix((1,5),(4,3),(2,6)))
@@ -419,7 +419,7 @@ class DenseTest extends FunSuite with Checkers with Matchers with DoubleImplicit
   test("Reshape transpose") {
     val m : DenseMatrix[Int] = DenseMatrix((1,2,3),(4,5,6)).t
     val r : DenseMatrix[Int] = m.reshape(2, 3, true)
-    assert(m.internalData eq r.internalData)
+    assert(m.data eq r.data)
     assert(r.rows === 2)
     assert(r.cols === 3)
     assert(r === DenseMatrix((1,5),(4,3),(2,6)).t)

@@ -30,7 +30,7 @@ object LU extends UFunc {
       val info = new intW(0)
       lapack.dgetrf(
         M /* rows */, N /* cols */,
-        Y.internalData, scala.math.max(1,M) /* LDA */,
+        Y.data, scala.math.max(1,M) /* LDA */,
         ipiv /* pivot indices */,
         info
       )

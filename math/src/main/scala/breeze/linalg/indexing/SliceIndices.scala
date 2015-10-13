@@ -8,19 +8,24 @@ package breeze.linalg.indexing
   *
   * Created by ktakagaki on 15/04/14.
   */
-abstract class Slicer[D :> Indices, DR :> D] /*extends Seq[Int]*/{
+abstract class SliceIndices/*[D :> Indices, DR :> D]*/ /*extends Seq[Int]*/{
 //  final lazy val iterator: Iterator[Int] = internalList.iterator
 //  final lazy val length: Int = internalList.length
-  abstract val dimensions: Int
+/*  abstract val dimensions: Int*/
 }
-case class Slicer1(val index0: Int) extends Slicer {
+case class SliceIndex1(val index0: Index) extends Indices with DimensionReduction0  {
   override val dimensions = 1
 }
-case class Slicer2(val index0: Int, val index1: Int) extends Slicer {
+case class SliceIndex2To1(val index0: Index, val index1: Index) extends Indices with DimensionReduction1 {
   override val dimensions = 2
 }
-case class Slicer3(val index0: Int, val index1: Int, val index2: Int) extends Slicer {
+case class SliceIndex3To1(val index0: Index, val index1: Index, val index2: Index) extends Indices with DimensionReduction2 {
   override val dimensions = 3
+}
+
+case class Index(val index: Int)
+object Index {
+  implicit def intToIndex(v: Int) = Index(v)
 }
 
 object Slicer {
