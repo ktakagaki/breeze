@@ -16,7 +16,6 @@ package breeze.linalg
  limitations under the License.
 */
 
-import breeze.linalg.immutable
 import org.scalatest._
 import org.scalatest.junit._
 import org.scalatest.prop._
@@ -59,7 +58,7 @@ class MatrixTest extends FunSuite with Checkers {
   }
 
   test("Setting") {
-    val a: immutable.Matrix[Double] = Matrix((1.0, 2.0, 3.0),(4.0, 5.0, 6.0))
+    val a: Matrix[Double] = Matrix((1.0, 2.0, 3.0),(4.0, 5.0, 6.0))
     val b = Matrix((7.0, -2.0, 8.0),(-3.0, -3.0, 1.0))
     val c = DenseMatrix((3.0, -1.0, 9.0),(-2.0, -2.0, 2.0))
     a := b
@@ -95,7 +94,7 @@ class MatrixTest extends FunSuite with Checkers {
       (Complex(12,12), Complex(0,0), Complex(5,5)))
     val c = DenseVector(Complex(6,0), Complex(2,0), Complex(3,0))
     val cs = SparseVector(Complex(6,0), Complex(2,0), Complex(3,0))
-    val value: immutable.Matrix[Complex] = a * b
+    val value: Matrix[Complex] = a * b
     assert(value === Matrix((Complex(0,74), Complex(0,-16), Complex(0,50)),
       (Complex(0,170), Complex(0,-46), Complex(0,134))))
     assert(b * c === DenseVector(Complex(62,62), Complex(-21,-21), Complex(87,87)))

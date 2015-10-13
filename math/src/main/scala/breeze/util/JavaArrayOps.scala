@@ -1,6 +1,6 @@
 package breeze.util
 
-import breeze.linalg.immutable.Matrix
+import breeze.linalg.Matrix
 import breeze.linalg.{DenseVector, DenseMatrix}
 import scala.reflect.ClassTag
 import breeze.math.Complex

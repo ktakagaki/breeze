@@ -1,6 +1,6 @@
 package breeze.linalg
 
-import breeze.linalg.immutable.Matrix
+import breeze.linalg.Matrix
 import org.scalatest.FunSuite
 
 /**

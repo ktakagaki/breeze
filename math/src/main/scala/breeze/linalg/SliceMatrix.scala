@@ -1,6 +1,5 @@
 package breeze.linalg
 
-import breeze.linalg.immutable
 import breeze.math.Semiring
 
 import scala.reflect.ClassTag
@@ -8,7 +7,7 @@ import scala.reflect.ClassTag
 class SliceMatrix[@specialized(Int) K1,
                   @specialized(Int) K2,
                   @specialized(Double, Int, Float, Long) V:Semiring:ClassTag](val tensor: Tensor[(K1, K2),V],
-                                                      val slice1: IndexedSeq[K1], val slice2: IndexedSeq[K2]) extends immutable.Matrix[V] {
+                                                      val slice1: IndexedSeq[K1], val slice2: IndexedSeq[K2]) extends Matrix[V] {
 
   def apply(i: Int, j: Int): V = tensor(slice1(i)->slice2(j))
 
@@ -24,15 +23,15 @@ class SliceMatrix[@specialized(Int) K1,
 
   def activeSize: Int = size
 
-  def repr: immutable.Matrix[V] = this
+  def repr: Matrix[V] = this
 
-  def copy: immutable.Matrix[V] = {
+  def copy: Matrix[V] = {
     if (rows == 0) Matrix.zeroRows[V](cols)
     else if (cols == 0) Matrix.zeroCols[V](rows)
     else {
 //      val v = apply(0,0)
       val result = new DenseMatrix[V](rows, cols, new Array[V](size))
-      result := (this:immutable.Matrix[V])
+      result := (this:Matrix[V])
       result
     }
   }

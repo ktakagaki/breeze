@@ -1,7 +1,7 @@
 package breeze
 
 import java.awt.{Color, Stroke, Paint}
-import breeze.linalg.immutable.Matrix
+import breeze.linalg.Matrix
 import org.jfree.chart.renderer.xy.XYItemRenderer
 import org.jfree.data.xy
 

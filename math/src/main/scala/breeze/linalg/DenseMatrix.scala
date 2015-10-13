@@ -15,14 +15,6 @@ package breeze.linalg
  limitations under the License.
 */
 
-<<<<<<< HEAD
-=======
-import Axis._1
-import breeze.linalg.immutable
-import operators._
-import support._
-import support.CanTraverseValues.ValuesVisitor
->>>>>>> ff55711415c7e3151f76488211a74e5321f40de8
 import breeze.generic._
 import breeze.linalg.Axis._1
 import breeze.linalg.operators._
@@ -63,11 +55,7 @@ final class DenseMatrix[@spec(Double, Int, Float, Long) V](val rows: Int,
                                                             val offset: Int,
                                                             val majorStride: Int,
                                                             val isTranspose: Boolean = false)
-  extends immutable.Matrix[V] with MatrixLike[V, DenseMatrix[V]] with Serializable {
-<<<<<<< HEAD
-
-=======
->>>>>>> ff55711415c7e3151f76488211a74e5321f40de8
+  extends Matrix[V] with MatrixLike[V, DenseMatrix[V]] with Serializable {
 
   /** Creates a matrix with the specified data array, rows, and columns. */
   def this(rows: Int, cols: Int)(implicit man: ClassTag[V]) = this(rows, cols, new Array[V](rows * cols), 0, rows)
@@ -371,7 +359,7 @@ with MatrixConstructors[DenseMatrix] {
   }
 
   /** Horizontally tiles some matrices. They must have the same number of rows */
-  def horzcat[M,V](matrices: M*)(implicit ev: M <:< immutable.Matrix[V], opset: OpSet.InPlaceImpl2[DenseMatrix[V], M], vman: ClassTag[V], zero: Zero[V]) = {
+  def horzcat[M,V](matrices: M*)(implicit ev: M <:< Matrix[V], opset: OpSet.InPlaceImpl2[DenseMatrix[V], M], vman: ClassTag[V], zero: Zero[V]) = {
     if(matrices.isEmpty) zeros[V](0,0)
     else {
       require(matrices.forall(m => m.rows == matrices(0).rows),"Not all matrices have the same number of rows")
@@ -554,19 +542,6 @@ with MatrixConstructors[DenseMatrix] {
 
   implicit def canMapValues[@specialized(Int, Float, Double) V, @specialized(Int, Float, Double) R](implicit r: ClassTag[R]): CanMapValues[DenseMatrix[V], V, R, DenseMatrix[R]] = {
     new CanMapValues[DenseMatrix[V],V,R,DenseMatrix[R]] {
-<<<<<<< HEAD
-=======
-      private def simpleMap(from : DenseMatrix[V], fn : (V=>R), isTranspose: Boolean): DenseMatrix[R] = {
-        val data = new Array[R](from.size)
-        var i= 0
-        val iMax = data.size
-        while (i < iMax) {
-          data(i) = fn(from.internalData(i + from.offset))
-          i += 1
-        }
-        new DenseMatrix[R](from.rows, from.cols, data, 0, if (isTranspose) { from.cols } else { from.rows }, isTranspose)
-      }
->>>>>>> ff55711415c7e3151f76488211a74e5321f40de8
 
       override def map(from : DenseMatrix[V], fn : (V=>R)): DenseMatrix[R] = {
         if (from.isContiguous) {

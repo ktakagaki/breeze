@@ -17,7 +17,6 @@ package breeze.linalg
 
 import java.util
 
-import breeze.linalg.immutable
 import breeze.linalg.operators._
 import breeze.linalg.support.CanTraverseValues.ValuesVisitor
 import breeze.linalg.support._
@@ -43,7 +42,7 @@ class CSCMatrix[@spec(Double, Int, Float, Long) V: Zero] private[linalg] (privat
                                                                                val colPtrs: Array[Int], // len cols + 1
                                                                                private var used : Int,
                                                                                private var _rowIndices: Array[Int]) // len >= used
-  extends immutable.Matrix[V] with MatrixLike[V, CSCMatrix[V]] with Serializable {
+  extends Matrix[V] with MatrixLike[V, CSCMatrix[V]] with Serializable {
 
   /**
    * Constructs a [[CSCMatrix]] instance. We don't validate the input data for performance reasons.
@@ -165,7 +164,7 @@ class CSCMatrix[@spec(Double, Int, Float, Long) V: Zero] private[linalg] (privat
 
 
   override def equals(p1: Any): Boolean = p1 match {
-    case m:immutable.Matrix[V] if m.rows == rows && m.cols == cols => valuesIterator.sameElements(m.valuesIterator)
+    case m:Matrix[V] if m.rows == rows && m.cols == cols => valuesIterator.sameElements(m.valuesIterator)
     case _ => false
   }
 

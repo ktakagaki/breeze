@@ -1,7 +1,7 @@
 package breeze.linalg
 
 import breeze.generic.UFunc
-import breeze.linalg.immutable.Matrix
+import breeze.linalg.Matrix
 import org.netlib.util.intW
 import com.github.fommil.netlib.LAPACK.{getInstance=>lapack}
 
