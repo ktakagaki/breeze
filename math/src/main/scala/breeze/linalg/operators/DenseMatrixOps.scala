@@ -17,6 +17,7 @@ import spire.syntax.cfor._
 
 import scala.{specialized=>spec}
 import scala.reflect.ClassTag
+import scalaxy.debug._
 
 
 trait DenseMatrixMultiplyStuff extends DenseMatrixOps
@@ -447,25 +448,28 @@ trait DenseMatrixOps { this: DenseMatrix.type =>
       def apply(a: DenseMatrix[T], b: DenseMatrix[T]): Unit = {
         require(a.rows == b.rows, "Row dimension mismatch!")
         require(a.cols == b.cols, "Col dimension mismatch!")
-        val ad = a.data
-        val bd = b.data
-        var c = 0
 
-        val minorSize = if(a.isTranspose) a.cols else a.rows
-
-        if (a.overlaps(b)) {
+        if ((a ne b) && a.overlaps(b)) {
           val ac = a.copy
           apply(ac, b)
           a := ac
           // gives a roughly 5-10x speedup
           // if a and b are both nicely and identically shaped, add them as though they were vectors
-        } else if (a.isTranspose == b.isTranspose
-          && a.majorStride == minorSize
-          && b.majorStride == a.majorStride) {
+        } else if (a.isTranspose == b.isTranspose && a.isContiguous && b.isContiguous) {
           vecOp(new DenseVector(a.data, a.offset, 1, a.size), new DenseVector(b.data, b.offset, 1, b.size))
-        } else if (a.isTranspose) {
+        } else {
+          slowPath(a, b)
+        }
+
+      }
+
+      private def slowPath(a: DenseMatrix[T], b: DenseMatrix[T]): Unit = {
+        if (a.isTranspose) {
           apply(a.t, b.t)
         } else {
+          val ad = a.data
+          val bd = b.data
+          var c = 0
           while (c < a.cols) {
             var r = 0
             while (r < a.rows) {
@@ -475,7 +479,6 @@ trait DenseMatrixOps { this: DenseMatrix.type =>
             c += 1
           }
         }
-
       }
 
       implicitly[BinaryUpdateRegistry[Matrix[T], Matrix[T], Op.type]].register(this)
@@ -493,7 +496,7 @@ trait DenseMatrixOps { this: DenseMatrix.type =>
         val bd = b.data
         var c = 0
 
-        if (a.overlaps(b)) {
+        if ((a ne b) && a.overlaps(b)) {
           val ac = a.copy
           apply(ac, b)
           a := ac
@@ -526,19 +529,35 @@ trait DenseMatrixOps { this: DenseMatrix.type =>
 
   new Op.InPlaceImpl2[DenseMatrix[T], T] {
     def apply(a: DenseMatrix[T], b: T):Unit = {
-      val ad: Array[T] = a.data
-      var c = 0
 
-      while(c < a.cols) {
-        var r = 0
-        while(r < a.rows) {
-          ad(a.linearIndex(r, c)) = op(ad(a.linearIndex(r,c)), b)
-          r += 1
-        }
-        c += 1
+      if (a.isContiguous) {
+        fastPath(a, b)
+      } else {
+        slowPath(a, b)
       }
 
     }
+
+    def fastPath(a: DenseMatrix[T], b: T): Unit = {
+      val ad: Array[T] = a.data
+      cforRange(a.offset until (a.offset + a.size)) { i =>
+        ad(i) = op(ad(i), b)
+      }
+    }
+
+    def slowPath(a: DenseMatrix[T], b: T): Unit = {
+      val ad = a.data
+      if (!a.isTranspose) {
+        cforRange2(0 until a.cols, 0 until a.rows) { (c, r) =>
+          ad(a.linearIndex(r, c)) = op(ad(a.linearIndex(r, c)), b)
+        }
+      } else {
+        cforRange2(0 until a.rows, 0 until a.cols) { (r, c) =>
+          ad(a.linearIndex(r, c)) = op(ad(a.linearIndex(r, c)), b)
+        }
+      }
+    }
+
     implicitly[BinaryUpdateRegistry[Matrix[T], T, Op.type]].register(this)
   }
 
@@ -1014,7 +1033,7 @@ trait LowPriorityDenseMatrix1 {
   new CanCollapseAxis[DenseMatrix[V], Axis._0.type, DenseVector[V], R, Transpose[DenseVector[R]]] {
     def apply(from: DenseMatrix[V], axis: Axis._0.type)(f: (DenseVector[V]) => R): Transpose[DenseVector[R]] = {
       val result = DenseVector.zeros[R](from.cols)
-      for(c <- 0 until from.cols) {
+      cforRange(0 until from.cols) { c =>
         result(c) = f(from(::, c))
       }
       result.t

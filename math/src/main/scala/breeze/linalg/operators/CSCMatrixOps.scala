@@ -11,6 +11,7 @@ import breeze.storage.Zero
 import breeze.util.SerializableLogging
 import scala.reflect.ClassTag
 import java.util
+import scalaxy.debug._
 
 /**
  * TODO
@@ -36,7 +37,7 @@ trait CSCMatrixOps extends CSCMatrixOps_Ring {  this: CSCMatrix.type =>
     new OpMulMatrix.Impl2[Transpose[SparseVector[T]],CSCMatrix[T],Transpose[SparseVector[T]]] {
       def apply(v: Transpose[SparseVector[T]], v2: CSCMatrix[T]): Transpose[SparseVector[T]] = {
         require(v2.rows == v.inner.length)
-        val csc = v.inner.asCSCMatrix()
+        val csc = v.inner.asCscRow
         val cscr = op(csc,v2)
         val ind = Array.ofDim[Int](cscr.internalData.length)
         var i = 0
@@ -246,20 +247,20 @@ trait CSCMatrixOps extends CSCMatrixOps_Ring {  this: CSCMatrix.type =>
     }
   }
 
-
   @expand
   @expand.valify
-  implicit def csc_dm_OpAdd[@expand.args(Int, Double, Float, Long) T]: OpAdd.Impl2[CSCMatrix[T], DenseMatrix[T], DenseMatrix[T]] = {
-    new OpAdd.Impl2[CSCMatrix[T], DenseMatrix[T], DenseMatrix[T]] {
-      def apply(a: CSCMatrix[T], b: DenseMatrix[T]): DenseMatrix[T] = {
+  implicit def dm_csc_InPlace_OpSet[@expand.args(Int, Double, Float, Long) T]: OpSet.InPlaceImpl2[DenseMatrix[T], CSCMatrix[T]] = {
+    new OpSet.InPlaceImpl2[DenseMatrix[T], CSCMatrix[T]] {
+      def apply(b: DenseMatrix[T], a: CSCMatrix[T]): Unit = {
         require(a.rows == b.rows, "Matrix dimensions must match")
         require(a.cols == b.cols, "Matrix dimensions must match")
         val rows = a.rows
         val cols = a.cols
-        if (cols == 0 || rows == 0) return DenseMatrix.zeros[T](rows, cols)
+        if (cols == 0 || rows == 0) return
+
+        b := (0: T)
 
 
-        val res = b.copy
         var ci = 0 // column index [0 ... cols)
         var apStop = a.colPtrs(0) // pointer into row indices and data
         while (ci < cols) {
@@ -268,13 +269,82 @@ trait CSCMatrixOps extends CSCMatrixOps_Ring {  this: CSCMatrix.type =>
           apStop = a.colPtrs(ci1)
           while (ap < apStop) {
             val ari = if (ap < apStop) a.rowIndices(ap) else rows // row index [0 ... rows)
-            res(ari, ci) += a.internalData(ap)
+            b(ari, ci) = a.data(ap)
             ap += 1
           }
           ci = ci1
         }
+      }
+    }
+  }
 
-        res
+  @expand
+  @expand.valify
+  implicit def dm_csc_InPlace_OpAdd[@expand.args(Int, Double, Float, Long) T]: OpAdd.InPlaceImpl2[DenseMatrix[T], CSCMatrix[T]] = {
+    new OpAdd.InPlaceImpl2[DenseMatrix[T], CSCMatrix[T]] {
+      def apply(b: DenseMatrix[T], a: CSCMatrix[T]): Unit = {
+        require(a.rows == b.rows, "Matrix dimensions must match")
+        require(a.cols == b.cols, "Matrix dimensions must match")
+        val rows = a.rows
+        val cols = a.cols
+        if (cols == 0 || rows == 0) return
+
+
+        var ci = 0 // column index [0 ... cols)
+        var apStop = a.colPtrs(0) // pointer into row indices and data
+        while (ci < cols) {
+          val ci1 = ci + 1
+          var ap = apStop
+          apStop = a.colPtrs(ci1)
+          while (ap < apStop) {
+            val ari = if (ap < apStop) a.rowIndices(ap) else rows // row index [0 ... rows)
+            b(ari, ci) += a.data(ap)
+            ap += 1
+          }
+          ci = ci1
+        }
+      }
+    }
+  }
+
+  @expand
+  @expand.valify
+  implicit def dm_csc_InPlace_OpSub[@expand.args(Int, Double, Float, Long) T]: OpSub.InPlaceImpl2[DenseMatrix[T], CSCMatrix[T]] = {
+    new OpSub.InPlaceImpl2[DenseMatrix[T], CSCMatrix[T]] {
+      def apply(b: DenseMatrix[T], a: CSCMatrix[T]): Unit = {
+        require(a.rows == b.rows, "Matrix dimensions must match")
+        require(a.cols == b.cols, "Matrix dimensions must match")
+        val rows = a.rows
+        val cols = a.cols
+        if (cols == 0 || rows == 0) return
+
+
+        var ci = 0 // column index [0 ... cols)
+        var apStop = a.colPtrs(0) // pointer into row indices and data
+        while (ci < cols) {
+          val ci1 = ci + 1
+          var ap = apStop
+          apStop = a.colPtrs(ci1)
+          while (ap < apStop) {
+            val ari = if (ap < apStop) a.rowIndices(ap) else rows // row index [0 ... rows)
+            b(ari, ci) -= a.data(ap)
+            ap += 1
+          }
+          ci = ci1
+        }
+      }
+    }
+  }
+
+
+  @expand
+  @expand.valify
+  implicit def csc_dm_OpAdd[@expand.args(Int, Double, Float, Long) T]: OpAdd.Impl2[CSCMatrix[T], DenseMatrix[T], DenseMatrix[T]] = {
+    new OpAdd.Impl2[CSCMatrix[T], DenseMatrix[T], DenseMatrix[T]] {
+      def apply(a: CSCMatrix[T], b: DenseMatrix[T]): DenseMatrix[T] = {
+        require(a.rows == b.rows, "Matrix dimensions must match")
+        require(a.cols == b.cols, "Matrix dimensions must match")
+        b.copy += a
       }
     }
   }
@@ -285,6 +355,26 @@ trait CSCMatrixOps extends CSCMatrixOps_Ring {  this: CSCMatrix.type =>
     new OpAdd.Impl2[DenseMatrix[T], CSCMatrix[T], DenseMatrix[T]] {
       def apply(a: DenseMatrix[T], b: CSCMatrix[T]): DenseMatrix[T] = {
         b + a
+      }
+    }
+  }
+
+  @expand
+  @expand.valify
+  implicit def dm_csc_OpSub[@expand.args(Int, Double, Float, Long) T]: OpSub.Impl2[DenseMatrix[T], CSCMatrix[T], DenseMatrix[T]] = {
+    new OpSub.Impl2[DenseMatrix[T], CSCMatrix[T], DenseMatrix[T]] {
+      def apply(b: DenseMatrix[T], a: CSCMatrix[T]): DenseMatrix[T] = {
+        b.copy -= a
+      }
+    }
+  }
+
+  @expand
+  @expand.valify
+  implicit def csc_dm_OpSub[@expand.args(Int, Double, Float, Long) T]: OpSub.Impl2[CSCMatrix[T], DenseMatrix[T], DenseMatrix[T]] = {
+    new OpSub.Impl2[CSCMatrix[T], DenseMatrix[T], DenseMatrix[T]] {
+      def apply(a: CSCMatrix[T], b: DenseMatrix[T]): DenseMatrix[T] = {
+        (-b) += a
       }
     }
   }
@@ -600,7 +690,7 @@ trait CSCMatrixOps extends CSCMatrixOps_Ring {  this: CSCMatrix.type =>
   implicit def canMulM_M[@expand.args(Int, Float, Double, Long) T]: breeze.linalg.operators.OpMulMatrix.Impl2[CSCMatrix[T], CSCMatrix[T], CSCMatrix[T]] = new breeze.linalg.operators.OpMulMatrix.Impl2[CSCMatrix[T], CSCMatrix[T], CSCMatrix[T]] {
     def apply(a: CSCMatrix[T], b: CSCMatrix[T]) = {
 
-      if(a.cols != b.rows) throw new RuntimeException("Dimension Mismatch!")
+      require(a.cols == b.rows, "Dimension Mismatch")
 
       var numnz = 0
       var i = 0

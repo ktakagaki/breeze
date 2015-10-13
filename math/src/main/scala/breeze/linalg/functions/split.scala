@@ -19,17 +19,17 @@ object split extends UFunc {
       require(v.size % n == 0)
 
       val individualVectorSize = v.size / n
-      val result = new collection.mutable.ListBuffer[DenseVector[T]]()
+      val result = new collection.mutable.ArrayBuffer[DenseVector[T]]()
 
-      cfor(0)(k => k < n, k => k+1)(k => {
+      cforRange(0 until n) { k =>
         val offsetInOriginalVector = k*individualVectorSize
         val chunk = new Array[T](individualVectorSize)
-        cfor(0)(i => i < individualVectorSize, i => i+1)(i => {
-          chunk(i) = v.unsafeValueAt(offsetInOriginalVector+i)
-        })
-        result += new DenseVector[T](chunk)
-      })
-      result.toSeq
+        cforRange(0 until individualVectorSize){i =>
+          chunk(i) = v(offsetInOriginalVector+i)
+        }
+        result += DenseVector[T](chunk)
+      }
+      result
     }
   }
 
@@ -42,17 +42,17 @@ object split extends UFunc {
       nSeq.foreach(n => {
         val chunk = new Array[T](n - lastN)
         cfor(lastN)(i => i < n, i => i + 1)(i => {
-          chunk(i-lastN) = v.unsafeValueAt(i)
+          chunk(i-lastN) = v(i)
         })
-        result += new DenseVector[T](chunk)
+        result += DenseVector[T](chunk)
         lastN = n
       })
       if (lastN < v.size) { //If we did not already add last chunk to result, do it now.
         val chunk = new Array[T](v.size - lastN)
         cfor(lastN)(i => i < v.size, i => i + 1)(i => {
-          chunk(i-lastN) = v.unsafeValueAt(i)
+          chunk(i-lastN) = v(i)
         })
-        result += new DenseVector[T](chunk)
+        result += DenseVector[T](chunk)
       }
       result.toSeq
     }
@@ -91,7 +91,7 @@ object hsplit extends UFunc {
         val chunk = DenseMatrix.create(v.rows, newCols, new Array[T](newSize))
         cfor(0)(i => i < v.rows, i => i+1)(i => {
           cfor(0)(j => j < newCols, j => j+1)(j => {
-            chunk.unsafeUpdate(i,j, v.unsafeValueAt(i,j+offsetInOriginalMatrix))
+            chunk(i,j) = v(i,j+offsetInOriginalMatrix)
           })
         })
         result += chunk
@@ -116,7 +116,7 @@ object vsplit extends UFunc {
         val chunk = DenseMatrix.create(newRows, v.cols, new Array[T](v.cols * newRows))
         cfor(0)(i => i < newRows, i => i+1)(i => {
           cfor(0)(j => j < v.cols, j => j+1)(j => {
-            chunk.unsafeUpdate(i,j, v.unsafeValueAt(i+offsetInOriginalMatrix,j))
+            chunk(i,j) = v(i+offsetInOriginalMatrix,j)
           })
         })
         result += chunk

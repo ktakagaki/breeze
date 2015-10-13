@@ -238,6 +238,12 @@ package object numerics {
     implicit object tanFloatImpl extends Impl[Float, Float] { def apply(v: Float) = m.tanh(v).toFloat}
   }
 
+  object sech extends UFunc with MappingUFunc {
+    implicit object tanIntImpl extends Impl[Int, Double] { def apply(v: Int) = 1.0/m.cosh(v.toDouble)}
+    implicit object tanDoubleImpl extends Impl[Double, Double] { def apply(v: Double) = 1.0/m.cosh(v)}
+    implicit object tanFloatImpl extends Impl[Float, Float] { def apply(v: Float) = 1.0f/m.cosh(v).toFloat}
+  }
+
   object asin extends UFunc with MappingUFunc {
     implicit object asinIntImpl extends Impl[Int, Double] { def apply(v: Int) = m.asin(v.toDouble)}
     implicit object asinDoubleImpl extends Impl[Double, Double] { def apply(v: Double) = m.asin(v)}
@@ -623,6 +629,10 @@ package object numerics {
     }
     implicit object sigmoidImplDouble extends Impl[Double, Double] {
       def apply(x:Double) = 1d/(1d+scala.math.exp(-x))
+    }
+
+    implicit object sigmoidImplFloat extends Impl[Float, Float] {
+      def apply(x:Float) = 1f/(1f+scala.math.exp(-x).toFloat)
     }
   }
 
