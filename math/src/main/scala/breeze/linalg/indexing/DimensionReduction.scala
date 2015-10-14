@@ -1,12 +1,15 @@
-package breeze.linalg.indexing
+package breeze.linalg
 
 /**
  * Created by ktakagaki on 15/10/13.
  */
-trait DimensionReduction {
+trait DimensionReduction extends Indices {
   val reduction: Int
 }
 
+trait DimensionReduction3 extends DimensionReduction {
+  override val reduction = 3
+}
 trait DimensionReduction2 extends DimensionReduction {
   override val reduction = 2
 }

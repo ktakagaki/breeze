@@ -1,10 +1,11 @@
-package breeze.linalg.indexing
+package breeze.linalg
+
 
 /**
- * Created by ktakagaki on 15/10/13.
+ * Created by ktakagaki on 15/10/14.
  */
-abstract class Dimensions(val dimensions: Int)
+abstract class Dimensions[Ord <: Order]
 
-case object Dimensions3 extends Dimensions(3)
-case object Dimensions2 extends Dimensions(2)
-case object Dimensions1 extends Dimensions(1)
+case class Dimensions3(val dimension1: Int, val dimension2: Int, val dimension3: Int) extends Dimensions[Order3]
+case class Dimensions2(val dimension1: Int, val dimension2: Int) extends Dimensions[Order2]
+case class Dimensions1(val dimension1: Int) extends Dimensions[Order1]

@@ -1,6 +1,5 @@
 package breeze.linalg.newMatrix
 
-import breeze.linalg.immutable.DenseMatrixB
 import org.scalatest.FunSuite
 
 /**

@@ -1,4 +1,4 @@
-package breeze.linalg.indexing
+package breeze.linalg
 
 /**Encapsulates indices and dimensional information for DenseMatrixB.
   * //Inherits from Seq[Int] to allow apply(Int*) type syntax.
@@ -8,20 +8,21 @@ package breeze.linalg.indexing
   *
   * Created by ktakagaki on 15/04/14.
   */
-abstract class Indices /*extends Seq[Int]*/{
+abstract class Indices[Ord <: Order] /*extends Seq[Int]*/{
 //  val internalList: List[Int]
 //  final lazy val iterator: Iterator[Int] = internalList.iterator
 //  final lazy val length: Int = internalList.length
-  val dimensions: Int
+//  val dimensions: Int
 }
-case class Indices1(val index0: Int) extends Indices {
-  override val dimensions = 1
+case class Indices1(val index0: Int) extends Indices[Order1] with DimensionReduction1 {
+
+//  override val dimensions = 1
 }
-case class Indices2(val index0: Int, val index1: Int) extends Indices {
-  override val dimensions = 2
+case class Indices2(val index0: Int, val index1: Int) extends Indices[Order2] with DimensionReduction2 {
+//  override val dimensions = 2
 }
-case class Indices3(val index0: Int, val index1: Int, val index2: Int) extends Indices {
-  override val dimensions = 3
+case class Indices3(val index0: Int, val index1: Int, val index2: Int) extends Indices[Order3] with DimensionReduction3 {
+//  override val dimensions = 3
 }
 
 object Indices {
