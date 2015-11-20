@@ -1,5 +1,6 @@
 package breeze.linalg
 
+import breeze.numerics.isNonfinite
 import org.netlib.blas.Ddot
 import org.scalacheck._
 import org.scalatest._
@@ -508,6 +509,27 @@ class DenseVectorTest extends FunSuite with Checkers {
     val fy = DenseVector.zeros[Double](fneg.length)
     fy := fneg
     assert(fy === DenseVector(4.0, 3.0, 2.0, 1.0))
+  }
+
+  implicit def genTriple: Arbitrary[DenseVector[Double]] = Arbitrary {
+    Arbitrary.arbitrary[Double].map(DenseVector.rand[Double](30) * _)
+  }
+
+
+  test("isClose") {
+    check((a: DenseVector[Double]) => isClose(a, a))
+    check((a: DenseVector[Double], b: DenseVector[Double]) => isClose(a,b) == zipValues(a, b).forall((a, b) => (a - b).abs < 1E-8))
+  }
+
+  test("nonfinite") {
+    check((a: DenseVector[Double]) => any(isNonfinite, a) == a.exists(isNonfinite(_)))
+    check((a: DenseVector[Double]) => all(isNonfinite, a) == a.forall(isNonfinite(_)))
+    assert(all(isNonfinite, DenseVector[Double]())(all.reduceUFunc))
+    assert(!any(isNonfinite, DenseVector[Double]()))
+  }
+
+  test("#467 can slice transpose") {
+    assert(DenseVector(3, 4).t(0 until 1) == DenseVector(3).t)
   }
 }
 
