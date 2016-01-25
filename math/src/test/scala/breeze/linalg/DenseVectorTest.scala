@@ -419,6 +419,7 @@ class DenseVectorTest extends FunSuite with Checkers {
     a.slice(0,3) := b.slice(1,b.length)
     assert(a.slice(0, 3) === b.slice(1, b.length))
     a.slice(0,4,2) := b(0 until 2)
+    println(a.slice(0,5,2).length)
     assert(a.slice(0, 4, 2) === b(0 until 2))
   }
 
