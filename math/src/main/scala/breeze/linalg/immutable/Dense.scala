@@ -1,25 +1,30 @@
 package breeze.linalg.immutable
 
-import breeze.linalg.{Indices, Indices3, Indices2, Indices1}
+import breeze.linalg.indexing.Indexer
+import breeze.linalg.{Dimensions, Indices, Indices3, Indices2, Indices1}
 
 import scala.{specialized => spec}
 
-/**Attempt at creating DenseMatrix equivalent which is immutable and allows higher order matrices.
+/**
+  * Attempt to create DenseMatrix equivalent which is immutable and allows higher order matrices.
   * Mutable versions should be implementable in the future,
   * by inheriting a mutability trait which allows update.
   * Seq[V] is used here to ensure immutability.
   *
- * Created by ktakagaki on 15/04/09.
- */
-abstract class Dense[@spec(Double, Int, Float, Long) V, I <: Dimensions](
-                                                              protected val internalData: Seq[V],
-                                                              protected val dimensions: Ind,
-                                                              protected val offsets:    Indices,
-                                                              protected val strides:    Indices
-                                                                )
+  * @param internal Private internal representation as flat Seq (Array)
+  * @param dimensions
+  * @param indexer
+  * @tparam V value type (specialized for Int/Long/Float/Double
+  * @tparam I
+  */
+abstract class Dense[@spec(Int, Long, Float, Double) V, I <: Indexer](
+                                                              private val internal: Seq[V],
+                                                              protected[breeze] val dimensions: Dimensions,
+                                                              protected[breeze] val indexer: I
+)
   extends Matrix[V] {
 
-  assert(internalData != null, "argument data cannot be null")
+  assert(internal != null, "argument data cannot be null")
   assert(dimensions != null, "argument dims cannot be null")
 //  assert(offsets != null, "offset data cannot be null")
 //  assert(strides != null, "strides data cannot be null")
@@ -49,7 +54,7 @@ class DenseIndices3(override val index0: Int, override val index1: Int, override
 }
 
 class Dense2[@spec(Double, Int, Float, Long) V](
-                                                       override protected val internalData: Seq[V],
+                                                       override protected val internal: Seq[V],
                                                        override protected val dimensions: Indices3,
                                                        override protected val offsets:    Indices3,
                                                        override protected val strides:    Indices3
@@ -86,22 +91,22 @@ class Dense3[@spec(Double, Int, Float, Long) V](
 
   def apply(range1: Range, range2: Range, range3: Range): DenseMatrix1[V]
 
-  override lazy val toLinearIndexChecked: (Seq[Int] => Int) = {
-    val tempret = ((ind: Seq[Int]) =>
-      (offsets.index0 + strides.index0*ind(0)) +
-        (offsets.index1 + strides.index1*ind(1)) +
-        (offsets.index2 + strides.index2*ind(2))
-    )
+//  override lazy val toLinearIndexChecked: (Seq[Int] => Int) = {
+//    val tempret = ((ind: Seq[Int]) =>
+//      (offsets.index0 + strides.index0*ind(0)) +
+//        (offsets.index1 + strides.index1*ind(1)) +
+//        (offsets.index2 + strides.index2*ind(2))
+//    )
+//
+//    assert(internalData.length > tempret(dimensions),
+//      s"Not enough input internalData specified (length = $internalData.length) for given input dimensions"  )
+//    tempret
+//  }
 
-    assert(internalData.length > tempret(dimensions),
-      s"Not enough input internalData specified (length = $internalData.length) for given input dimensions"  )
-    tempret
-  }
-
-  override lazy val linearIndexToIndices: (Int => Seq[Int]) = {
-    ((linearInd: Int) =>
-    Array(  (linearInd - offsets(0))%strides(0), (linearInd - offsets(1))%strides(1), (linearInd - offsets(2))%strides(2) )
-  }
+//  override lazy val linearIndexToIndices: (Int => Seq[Int]) = {
+//    ((linearInd: Int) =>
+//    Array(  (linearInd - offsets(0))%strides(0), (linearInd - offsets(1))%strides(1), (linearInd - offsets(2))%strides(2) )
+//  }
 
   override def apply(indices: Int*) = internalData( toLinearIndexChecked(indices) )
 

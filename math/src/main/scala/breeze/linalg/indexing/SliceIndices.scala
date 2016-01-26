@@ -1,5 +1,7 @@
 package breeze.linalg.indexing
 
+import breeze.linalg._
+
 /**Encapsulates indices and dimensional information for DenseMatrixB.
   * Inherits from Seq[Int] to allow apply(Int*) type syntax.
   * Using tuple for this purpose would have been an option, except that
@@ -8,33 +10,56 @@ package breeze.linalg.indexing
   *
   * Created by ktakagaki on 15/04/14.
   */
-abstract class SliceIndices/*[D :> Indices, DR :> D]*/ /*extends Seq[Int]*/{
+abstract class SliceIndices {
+
 //  final lazy val iterator: Iterator[Int] = internalList.iterator
 //  final lazy val length: Int = internalList.length
 /*  abstract val dimensions: Int*/
+
 }
-case class SliceIndex1(val index0: Index) extends Indices with DimensionReduction0  {
-  override val dimensions = 1
-}
-case class SliceIndex2To1(val index0: Index, val index1: Index) extends Indices with DimensionReduction1 {
-  override val dimensions = 2
-}
-case class SliceIndex3To1(val index0: Index, val index1: Index, val index2: Index) extends Indices with DimensionReduction2 {
-  override val dimensions = 3
+case class SliceIndex1S(val slicer0: Slicer)
+  extends Indices with DimensionChange1To0  {
+
 }
 
-case class Index(val index: Int)
-object Index {
-  implicit def intToIndex(v: Int) = Index(v)
+case class SliceIndex2SS(val slicer0: Slicer, val slicer1: Slicer)
+  extends Indices with DimensionChange2To0 {
+
+}
+case class SliceIndex2SI(val slicer0: Slicer, val index1: Int)
+  extends Indices with DimensionChange2To1 {
+
+}
+case class SliceIndex2IS(val index0: Int, val slicer1: Slicer)
+  extends Indices with DimensionChange2To1 {
+
 }
 
-object Slicer {
-  implicit def tup(indices: Seq[Int]) = {
-    indices.length match {
-      case 1 => Indices1(indices(0))
-      case 2 => Indices2(indices(0), indices(1))
-      case 3 => Indices3(indices(0), indices(1), indices(2))
-      case _ => throw new IllegalArgumentException("currently supporting up to 3 indices")
-    }
-  }
+
+case class SliceIndex3SSS(val slicer0: Slicer, val slicer1: Slicer, val slicer2: Slicer)
+  extends Indices with DimensionChange3To3 {
+}
+
+case class SliceIndex3ISS(val index0: Int, val slicer1: Slicer, val slicer2: Slicer)
+  extends Indices with DimensionChange3To2 {
+}
+case class SliceIndex3SIS(val slicer0: Slicer, val index1: Int, val slicer2: Slicer)
+  extends Indices with DimensionChange3To2 {
+}
+case class SliceIndex3SSI(val slicer0: Slicer, val slicer1: Slicer, val index2: Int)
+  extends Indices with DimensionChange3To2 {
+}
+
+case class SliceIndex3ISI(val index0: Int, val slicer1: Slicer, val index2: Int)
+  extends Indices with DimensionChange3To1 {
+}
+case class SliceIndex3SII(val slicer0: Slicer, val index1: Int, val index2: Int)
+  extends Indices with DimensionChange3To1 {
+}
+case class SliceIndex3IIS(val index0: Int, val index1: Int, val slicer2: Slicer)
+  extends Indices with DimensionChange3To1 {
+}
+
+case class SliceIndex3III(val index0: Int, val index1: Int, val index2: Int)
+  extends Indices with DimensionChange3To1 {
 }
