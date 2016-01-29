@@ -7,14 +7,12 @@ import support._
 import scala.reflect.ClassTag
 import java.util
 import breeze.macros.expand
-import breeze.macros.expand.sequence
 import breeze.math._
-import scala.math.BigInt
-import breeze.generic.{UFunc}
-import scala.specialized
+import breeze.generic.UFunc
 import breeze.storage.Zero
 import breeze.generic.UFunc.{UImpl2, UImpl}
 import scala.{specialized=>spec}
+import scalaxy.debug._
 
 trait SparseVector_DenseVector_Ops { this: SparseVector.type =>
   import breeze.math.PowImplicits._
@@ -409,7 +407,7 @@ trait SparseVectorOps { this: SparseVector.type =>
   UFunc.UImpl2[Tag,LHS,Transpose[SparseVector[V]],R] =
     new UFunc.UImpl2[Tag,LHS,Transpose[SparseVector[V]],R] {
       def apply(v: LHS, v2: Transpose[SparseVector[V]]): R = {
-        op(v,v2.inner.asCSCMatrix())
+        op(v,v2.inner.asCscRow)
       }
     }
 
@@ -1328,7 +1326,7 @@ trait SparseVectorOps { this: SparseVector.type =>
     }
   }
 
-  implicit def zipMapKV[V, R:ClassTag:Zero:Semiring] = new CanZipMapKeyValuesSparseVector[V, R]
+  implicit def zipMapKV[V, R:ClassTag:Zero:Semiring]: CanZipMapKeyValuesSparseVector[V, R] = new CanZipMapKeyValuesSparseVector[V, R]
 
 
   implicit def implOpNeg_SVT_eq_SVT[@spec(Double, Int, Float, Long)  V]

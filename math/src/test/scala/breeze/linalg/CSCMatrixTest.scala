@@ -190,6 +190,14 @@ class CSCMatrixTest extends FunSuite with Checkers {
     assert(a - b === CSCMatrix((1, -1, 0), (0,0,0)))
   }
 
+  test("addition/subtraction csc/dm") {
+    val a : CSCMatrix[Int] = CSCMatrix((1,0,0),(2,3,-1))
+    val b : DenseMatrix[Int] = DenseMatrix((0,1,0),(2,3,-1))
+    assert(a + b === DenseMatrix((1, 1, 0), (4,6,-2)))
+    assert(a - b === DenseMatrix((1, -1, 0), (0,0,0)))
+    assert(b - a === -DenseMatrix((1, -1, 0), (0,0,0)))
+  }
+
   test("inplace addition/subtraction") {
     val a : CSCMatrix[Int] = CSCMatrix((1,0,0),(2,3,-1))
     val b : CSCMatrix[Int] = CSCMatrix((0,1,0),(2,3,-1))
@@ -200,6 +208,13 @@ class CSCMatrixTest extends FunSuite with Checkers {
     a -= b
     assert(a === CSCMatrix((1, -1, 0), (0,0,0)))
     assert(a.activeSize === 2)
+  }
+
+  test("inplace set dm/csc") {
+    val a : CSCMatrix[Int] = CSCMatrix((1,0,0),(2,3,-1))
+    val b : DenseMatrix[Int] = DenseMatrix((0,1,0),(2,3,-1))
+    b := a
+    assert(a == b)
   }
 
   test("InPlace Ops") {
@@ -384,6 +399,17 @@ class CSCMatrixTest extends FunSuite with Checkers {
     val a = DenseMatrix((2,2),(3,3))
     val b = CSCMatrix((2,2),(3,3))
     assert(a + b === a + b.toDense)
+  }
+
+  test("#313") {
+    val builder = new CSCMatrix.Builder[Double](rows = -1, cols = -1)
+    builder.add(0, 0, 1.0)
+    builder.add(1, 0, 1.0)
+
+    val a = builder.result
+
+    assert(a.rows == 2)
+    assert(a.cols == 1)
   }
 }
 

@@ -12,6 +12,18 @@ import breeze.storage.Zero
 
 trait BitVectorOps {
 
+  implicit object anyImpl extends any.Impl[BitVector, Boolean] {
+    override def apply(v: BitVector): Boolean = {
+      v.data.cardinality() != 0
+    }
+  }
+
+  implicit object allImpl extends all.Impl[BitVector, Boolean] {
+    override def apply(v: BitVector): Boolean = {
+      v.data.cardinality() == v.size
+    }
+  }
+
   @expand
   @expand.valify
   implicit def bv_bv_UpdateOp[@expand.args(OpAnd, OpOr, OpXor, OpSet) Op <: OpType]
@@ -155,15 +167,4 @@ trait BitVectorOps {
   }
 
 
-  implicit def canMapValues[R:ClassTag:Zero]:CanMapValues[BitVector, Boolean, R, DenseVector[R]] = new CanMapValues[BitVector, Boolean, R, DenseVector[R]] {
-    /** Maps all key-value pairs from the given collection. */
-    override def map(from: BitVector, fn: (Boolean) => R): DenseVector[R] = {
-      DenseVector.tabulate(from.length)(i => fn(from(i)))
-    }
-
-    /** Maps all active key-value pairs from the given collection. */
-    override def mapActive(from: BitVector, fn: (Boolean) => R): DenseVector[R] = map(from, fn)
-  }
-
-  implicit object cmvHandHold extends CanMapValues.HandHold[BitVector, Boolean]
 }
