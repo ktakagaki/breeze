@@ -15,10 +15,8 @@ package breeze.math
  See the License for the specific language governing permissions and
  limitations under the License.
 */
-import org.scalatest.FunSuite
-import org.scalatest.prop.Checkers
-import org.scalacheck.{Prop, Arbitrary}
-import breeze.linalg.norm
+import breeze.linalg.{normalize, norm}
+import org.scalacheck.Prop
 
 /**
  *
@@ -26,7 +24,7 @@ import breeze.linalg.norm
  */
 
 trait TensorSpaceTestBase[V, I, S] extends MutableModuleTestBase[V, S] {
-  implicit val space: MutableTensorField[V, I, S]
+  implicit val space: MutableEnumeratedCoordinateField[V, I, S]
 
   import space._
 
@@ -54,6 +52,7 @@ trait TensorSpaceTestBase[V, I, S] extends MutableModuleTestBase[V, S] {
     })
   }
 
+
   // dot product distributes
   test("dot product distributes") {
     check(Prop.forAll{ (trip: (V, V, V)) =>
@@ -79,16 +78,6 @@ trait TensorSpaceTestBase[V, I, S] extends MutableModuleTestBase[V, S] {
     })
 
   }
-
-  test("op set of scalars works") {
-    check(Prop.forAll{ (trip: (V, V, V), s: S) =>
-      val (a, b, _) = trip
-      val ab = copy(a)
-      ab := s
-      a + s == (a + ab)
-    })
-  }
-
 
   test("Elementwise mult of vectors distributes over vector addition") {
     check(Prop.forAll{ (trip: (V, V, V)) =>
@@ -124,10 +113,9 @@ trait TensorSpaceTestBase[V, I, S] extends MutableModuleTestBase[V, S] {
       close(ab, ba, TOL)
     })
   }
-
 }
 
-trait DoubleValuedTensorSpaceTestBase[V <: breeze.linalg.Vector[Double], I] extends TensorSpaceTestBase[V, I, Double] {
+trait DoubleValuedTensorSpaceTestBase[V, I] extends TensorSpaceTestBase[V, I, Double] {
     // normalization
   import space._
   
@@ -139,8 +127,14 @@ trait DoubleValuedTensorSpaceTestBase[V <: breeze.linalg.Vector[Double], I] exte
       val v = breeze.linalg.norm(normalized, nn)
       (v - 1.0).abs <= TOL || norm(normalized) == 0.0
     })
+  }
 
 
+  test("normalize") {
+    check(Prop.forAll{ (trip: (V, V, V)) =>
+      val aNorm = normalize(trip._1)
+      (norm(aNorm) - 1.0)<=TOL || norm(aNorm) == 0.0
+    })
   }
 
 }

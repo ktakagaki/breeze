@@ -1,5 +1,6 @@
 package breeze.linalg
 
+import breeze.linalg.svd.SVD
 import breeze.stats.mean
 
 /**
@@ -20,7 +21,7 @@ class PCA(val x: DenseMatrix[Double], val covmat: DenseMatrix[Double]) {
   /**
    * The means of each column (axis) of the data.
    */
-  lazy val center = mean(x,Axis._0).toDenseVector
+  lazy val center = mean(x,Axis._0).t
 
   /**
    * Do SVD on the covariance matrix.
@@ -32,7 +33,7 @@ class PCA(val x: DenseMatrix[Double], val covmat: DenseMatrix[Double]) {
    * loadings: the matrix of variable loadings (i.e., a matrix whose rows
    *   contain the eigenvectors (note: in R, the eigenvectors are the columns)
   */
-  lazy val (_,eigenvalues,loadings) = svd(covmat)
+  lazy val SVD(_,eigenvalues,loadings) = svd(covmat)
 
   /**
    * The standard deviations of the principal components.

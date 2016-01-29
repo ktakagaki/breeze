@@ -17,8 +17,14 @@ package breeze.util
 */
 
 import java.util.Arrays
+import breeze.linalg.diff
+import breeze.macros.expand
+import spire.std.float
+
 import scala.reflect.ClassTag
 import scala.collection.mutable
+import scala.util.hashing.MurmurHash3
+import spire.syntax.cfor._
 
 /**
  * Array operations on generic arrays, a little faster in general, I hope.
@@ -26,6 +32,9 @@ import scala.collection.mutable
  */
 
 object ArrayUtil {
+
+
+
 
   def fill[V](a: Array[V], offset: Int, length: Int, v: V) {
     a match {
@@ -277,5 +286,71 @@ object ArrayUtil {
 
 
   }
+
+  def gallopSearch(objs: Array[Int], fromIndex: Int, toIndex: Int, toFind: Int):Int = {
+    if(objs.length == 0) return ~0
+
+//    if(toIndex - fromIndex <= 16) return linearSearch(objs, fromIndex, toIndex, toFind)
+
+    var low = fromIndex
+
+    var step = 1
+    var high = fromIndex + step
+
+    while (high < toIndex && objs(high) < toFind) {
+      low = high
+      step *= 2
+      high = fromIndex + step
+    }
+
+    if (high < toIndex && objs(high) == toFind) {
+      high
+    } else {
+      Arrays.binarySearch(objs, low, math.min(high, toIndex), toFind)
+    }
+  }
+
+  def zeroSkippingHashCode[V](data: Array[V], offset: Int, stride: Int, length: Int): Int = {
+    (data:Any) match {
+      case x: Array[Double] => zeroSkippingHashCodeImpl_Double(x, offset, stride, length)
+      case x: Array[Float] => zeroSkippingHashCodeImpl_Float(x, offset, stride, length)
+      case x: Array[Int] => zeroSkippingHashCodeImpl_Int(x, offset, stride, length)
+      case x: Array[Long] => zeroSkippingHashCodeImpl_Long(x, offset, stride, length)
+      case x: Array[Short] => zeroSkippingHashCodeImpl_Short(x, offset, stride, length)
+      case x: Array[Byte] => zeroSkippingHashCodeImpl_Byte(x, offset, stride, length)
+      case x: Array[Char] => zeroSkippingHashCodeImpl_Char(x, offset, stride, length)
+      case x: Array[Boolean] => zeroSkippingHashCodeImpl_Boolean(x, offset, stride, length)
+      case _ => zeroSkippingHashCodeImplSlow(data, offset, stride, length)
+    }
+
+  }
+
+  @expand
+  private def zeroSkippingHashCodeImpl[@expand.args(Int, Float, Double, Long, Byte, Short, Char, Boolean) V](data: Array[V], offset: Int, stride: Int, length: Int):Int = {
+    var hash = 43
+    var i = offset
+    cforRange(0 until length) { _ =>
+      val v = data(i)
+      val hh = v.##
+      if (hh != 0)
+        hash = MurmurHash3.mix(hash, hh)
+      i += stride
+    }
+    hash
+  }
+
+  private def zeroSkippingHashCodeImplSlow[V](data: Array[V], offset: Int, stride: Int, length: Int):Int = {
+    var hash = 43
+    var i = offset
+    cforRange(0 until length) { _ =>
+      val v = data(i)
+      val hh = v.##
+      if (hh != 0)
+        hash = MurmurHash3.mix(hash, hh)
+      i += stride
+    }
+    hash
+  }
+
 
 }

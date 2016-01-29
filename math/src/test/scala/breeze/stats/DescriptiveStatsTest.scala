@@ -3,7 +3,7 @@ package breeze.stats
 import org.scalatest.{FunSuite, WordSpec}
 import org.scalatest.Matchers
 import scala.util.Random
-import breeze.linalg.DenseVector
+import breeze.linalg.{SparseVector, DenseVector, DenseMatrix}
 import breeze.math.Complex
 
 class DescriptiveStatsTest extends WordSpec with Matchers {
@@ -20,6 +20,11 @@ class DescriptiveStatsTest extends WordSpec with Matchers {
       val a = List(1.0,2.0,3.0,4.0)
       mean(a) should be (2.5)
     }
+    "mean should give correct value for SparseVectors" in {
+      val a = SparseVector.zeros[Double](1000)
+      a(10) = 100.0
+      mean(a) should be (0.1)
+    }
     "covariance should not explode when size of list is 1" in {
       val a = List(1.0)
       val b = List(2.0)
@@ -30,6 +35,54 @@ class DescriptiveStatsTest extends WordSpec with Matchers {
       val b = List(2.0,-3,4.0,5)
       DescriptiveStats.cov(a,b) should be (2+(2.0/3))
     }
+    "covmat should produce correct values for matrix" in {
+      val d = DenseMatrix((1.0,2.0), (2.0, -3.0),(3.0, 4.0), (4.0, 5.0))
+      val result: DenseMatrix[Double] = covmat(d)
+      assert( math.abs( result(0,1) - 2.66666667) < 1e-7)
+      assert( math.abs( result(1,0) - 2.66666667) < 1e-7)
+      assert( math.abs( result(0,0) - 1.66666667) < 1e-7)
+      assert( math.abs( result(1,1) - 12.66666667) < 1e-7)
+    }
+
+    "covmat should produce correct values for seq of vectors" in {
+      val d = Seq(DenseVector(1.0,2.0), DenseVector(2.0, -3.0),DenseVector(3.0, 4.0), DenseVector(4.0, 5.0))
+      val result: DenseMatrix[Double] = covmat(d)
+      assert( math.abs( result(0,1) - 2.66666667) < 1e-7)
+      assert( math.abs( result(1,0) - 2.66666667) < 1e-7)
+      assert( math.abs( result(0,0) - 1.66666667) < 1e-7)
+      assert( math.abs( result(1,1) - 12.66666667) < 1e-7)
+    }
+
+    "corrcoeff should produce correct values" in {
+      val d = DenseMatrix((1.0,2.0), (2.0, -3.0),(3.0, 4.0), (4.0, 5.0))
+      val result: DenseMatrix[Double] = corrcoeff(d)
+      assert( math.abs( result(0,1) - 0.580381) < 1e-7)
+      assert( math.abs( result(1,0) - 0.580381) < 1e-7)
+      assert( math.abs( result(0,0) - 1.0) < 1e-7)
+      assert( math.abs( result(1,1) - 1.0) < 1e-7)
+    }
+    "corrcoeff should produce correct values for list of vectors" in {
+      val d = Seq(DenseVector(1.0,2.0), DenseVector(2.0, -3.0),DenseVector(3.0, 4.0), DenseVector(4.0, 5.0))
+      val result: DenseMatrix[Double] = corrcoeff(d)
+      assert( math.abs( result(0,1) - 0.580381) < 1e-7)
+      assert( math.abs( result(1,0) - 0.580381) < 1e-7)
+      assert( math.abs( result(0,0) - 1.0) < 1e-7)
+      assert( math.abs( result(1,1) - 1.0) < 1e-7)
+    }
+
+    "mode should produce the correct values" in {
+      val vector = DenseVector(1.0, 2.0, 3.0, 2.0, 3.0, 3.0)
+      val result = mode(vector)
+      assert(result.mode == 3.0)
+      assert(result.frequency == 3)
+    }
+    "mode should return Double.NaN for an empty collection" in {
+      val vector = DenseVector[Double]()
+      val result = mode(vector)
+      assert(result.mode.isNaN)
+      assert(result.frequency == 0)
+    }
+
   }
 }
 
@@ -53,10 +106,19 @@ class DescriptiveStatsTest2 extends FunSuite {
     assert(mav == mav2)
   }
 
-  //  test("complex mean") {
-  //    val data =  DenseVector[Complex]( (0.0 + 1.0 * bmath.i), (1.0 + 0.0 * bmath.i), (2.0 + 2.0 * bmath.i) )
-  //    assert( mean(data) == (1.0 + 1.0 * bmath.i), "complex mean incorrect")
-  //  }
+  test("mean and variance addition") {
+    val r = new Random(0)
+    val data =  Array.fill(100000)(r.nextGaussian)
+    val data2 =  Array.fill(100000)(r.nextGaussian * 5 + 3)
+    val mav = meanAndVariance(data)
+    val mav2 = meanAndVariance(data2)
+    val mavTotal = meanAndVariance(data ++ data2)
+    val mavSum = mav + mav2
+    assert(breeze.numerics.closeTo(mavTotal.mean, mavSum.mean, 1E-5))
+    assert(breeze.numerics.closeTo(mavTotal.variance, mavSum.variance, 1E-5))
+    assert(mavSum.count == mavTotal.count)
+  }
+
 
   test("median") {
     val dataOdd =  DenseVector(0,1,2,3,400000)
@@ -72,4 +134,3 @@ class DescriptiveStatsTest2 extends FunSuite {
     assert( median(dataEvenDuplicate2)==450)
   }
 }
-

@@ -21,6 +21,7 @@ import breeze.math._
 import breeze.numerics
 import breeze.numerics._
 import breeze.optimize.DiffFunction
+
 import scala.collection.mutable
 
 /**
@@ -137,7 +138,7 @@ case class AliasTable[I](probs: DenseVector[Double],
  */
 object Multinomial {
 
-  class ExpFam[T,I](exemplar: T)(implicit space: MutableTensorField[T, I, Double]) extends ExponentialFamily[Multinomial[T,I],I] with HasConjugatePrior[Multinomial[T,I],I] {
+  class ExpFam[T,I](exemplar: T)(implicit space: MutableFiniteCoordinateField[T, I, Double]) extends ExponentialFamily[Multinomial[T,I],I] with HasConjugatePrior[Multinomial[T,I],I] {
 
     import space._
     type ConjugatePrior = Dirichlet[T,I]

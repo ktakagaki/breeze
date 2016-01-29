@@ -2,7 +2,7 @@ package breeze.linalg
 
 import breeze.linalg.operators._
 import breeze.macros.expand
-import breeze.linalg.support.CanTranspose
+import breeze.linalg.support.{CanSlice, CanTranspose}
 import breeze.generic.UFunc
 
 /**
@@ -65,6 +65,46 @@ trait TransposeLowPrio {
 
   implicit class LiftApply[K, T](_trans: Transpose[Tensor[K, T]]) {
     def apply(i: K):T = _trans.inner(i)
+  }
+
+  // TODO: make CanSlice a UFunc
+  implicit def liftSlice[Op, T, S, U, UT](implicit op: CanSlice[T, S, U], trans: CanTranspose[U, UT]): CanSlice[Transpose[T], S, UT] = {
+    new CanSlice[Transpose[T], S, UT] {
+      override def apply(from: Transpose[T], slice: S): UT = {
+        op(from.inner, slice).t
+      }
+    }
+  }
+
+  implicit def liftUFunc[Op, T, U, UT](implicit op: UFunc.UImpl[Op, T, U], trans: CanTranspose[U, UT]):UFunc.UImpl[Op, Transpose[T], UT] = {
+    new UFunc.UImpl[Op, Transpose[T], UT] {
+      override def apply(v: Transpose[T]): UT = trans(op(v.inner))
+    }
+  }
+
+  implicit def liftInPlace[Op, T, U](implicit op: UFunc.InPlaceImpl[Op, T]):UFunc.InPlaceImpl[Op, Transpose[T]] = {
+    new UFunc.InPlaceImpl[Op, Transpose[T]] {
+      override def apply(v: Transpose[T]) = op(v.inner)
+    }
+  }
+
+  implicit def liftUFunc3_1[Op, T, T2, T3, U, UT](implicit op: UFunc.UImpl3[Op, T, T2, T3, U],
+                                                  trans: CanTranspose[U, UT]):UFunc.UImpl3[Op, Transpose[T], T2, T3, UT] = {
+    new UFunc.UImpl3[Op, Transpose[T], T2, T3, UT] {
+
+      override def apply(v: Transpose[T], v2: T2, v3: T3): UT = {
+        trans(op(v.inner, v2, v3))
+      }
+    }
+  }
+
+  implicit def liftUFuncInplace3_1[Op, T, T2, T3](implicit op: UFunc.InPlaceImpl3[Op, T, T2, T3]):UFunc.InPlaceImpl3[Op, Transpose[T], T2, T3] = {
+    new UFunc.InPlaceImpl3[Op, Transpose[T], T2, T3] {
+
+      override def apply(v: Transpose[T], v2: T2, v3: T3)  = {
+        op(v.inner, v2, v3)
+      }
+    }
   }
 
 }

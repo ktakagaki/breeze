@@ -28,7 +28,7 @@ import breeze.storage.Zero
  * Represents a Dirichlet distribution, the conjugate prior to the multinomial.
  * @author dlwh
  */
-case class Dirichlet[T, @specialized(Int) I](params: T)(implicit space: MutableTensorField[T, I, Double],
+case class Dirichlet[T, @specialized(Int) I](params: T)(implicit space: EnumeratedCoordinateField[T, I, Double],
                                                         rand: RandBasis = Rand) extends ContinuousDistr[T] {
   import space._
   /**
@@ -42,14 +42,14 @@ case class Dirichlet[T, @specialized(Int) I](params: T)(implicit space: MutableT
    * Returns unnormalized probabilities for a Multinomial distribution.
    */
   def unnormalizedDraw() = {
-    mapValues.mapActive(params, { (v:Double) => new Gamma(v,1).draw()})
+    mapActiveValues(params, { (v:Double) => if(v == 0.0) 0.0 else new Gamma(v,1).draw()})
   }
 
   /**
    * Returns logNormalized probabilities. Use this if you're worried about underflow
    */
   def logDraw() = {
-    val x = mapValues.mapActive(params, { (v:Double) => new Gamma(v,1).logDraw()})
+    val x = mapActiveValues(params, { (v:Double) => if (v == 0.0) 0.0 else new Gamma(v,1).logDraw()})
     val m = softmax(x.activeValuesIterator)
     assert(!m.isInfinite, x)
     x.activeKeysIterator.foreach(i => x(i) -= m)
@@ -93,7 +93,7 @@ object Dirichlet {
   def apply(arr: Array[Double]): Dirichlet[DenseVector[Double], Int] = Dirichlet( new DenseVector[Double](arr))
 
 
-  class ExpFam[T,I](exemplar: T)(implicit space: MutableTensorField[T, I, Double]) extends ExponentialFamily[Dirichlet[T,I],T] {
+  class ExpFam[T,I](exemplar: T)(implicit space: MutableFiniteCoordinateField[T, I, Double]) extends ExponentialFamily[Dirichlet[T,I],T] {
     import space._
     type Parameter = T
     case class SufficientStatistic(n: Double, t: T) extends breeze.stats.distributions.SufficientStatistic[SufficientStatistic] {

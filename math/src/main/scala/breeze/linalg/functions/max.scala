@@ -1,13 +1,13 @@
 package breeze.linalg
 
 import breeze.generic.UFunc
-import breeze.macros.expand
-import breeze.linalg.support.{CanTransformValues, CanMapValues, CanTraverseValues}
+import breeze.linalg.support.{ScalarOf, CanTransformValues, CanMapValues, CanTraverseValues}
 import breeze.linalg.support.CanTraverseValues.ValuesVisitor
+import breeze.macros.expand
+import spire.syntax.cfor._
 
-//ToDo: minMax function to find both in one go
-
-object max extends UFunc {
+object max extends UFunc /*with VectorizedReduceUFunc <-- doesn't work with 2.10, because god knows */{
+  type Op = this.type
 
   @expand
   @expand.valify
@@ -45,14 +45,29 @@ object max extends UFunc {
         }
 
         override def visitArray(arr: Array[S], offset: Int, length: Int, stride: Int): Unit = {
-          var i = 0
-          var off = offset
-          while(i < length) {
+          if (length >= 0) {
             visitedOne = true
-            max = scala.math.max(max, arr(off))
-            i += 1
-            off += stride
           }
+
+          if (stride == 1) {
+            var m = max
+
+            cforRange(offset until (offset + length)) { i =>
+              m = scala.math.max(m, arr(i))
+            }
+            max = m
+          } else {
+            var off = offset
+            var m = max
+            cforRange(0 until length) { i =>
+              m = scala.math.max(m, arr(off))
+              off += stride
+            }
+            max = m
+          }
+
+
+
         }
       }
 
@@ -65,6 +80,30 @@ object max extends UFunc {
     }
 
   }
+
+
+  implicit def maxVS[T, U, LHS, RHS, RV](implicit cmvH: ScalarOf[T, LHS],
+                                         maxImpl: max.Impl2[LHS, RHS, LHS],
+                                         cmv: CanMapValues[T, LHS, LHS, U]):Impl2[T, RHS, U] = {
+    new Impl2[T, RHS, U] {
+      override def apply(v: T, v2: RHS): U = cmv(v, maxImpl(_, v2))
+    }
+  }
+
+  /*
+  @expand
+  implicit def helper[@expand.args(Int, Float, Long, Double) T]
+                     (implicit @expand.sequence[T](Int.MinValue, Float.NegativeInfinity, Long.MinValue, Double.NegativeInfinity)
+                     init: T):VectorizeHelper[T] = new VectorizeHelper[T] {
+    override def zerosLike(len: Int): DenseVector[T] = {
+      val r = DenseVector.zeros[T](len)
+      r := init
+      r
+    }
+
+    override def combine(x: T, y: T): T = java.lang.Math.max(x, y)
+  }
+  */
 
   /**
    * Method for computing the max of the first length elements of an array. Arrays
@@ -82,6 +121,7 @@ object max extends UFunc {
     }
     accum
   }
+
 }
 
 
@@ -149,6 +189,14 @@ object min extends UFunc {
     }
 
   }
+
+  implicit def minVS[T, U, LHS, RHS, RV](implicit cmvH: ScalarOf[T, LHS],
+                                         maxImpl: min.Impl2[LHS, RHS, LHS],
+                                         cmv: mapValues.Impl2[T, LHS => LHS, U]):Impl2[T, RHS, U] = {
+    new Impl2[T, RHS, U] {
+      override def apply(v: T, v2: RHS): U = cmv(v, maxImpl(_, v2))
+    }
+  }
 }
 
 
@@ -160,15 +208,26 @@ object clip extends UFunc {
     new Impl3[T, V, V, T] {
       import ordering.mkOrderingOps
       def apply(v: T, v2: V, v3: V): T = {
-        cmv.map(v, x => if(x < v2) v2 else if (x > v3) v3 else x)
+        cmv(v, x => if(x < v2) v2 else if (x > v3) v3 else x)
       }
     }
   }
 
-  implicit def clipInPlaceOrdering[T,V](implicit ordering: Ordering[V], cmv: CanTransformValues[T, V, V]):InPlaceImpl3[T, V, V] = {
+  implicit def clipInPlaceOrdering[T, V](implicit ordering: Ordering[V], cmv: CanTransformValues[T, V]):InPlaceImpl3[T, V, V] = {
     import ordering.mkOrderingOps
     new InPlaceImpl3[T, V, V] {
       def apply(v: T, v2: V, v3: V):Unit = {
+        cmv.transform(v, x => if(x < v2) v2 else if (x > v3) v3 else x)
+      }
+    }
+  }
+
+  @expand
+  implicit def clipInPlace[Vec,
+                           @expand.args(Double, Float, Int, Long)
+                           T](cmv: CanTransformValues[Vec, T]):InPlaceImpl3[Vec, T, T] = {
+    new InPlaceImpl3[Vec, T, T] {
+      def apply(v: Vec, v2: T, v3: T):Unit = {
         cmv.transform(v, x => if(x < v2) v2 else if (x > v3) v3 else x)
       }
     }

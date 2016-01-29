@@ -1,11 +1,42 @@
 package breeze.util
 
+import scala.collection.generic.CanBuildFrom
+import scala.collection.mutable
+
 /**
  * Stores various implicits, also available by importing breeze.util._
  */
 object Implicits extends DoubleImplicits with IteratorImplicits {
+  implicit class scEnrichColl[Coll <: Traversable[(_,_)]](val __this: Coll) extends AnyVal {
+    def toMultiMap[Result, A, B](implicit view: Coll <:< Traversable[(A, B)],  cbf: CanBuildFrom[Coll, B, Result]): Map[A, Result] = {
+      var result = collection.mutable.Map[A, mutable.Builder[B, Result]]()
+      result = result.withDefault { a =>  val r = cbf(__this); result.update(a, r); r}
+
+      for((a,b) <- view(__this)) {
+        result(a) += b
+      }
+
+      result.mapValues(_.result()).toMap
+    }
+  }
+
+
+  implicit class scEnrichArray[A, B](val __this: Array[(A, B)]) extends AnyVal {
+    def toMultiMap[Result](implicit cbf: CanBuildFrom[Array[(A, B)], B, Result]): Map[A, Result] = {
+      var result = collection.mutable.Map[A, mutable.Builder[B, Result]]()
+      result = result.withDefault { a =>  val r = cbf(__this); result.update(a, r); r}
+
+      for((a,b) <- __this) {
+        result(a) += b
+      }
+
+      result.mapValues(_.result()).toMap
+    }
+
+  }
 
 }
+
 
 trait DoubleImplicits {
   class RichDouble(x: Double) {

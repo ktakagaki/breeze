@@ -1,5 +1,7 @@
 package breeze.linalg
 
+import breeze.numerics.isNonfinite
+import org.netlib.blas.Ddot
 import org.scalacheck._
 import org.scalatest._
 import org.scalatest.junit._
@@ -85,10 +87,30 @@ class DenseVectorTest extends FunSuite with Checkers {
     assert(max(v) === 3)
   }
 
+  test("elemenwise max") {
+    val v = DenseVector(2, 0, 3, 2, -1)
+    val v2 = DenseVector(3, -1, 3, 4, -4)
+
+    assert(max(v, v2) === DenseVector(3, 0, 3, 4, -1))
+    assert(max(v, 2) === DenseVector(2, 2, 3, 2, 2))
+
+    assert(min(v, 2) === DenseVector(2, 0, 2, 2, -1))
+  }
+
+  test("Scalars on the LHS") {
+    val v = DenseVector(2, 1, 3, 2, -1)
+    assert(1 :+ v == v + 1)
+    assert(1 :- v == -v + 1)
+    assert(6 :/ v == v.mapValues(6 / _) )
+    assert(6 :* v == v.mapValues(6 * _) )
+
+  }
+
   test("Topk") {
     val v = DenseVector(2, 0, 3, 4, -1)
 
-    assert(argtopk(v, 3) === IndexedSeq(3,2,0))
+    // order doesn't matter
+    assert(argtopk(v, 3).toSet === Set(3,2,0))
   }
 
 
@@ -96,17 +118,19 @@ class DenseVectorTest extends FunSuite with Checkers {
     assert(mean(DenseVector(0.0,1.0,2.0)) === 1.0)
     assert(mean(DenseVector(0.0,3.0)) === 1.5)
     assert(mean(DenseVector(3.0)) === 3.0)
+    assert(mean(DenseVector(3.0).t) === 3.0)
   }
 
   test("Norm") {
     val v = DenseVector(-0.4326, -1.6656, 0.1253, 0.2877, -1.1465)
-    assertClose(v.norm(1), 3.6577)
-    assertClose(v.norm(2), 2.0915)
-    assertClose(v.norm(3), 1.8405)
-    assertClose(v.norm(4), 1.7541)
-    assertClose(v.norm(5), 1.7146)
-    assertClose(v.norm(6), 1.6940)
-    assertClose(v.norm(Double.PositiveInfinity), 1.6656)
+    assertClose(norm(v, 1), 3.6577)
+    assertClose(norm(v, 2), 2.0915)
+    assertClose(norm(v, 3), 1.8405)
+    assertClose(norm(v, 4), 1.7541)
+    assertClose(norm(v, 5), 1.7146)
+    assertClose(norm(v, 6), 1.6940)
+    assertClose(norm(v.t, 6), 1.6940)
+    assertClose(norm(v, Double.PositiveInfinity), 1.6656)
   }
 
   test("MulInner") {
@@ -247,6 +271,14 @@ class DenseVectorTest extends FunSuite with Checkers {
     assert(mav === DenseVector(2.0, 3.0, 4.0, 5.0, 6.0))
   }
 
+  test("Strided Map(Active)Values Double") {
+    val a: DenseVector[Double] = DenseVector(1, 2, 3, 4, 5)
+    val mv: DenseVector[Double] = a(2 to -1).mapValues(_ + 1)
+    val mav: DenseVector[Double] = a(2 to -1).mapActiveValues(_ + 1)
+    assert(mv === DenseVector(4.0, 5.0, 6.0))
+    assert(mav === DenseVector(4.0, 5.0, 6.0))
+  }
+
   test("Map(Active)Pairs Int") {
     val a: DenseVector[Int] = DenseVector(1, 2, 3, 4, 5)
     val mv: DenseVector[Int] = a.mapPairs((i,x) => x + 1)
@@ -337,6 +369,12 @@ class DenseVectorTest extends FunSuite with Checkers {
 
   }
 
+  test("Negation Tranpose") {
+    val a1 = DenseVector(1.0, 2.0, 3.0)
+    assert(-a1.t == DenseVector(-1.0, -2.0, -3.0).t)
+
+  }
+
   test("DV ops work as Vector") {
     val a = DenseVector(1.0, 2.0, 3.0)
     val b = DenseVector(3.0, 4.0, 5.0)
@@ -415,6 +453,13 @@ class DenseVectorTest extends FunSuite with Checkers {
     assert(dv === DenseVector(1,1,2,3,4,5,6,7,8,8))
   }
 
+  test("clip tranpose") {
+    val dv = DenseVector.range(0, 10)
+    assert(clip(dv.t, 1, 8) === DenseVector(1,1,2,3,4,5,6,7,8,8).t)
+    clip.inPlace(dv.t, 1, 8)
+    assert(dv.t === DenseVector(1,1,2,3,4,5,6,7,8,8).t)
+  }
+
   test("any and all") {
     val a = DenseVector(1, 2, 3)
     val b = DenseVector(1, 4, 1)
@@ -435,6 +480,57 @@ class DenseVectorTest extends FunSuite with Checkers {
     assert(!a === DenseVector(false, true, true))
   }
 
+  // blas causes me so many headaches
+  test("negative step sizes and dot -- Double") {
+    val foo = DenseVector(1.0, 2.0, 3.0, 4.0)
+    val fneg = foo(3 to 0 by -1)
+    println(fneg, fneg.offset, fneg.data, fneg.length, fneg.stride)
+    assert((foo dot foo(3 to 0 by -1)) === 20.0)
+  }
+
+  test("negative step sizes and + -- Double") {
+    val foo = DenseVector(1.0, 2.0, 3.0, 4.0)
+    val fneg = foo(3 to 0 by -1)
+    assert(foo + fneg === DenseVector(5.0, 5.0, 5.0, 5.0))
+  }
+
+
+  test("negative step sizes and scale -- Double") {
+    val foo = DenseVector(1.0, 2.0, 3.0, 4.0)
+    val fneg = foo(3 to 0 by -1)
+    fneg *= 1.0
+    assert(fneg * 3.0 === DenseVector(12.0, 9.0, 6.0, 3.0))
+  }
+
+  test("negative step sizes and assignment -- Double") {
+    val foo = DenseVector(1.0, 2.0, 3.0, 4.0)
+    val fneg = foo(3 to 0 by -1)
+    fneg.copy
+    val fy = DenseVector.zeros[Double](fneg.length)
+    fy := fneg
+    assert(fy === DenseVector(4.0, 3.0, 2.0, 1.0))
+  }
+
+  implicit def genTriple: Arbitrary[DenseVector[Double]] = Arbitrary {
+    Arbitrary.arbitrary[Double].map(DenseVector.rand[Double](30) * _)
+  }
+
+
+  test("isClose") {
+    check((a: DenseVector[Double]) => isClose(a, a))
+    check((a: DenseVector[Double], b: DenseVector[Double]) => isClose(a,b) == zipValues(a, b).forall((a, b) => (a - b).abs < 1E-8))
+  }
+
+  test("nonfinite") {
+    check((a: DenseVector[Double]) => any(isNonfinite, a) == a.exists(isNonfinite(_)))
+    check((a: DenseVector[Double]) => all(isNonfinite, a) == a.forall(isNonfinite(_)))
+    assert(all(isNonfinite, DenseVector[Double]())(all.reduceUFunc))
+    assert(!any(isNonfinite, DenseVector[Double]()))
+  }
+
+  test("#467 can slice transpose") {
+    assert(DenseVector(3, 4).t(0 until 1) == DenseVector(3).t)
+  }
 }
 
 /**
@@ -443,18 +539,22 @@ class DenseVectorTest extends FunSuite with Checkers {
  */
 @RunWith(classOf[JUnitRunner])
 class DenseVectorOps_DoubleTest extends DoubleValuedTensorSpaceTestBase[DenseVector[Double], Int] {
- val space: MutableTensorField[DenseVector[Double], Int, Double] = DenseVector.space[Double]
+ val space = DenseVector.space[Double]
 
-  val N = 30
   implicit def genTriple: Arbitrary[(DenseVector[Double], DenseVector[Double], DenseVector[Double])] = {
+    val N = 30
     Arbitrary {
       for{x <- Arbitrary.arbitrary[Double].map { _  % 1E100}
           y <- Arbitrary.arbitrary[Double].map { _ % 1E100 }
           z <- Arbitrary.arbitrary[Double].map { _ % 1E100 }
+          n <- Gen.choose(1, N)
+          stride <- Gen.choose(1, 4)
+          offset <- Gen.choose(0, 5)
       } yield {
-        (DenseVector.fill(N)(math.random * x),
-          DenseVector.fill(N)(math.random * y),
-          DenseVector.fill(N)(math.random * z))
+        (DenseVector.fill(n * stride + offset)(math.random * x),//.apply(offset until (n * stride + offset) by stride),
+          DenseVector.fill(n * stride + offset)(math.random * y),//.apply(offset until (n * stride + offset) by stride),
+          DenseVector.fill(n * stride + offset)(math.random * z)//.apply(offset until (n * stride + offset) by stride)
+          )
       }
     }
   }
@@ -464,7 +564,7 @@ class DenseVectorOps_DoubleTest extends DoubleValuedTensorSpaceTestBase[DenseVec
 
 @RunWith(classOf[JUnitRunner])
 class DenseVectorOps_IntTest extends TensorSpaceTestBase[DenseVector[Int], Int, Int] {
- val space: MutableTensorField[DenseVector[Int], Int, Int] = DenseVector.space[Int]
+ val space = DenseVector.space[Int]
 
   val N = 30
   implicit def genTriple: Arbitrary[(DenseVector[Int], DenseVector[Int], DenseVector[Int])] = {
@@ -472,10 +572,11 @@ class DenseVectorOps_IntTest extends TensorSpaceTestBase[DenseVector[Int], Int, 
       for{x <- Arbitrary.arbitrary[Int].map { _  % 1000}
           y <- Arbitrary.arbitrary[Int].map { _ % 1000}
           z <- Arbitrary.arbitrary[Int].map { _ % 1000}
+          n <- Gen.choose(1, N)
       } yield {
-        (DenseVector.fill(N)(math.random * x toInt),
-          DenseVector.fill(N)(math.random * y toInt),
-          DenseVector.fill(N)(math.random * z toInt))
+        (DenseVector.fill(n)(math.random * x toInt),
+          DenseVector.fill(n)(math.random * y toInt),
+          DenseVector.fill(n)(math.random * z toInt))
       }
     }
   }
@@ -485,7 +586,7 @@ class DenseVectorOps_IntTest extends TensorSpaceTestBase[DenseVector[Int], Int, 
 
 @RunWith(classOf[JUnitRunner])
 class DenseVectorOps_ComplexTest extends TensorSpaceTestBase[DenseVector[Complex], Int, Complex] {
-  val space: MutableTensorField[DenseVector[Complex], Int, Complex] = DenseVector.space[Complex]
+  val space = DenseVector.space[Complex]
 
   val N = 30
   implicit def genTriple: Arbitrary[(DenseVector[Complex], DenseVector[Complex], DenseVector[Complex])] = {
@@ -493,10 +594,11 @@ class DenseVectorOps_ComplexTest extends TensorSpaceTestBase[DenseVector[Complex
       for{x <- Arbitrary.arbitrary[Complex]
           y <- Arbitrary.arbitrary[Complex]
           z <- Arbitrary.arbitrary[Complex]
+          n <- Gen.choose(1, N)
       } yield {
-        (DenseVector.fill(N)(math.random * x),
-          DenseVector.fill(N)(math.random * y),
-          DenseVector.fill(N)(math.random * z))
+        (DenseVector.fill(n)(math.random * x),
+          DenseVector.fill(n)(math.random * y),
+          DenseVector.fill(n)(math.random * z))
       }
     }
   }
@@ -506,7 +608,7 @@ class DenseVectorOps_ComplexTest extends TensorSpaceTestBase[DenseVector[Complex
 
 @RunWith(classOf[JUnitRunner])
 class DenseVectorOps_FloatTest extends TensorSpaceTestBase[DenseVector[Float], Int, Float] {
- val space: MutableTensorField[DenseVector[Float], Int, Float] = DenseVector.space[Float]
+ val space = DenseVector.space[Float]
 
   val N = 30
   implicit def genTriple: Arbitrary[(DenseVector[Float], DenseVector[Float], DenseVector[Float])] = {
@@ -514,10 +616,13 @@ class DenseVectorOps_FloatTest extends TensorSpaceTestBase[DenseVector[Float], I
       for{x <- Arbitrary.arbitrary[Float].map { _  % 1000}
           y <- Arbitrary.arbitrary[Float].map { _ % 1000}
           z <- Arbitrary.arbitrary[Float].map { _ % 1000}
+          n <- Gen.choose(1, N)
+          stride <- Gen.choose(1, 4)
+          offset <- Gen.choose(0, 5)
       } yield {
-        (DenseVector.fill(N)(math.random * x toFloat),
-          DenseVector.fill(N)(math.random * y toFloat),
-          DenseVector.fill(N)(math.random * z toFloat))
+        (DenseVector.fill(n * stride + offset)(math.random * x toFloat).apply(offset until (n * stride + offset) by stride),
+          DenseVector.fill(n * stride + offset)(math.random * y toFloat).apply(offset until (n * stride + offset) by stride),
+          DenseVector.fill(n * stride + offset)(math.random * z toFloat).apply(offset until (n * stride + offset) by stride))
       }
     }
   }

@@ -3,6 +3,8 @@ package breeze.linalg
 import breeze.generic.UFunc
 import breeze.linalg.support.CanTraverseValues
 import breeze.linalg.support.CanTraverseValues.ValuesVisitor
+import breeze.macros.expand
+import spire.syntax.cfor._
 
 
 /**
@@ -31,19 +33,27 @@ object softmax extends UFunc {
    */
   def array(arr: Array[Double], length: Int) = {
     val m = max.array(arr, length)
-    var accum = 0.0
-    var i = 0
-    while(i < length) {
-      accum += scala.math.exp(arr(i) - m)
-      i += 1
+    if(m.isInfinite) {
+      m
+    } else {
+      var accum = 0.0
+      var i = 0
+      while(i < length) {
+        accum += scala.math.exp(arr(i) - m)
+        i += 1
+      }
+      m + scala.math.log(accum)
     }
-    m + scala.math.log(accum)
   }
 
   implicit def reduceDouble[T](implicit iter: CanTraverseValues[T, Double], maxImpl: max.Impl[T, Double]): Impl[T, Double] = new Impl[T, Double] {
     def apply(v: T): Double = {
 
       val max = if(!iter.isTraversableAgain(v)) 0.0 else maxImpl(v)
+
+      if (max.isInfinite) {
+        return Double.NegativeInfinity
+      }
 
       val visit = new ValuesVisitor[Double] {
         var accum = 0.0
@@ -72,6 +82,48 @@ object softmax extends UFunc {
       iter.traverse(v, visit)
 
       max + scala.math.log(visit.accum)
+    }
+
+  }
+
+  implicit def reduceFloat[T](implicit iter: CanTraverseValues[T, Float], maxImpl: max.Impl[T, Float]): Impl[T, Float] = new Impl[T, Float] {
+    def apply(v: T): Float = {
+
+      val max = if(!iter.isTraversableAgain(v)) 0.0f else maxImpl(v)
+
+      if (max.isInfinite) {
+        return Float.NegativeInfinity
+      }
+
+      val visit = new ValuesVisitor[Float] {
+        var accum = 0.0f
+        def visit(a: Float): Unit = {
+          accum += scala.math.exp(a - max).toFloat
+        }
+
+        def zeros(numZero: Int, zeroValue: Float): Unit = {
+          if(numZero != 0) {
+            accum += (numZero * scala.math.exp(zeroValue - max)).toFloat
+          }
+        }
+
+        override def visitArray(arr: Array[Float], offset: Int, length: Int, stride: Int): Unit = {
+          var i = 0
+          var off = offset
+          var cur = 0.0f
+
+          while (i < length) {
+            cur += scala.math.exp(arr(off) - max).toFloat
+            i += 1
+            off += stride
+          }
+          accum += cur
+        }
+      }
+
+      iter.traverse(v, visit)
+
+      max + scala.math.log(visit.accum).toFloat
     }
 
   }

@@ -4,7 +4,7 @@ import breeze.linalg.support.CanCopy
 import breeze.linalg.{norm, Tensor, NumericOps}
 import breeze.linalg.operators.{OpSub, BinaryOp}
 import breeze.stats.distributions.Rand
-import com.typesafe.scalalogging.slf4j.LazyLogging
+import breeze.util.SerializableLogging
 
 /**
  * Class that compares the computed gradient with an empirical gradient based on
@@ -12,7 +12,7 @@ import com.typesafe.scalalogging.slf4j.LazyLogging
  *
  * @author dlwh
  */
-object GradientTester extends LazyLogging {
+object GradientTester extends SerializableLogging {
   /**
    * Tests a gradient by comparing the gradient to the empirically calculated gradient from finite differences,
    * returning those that are bad, logging bad ones on WARN, ok ones on DEBUG, and overall statistics on INFO.
@@ -76,7 +76,7 @@ object GradientTester extends LazyLogging {
         tried += 1
       }
       if (tried % 100 == 0 || tried == sz) {
-        logger.info(f"Checked $tried of ${sz} (out of dimension ${x.size}). ${ok * 1.0 / tried}%.4g%% ok.")
+        logger.info(f"Checked $tried of ${sz} (out of dimension ${x.size}). ${ok * 100.0 / tried}%.4g%% ok.")
       }
     }
     differences

@@ -1,10 +1,13 @@
 package breeze.linalg
 
+import java.util
+
 import breeze.macros.expand
 import breeze.linalg.Options._
 import breeze.stats.{median, mean}
 import scala.reflect.ClassTag
 import breeze.math.Semiring
+import spire.implicits.{cforRange, cforRange2}
 
 /**
  * @author ktakagaki
@@ -103,7 +106,9 @@ object CanPadRight {
         require( optDim.n1 > 0 && optDim.n2 > 0, "Cannot pad to zero or negative length!")
 
         val tempret = DenseMatrix.zeros[T](optDim.n1, optDim.n2)
-        for(c <- 0 until min(optDim.n2, m.cols); r <- 0 until min(optDim.n1, m.rows)) tempret(r, c) = m(r, c)
+        cforRange2(0 until min(optDim.n2, m.cols), 0 until min(optDim.n1, m.rows)){
+          (c, r) => tempret(r, c) = m(r, c)
+        }
         tempret
       }
 
@@ -142,16 +147,21 @@ object CanPadLeft {
         }
       }
 
-      def padLeft1ImplZero[T]
+      def padLeft1ImplZero
       (v: DenseVector[T], optDim: Dimensions1): DenseVector[T] = {
         padLeft1ImplFixed(v, optDim, implicitly[Semiring[T]].zero)
       }
 
-      def padLeft1ImplFixed[T](v: DenseVector[T], optDim: Dimensions1, padValue: T): DenseVector[T] = {
+      def padLeft1ImplFixed(v: DenseVector[T], optDim: Dimensions1, padValue: T): DenseVector[T] = {
         require( optDim.n1 > 0, "Cannot pad to zero or negative length!")
         v.length match {
           case optDim.n1 => v.copy
-          case num: Int if num < optDim.n1 => DenseVector( Array.tabulate(optDim.n1 - num)(p => padValue) ++ v.toArray )
+          case num: Int if num < optDim.n1 =>
+            val res = new Array[T](optDim.n1)
+            util.Arrays.fill(res, padValue)
+            val r = DenseVector(res)
+            r((optDim.n1 - num) until optDim.n1) := v
+            r
           case num: Int if optDim.n1 < num => v(v.length - optDim.n1 until v.length).copy //function should return a copy
           case _ => throw new IllegalArgumentException("(n) specification incorrect: " + optDim.toString + " !")
         }
@@ -204,7 +214,9 @@ object CanPadLeft {
         require( optDim.n1 > 0 && optDim.n2 > 0, "Cannot pad to zero or negative length!")
 
         val tempret = DenseMatrix.zeros[T](optDim.n1, optDim.n2)
-        for(c <- 1 to min(optDim.n2, m.cols); r <- 1 to min(optDim.n1, m.rows)) tempret(optDim.n1 - r , optDim.n2 - c) = m(m.rows - r, m.cols - c)
+        cforRange2(1 to min(optDim.n2, m.cols), 1 to min(optDim.n1, m.rows)) {
+          (c, r) => tempret(optDim.n1 - r , optDim.n2 - c) = m(m.rows - r, m.cols - c)
+        }
         tempret
       }
 

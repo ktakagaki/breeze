@@ -1,8 +1,8 @@
 package breeze.optimize
 
-import breeze.linalg.norm
-import breeze.math.{VectorRing, NormedModule, InnerProductVectorSpace}
 import breeze.linalg.support.CanCopy
+import breeze.math.InnerProductModule
+import breeze.util.Isomorphism
 
 /*
  Copyright 2009 David Hall, Daniel Ramage
@@ -25,7 +25,7 @@ import breeze.linalg.support.CanCopy
 *
 * @author dlwh
 */
-trait DiffFunction[T] extends StochasticDiffFunction[T] {
+trait DiffFunction[T] extends StochasticDiffFunction[T] { outer =>
   def cached(implicit copy: CanCopy[T]) = {
     if (this.isInstanceOf[CachedDiffFunction[_]]) {
       this
@@ -33,10 +33,18 @@ trait DiffFunction[T] extends StochasticDiffFunction[T] {
       new CachedDiffFunction(this)
     }
   }
+
+  override def throughLens[U](implicit l: Isomorphism[T,U]):DiffFunction[U] = new DiffFunction[U] {
+    override def calculate(u: U) = {
+      val t = l.backward(u)
+      val (obj,gu) = outer.calculate(t)
+      (obj,l.forward(gu))
+    }
+  }
 }
 
 object DiffFunction {
-  def withL2Regularization[T, I](d: DiffFunction[T],weight: Double)(implicit space: VectorRing[T, Double]) = new DiffFunction[T] {
+  def withL2Regularization[T, I](d: DiffFunction[T],weight: Double)(implicit space: InnerProductModule[T, Double]) = new DiffFunction[T] {
     import space._
     override def gradientAt(x:T):T = {
       val grad = d.gradientAt(x)
@@ -62,7 +70,7 @@ object DiffFunction {
     }
   }
 
-  def withL2Regularization[T, I](d: BatchDiffFunction[T],weight: Double)(implicit space: NormedModule[T, Double]):BatchDiffFunction[T] = new BatchDiffFunction[T] {
+  def withL2Regularization[T, I](d: BatchDiffFunction[T],weight: Double)(implicit space: InnerProductModule[T, Double]):BatchDiffFunction[T] = new BatchDiffFunction[T] {
     import space._
     override def gradientAt(x:T, batch: IndexedSeq[Int]):T = {
       val grad = d.gradientAt(x, batch)
@@ -75,7 +83,7 @@ object DiffFunction {
     }
 
     private def myValueAt(x:T) = {
-      weight * math.pow(norm(x,2),2) / 2
+      weight * (x dot x)
     }
 
     private def myGrad(g: T, x: T) = {

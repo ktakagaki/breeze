@@ -1,22 +1,23 @@
 package breeze.linalg
 
+import operators._
+import support._
+import support.CanTraverseValues.ValuesVisitor
+import support.CanTraverseKeyValuePairs.KeyValuePairsVisitor
 import breeze.collection.mutable.OpenAddressHashArray
-import breeze.linalg.operators._
 import breeze.storage.Zero
-import breeze.generic._
-import breeze.linalg.support._
-import breeze.math.{MutableTensorField, MutableVectorField, Field}
+import breeze.macros.expand
+import breeze.math._
+
+import scala.{specialized=>spec}
 import scala.reflect.ClassTag
 import scala.util.hashing.MurmurHash3
-import breeze.macros.expand
-import CanTraverseValues.ValuesVisitor
-import breeze.linalg.support.CanTraverseKeyValuePairs.KeyValuePairsVisitor
 
 /**
  * A HashVector is a sparse vector backed by an OpenAddressHashArray
  * @author dlwh
  */
-class HashVector[@specialized(Int, Double, Float) E](val array: OpenAddressHashArray[E]) extends Vector[E] with VectorLike[E, HashVector[E]] {
+class HashVector[@spec(Double, Int, Float, Long) E](val array: OpenAddressHashArray[E]) extends Vector[E] with VectorLike[E, HashVector[E]] {
 
   // don't delete
   HashVector.init()
@@ -84,10 +85,10 @@ object HashVector extends HashVectorOps
                           with HashVector_SparseVector_Ops
                           with SparseVector_HashVector_Ops
                            {
-  def zeros[@specialized(Double, Float, Int) V: ClassTag:Zero](size: Int) = {
+  def zeros[@spec(Double, Int, Float, Long) V: ClassTag:Zero](size: Int) = {
     new HashVector(new OpenAddressHashArray[V](size))
   }
-  def apply[@specialized(Double, Float, Int) V:Zero](values: Array[V]) = {
+  def apply[@spec(Double, Int, Float, Long) V:Zero](values: Array[V]) = {
     implicit val man = ClassTag[V](values.getClass.getComponentType.asInstanceOf[Class[V]])
     val oah = new OpenAddressHashArray[V](values.length)
     for( (v,i) <- values.zipWithIndex) oah(i) = v
@@ -97,8 +98,8 @@ object HashVector extends HashVectorOps
   def apply[V:ClassTag:Zero](values: V*):HashVector[V] = {
     apply(values.toArray)
   }
-  def fill[@specialized(Double, Int, Float) V:ClassTag:Zero](size: Int)(v: =>V):HashVector[V] = apply(Array.fill(size)(v))
-  def tabulate[@specialized(Double, Int, Float) V:ClassTag:Zero](size: Int)(f: Int=>V):HashVector[V]= apply(Array.tabulate(size)(f))
+  def fill[@spec(Double, Int, Float, Long) V:ClassTag:Zero](size: Int)(v: =>V):HashVector[V] = apply(Array.fill(size)(v))
+  def tabulate[@spec(Double, Int, Float, Long) V:ClassTag:Zero](size: Int)(f: Int=>V):HashVector[V]= apply(Array.tabulate(size)(f))
 
   def apply[V:ClassTag:Zero](length: Int)(values: (Int, V)*) = {
     val r = zeros[V](length)
@@ -126,17 +127,19 @@ object HashVector extends HashVectorOps
     }
   }
 
-  implicit def canCopyHash[@specialized(Int, Float, Double) V: ClassTag: Zero] = new CanCopyHashVector[V]
+  implicit def canCopyHash[@specialized(Int, Float, Double) V: ClassTag: Zero]: CanCopyHashVector[V] = new CanCopyHashVector[V]
 
   implicit def canMapValues[V, V2: ClassTag: Zero]:CanMapValues[HashVector[V], V, V2, HashVector[V2]] = {
     new CanMapValues[HashVector[V], V, V2, HashVector[V2]] {
-      /**Maps all key-value pairs from the given collection. */
-      def map(from: HashVector[V], fn: (V) => V2) = {
+      def apply(from: HashVector[V], fn: (V) => V2) = {
         HashVector.tabulate(from.length)(i => fn(from(i)))
       }
+    }
+  }
 
-      /**Maps all active key-value pairs from the given collection. */
-      def mapActive(from: HashVector[V], fn: (V) => V2) = {
+  implicit def canMapActiveValues[V, V2: ClassTag: Zero]:CanMapActiveValues[HashVector[V], V, V2, HashVector[V2]] = {
+    new CanMapActiveValues[HashVector[V], V, V2, HashVector[V2]] {
+      def apply(from: HashVector[V], fn: (V) => V2) = {
         val out = new OpenAddressHashArray[V2](from.length)
         var i = 0
         while(i < from.iterableSize) {
@@ -148,7 +151,8 @@ object HashVector extends HashVectorOps
       }
     }
   }
-  implicit def handholdCMV[T]= new CanMapValues.HandHold[HashVector[T], T]
+
+  implicit def scalarOf[T]: ScalarOf[HashVector[T], T] = ScalarOf.dummy
 
   implicit def canIterateValues[V]:CanTraverseValues[HashVector[V], V] = {
     new CanTraverseValues[HashVector[V],V] {
@@ -211,8 +215,13 @@ object HashVector extends HashVectorOps
     }
   }
 
-  implicit def space[E:Field:ClassTag:Zero]: MutableTensorField[HashVector[E],Int,E] = {
-    MutableTensorField.make[HashVector[E], Int, E]
+  implicit def canTabulate[E:ClassTag:Zero]: CanTabulate[Int, HashVector[E], E] = new CanTabulate[Int,HashVector[E],E] {
+    def apply(d: Int, f: (Int) => E): HashVector[E] = tabulate[E](d)(f)
+  }
+
+  implicit def space[E:Field:ClassTag:Zero]: MutableFiniteCoordinateField[HashVector[E],Int,E] = {
+    implicit val _dim = dim.implVDim[E, HashVector[E]]
+    MutableFiniteCoordinateField.make[HashVector[E], Int, E]
   }
 
   import breeze.math.PowImplicits._

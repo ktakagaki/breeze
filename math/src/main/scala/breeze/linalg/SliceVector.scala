@@ -1,10 +1,12 @@
 package breeze.linalg
 
-import scala.reflect.ClassTag
+import breeze.linalg.support.CanTraverseKeyValuePairs.KeyValuePairsVisitor
+import breeze.linalg.support.CanTraverseValues.ValuesVisitor
 import breeze.linalg.support._
 import breeze.storage.Zero
-import breeze.linalg.support.CanTraverseValues.ValuesVisitor
-import breeze.linalg.support.CanTraverseKeyValuePairs.KeyValuePairsVisitor
+
+import scala.reflect.ClassTag
+import scala.{specialized => spec}
 
 /**
  * A SliceVector is a vector that is a view of another underlying tensor. For instance:
@@ -16,7 +18,7 @@ import breeze.linalg.support.CanTraverseKeyValuePairs.KeyValuePairsVisitor
  * will give a SliceVector such that apply/update at index 0 will map to m(1,2), index 1 to m(3,4), etc.
  * @author dlwh
  */
-class SliceVector[@specialized(Int) K, @specialized(Int, Double, Float) V:ClassTag](val tensor: Tensor[K,V],
+class SliceVector[@spec(Int) K, @spec(Double, Int, Float, Long) V:ClassTag](val tensor: Tensor[K,V],
                                                                                     val slices: IndexedSeq[K]) extends Vector[V] {
   def apply(i: Int): V = tensor(slices(i))
 
@@ -39,7 +41,7 @@ class SliceVector[@specialized(Int) K, @specialized(Int, Double, Float) V:ClassT
 
 
 object SliceVector {
-  implicit def handholdCMV[K, T] = new CanMapValues.HandHold[SliceVector[K, T], T]
+  implicit def scalarOf[K, T]: ScalarOf[SliceVector[K, T], T] = ScalarOf.dummy
 
   implicit def canMapKeyValuePairs[K, V, V2: ClassTag]: CanMapKeyValuePairs[SliceVector[K, V], Int, V, V2, DenseVector[V2]] = {
     new CanMapKeyValuePairs[SliceVector[K, V], Int, V, V2, DenseVector[V2]] {
@@ -55,13 +57,10 @@ object SliceVector {
 
   implicit def canMapValues[K, V, V2: ClassTag]: CanMapValues[SliceVector[K, V], V, V2, DenseVector[V2]] = {
     new CanMapValues[SliceVector[K, V], V, V2, DenseVector[V2]] {
-      override def map(from: SliceVector[K, V], fn: (V) => V2): DenseVector[V2] = {
+      override def apply(from: SliceVector[K, V], fn: (V) => V2): DenseVector[V2] = {
         DenseVector.tabulate(from.length)(i => fn(from(i)))
       }
 
-      override def mapActive(from: SliceVector[K, V], fn: (V) => V2): DenseVector[V2] = {
-        map(from, fn)
-      }
     }
   }
 
@@ -81,7 +80,7 @@ object SliceVector {
 
       /** Iterates all key-value pairs from the given collection. */
       def traverse(from: SliceVector[K, V], fn: ValuesVisitor[V]): Unit = {
-        from.activeValuesIterator foreach {
+        from.valuesIterator foreach {
           fn.visit(_)
         }
       }
@@ -92,7 +91,7 @@ object SliceVector {
     new CanTraverseKeyValuePairs[SliceVector[K, V], Int, V] {
       /** Traverses all values from the given collection. */
       override def traverse(from: SliceVector[K, V], fn: KeyValuePairsVisitor[Int, V]): Unit = {
-        from.activeIterator foreach {
+        from.iterator foreach {
           case (k, v) => fn.visit(k, v)
         }
 
@@ -104,8 +103,8 @@ object SliceVector {
   }
 
 
-  implicit def canTransformValues[K, V]: CanTransformValues[SliceVector[K, V], V, V] = {
-    new CanTransformValues[SliceVector[K, V], V, V] {
+  implicit def canTransformValues[K, V]: CanTransformValues[SliceVector[K, V], V] = {
+    new CanTransformValues[SliceVector[K, V], V] {
       def transform(from: SliceVector[K, V], fn: (V) => V) {
         for (i <- 0 until from.length) {
           from(i) = fn(from(i))
