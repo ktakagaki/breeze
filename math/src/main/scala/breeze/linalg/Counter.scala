@@ -86,7 +86,7 @@ trait Counter[K, V] extends Tensor[K,V] with CounterLike[K, V, collection.mutabl
 
 object Counter extends CounterOps {
   /** Returns an empty counter. */
-  def apply[K,V:Zero:Semiring]() : Counter[K,V] =
+  def apply[K,V:Zero]() : Counter[K,V] =
     new Impl(scala.collection.mutable.HashMap[K,V]())
 
   /** Returns a counter by summing all the given values. */
@@ -118,22 +118,27 @@ object Counter extends CounterOps {
     def default = zero.zero
   }
 
-  implicit def canMapValues[K, V, RV:Semiring]: CanMapValues[Counter[K, V], V, RV, Counter[K, RV]]
-  = new CanMapValues[Counter[K,V],V,RV,Counter[K,RV]] {
-    override def map(from : Counter[K,V], fn : (V=>RV)) = {
-      val rv = Counter[K,RV]()
-      for( (k,v) <- from.iterator) {
-        rv(k) = fn(from.data(k))
+  implicit def canMapValues[K, V, RV: Zero]: CanMapValues[Counter[K, V], V, RV, Counter[K, RV]] = {
+    new CanMapValues[Counter[K, V], V, RV, Counter[K, RV]] {
+      override def apply(from: Counter[K, V], fn: (V => RV)) = {
+        val rv = Counter[K, RV]()
+        for ((k, v) <- from.iterator) {
+          rv(k) = fn(from.data(k))
+        }
+        rv
       }
-      rv
     }
+  }
 
-    override def mapActive(from : Counter[K,V], fn : (V=>RV)) = {
-      val rv = Counter[K,RV]()
-      for( (k,v) <- from.activeIterator) {
-        rv(k) = fn(from.data(k))
+  implicit def canMapActiveValues[K, V, RV: Zero]: CanMapActiveValues[Counter[K, V], V, RV, Counter[K, RV]] = {
+    new CanMapActiveValues[Counter[K, V], V, RV, Counter[K, RV]] {
+      override def apply(from : Counter[K,V], fn : (V=>RV)) = {
+        val rv = Counter[K,RV]()
+        for( (k,v) <- from.activeIterator) {
+          rv(k) = fn(from.data(k))
+        }
+        rv
       }
-      rv
     }
   }
 
@@ -149,6 +154,8 @@ object Counter extends CounterOps {
     }
 
   }
+
+  implicit def scalarOf[K, V]: ScalarOf[Counter[K, V], V] = ScalarOf.dummy
 
   implicit def canTraverseKeyValuePairs[K,V]: CanTraverseKeyValuePairs[Counter[K,V],K,V] = new CanTraverseKeyValuePairs[Counter[K,V],K,V] {
     /** Traverses all values from the given collection. */
@@ -171,15 +178,32 @@ object Counter extends CounterOps {
     }
   }
 
-  implicit def canCreateZeros[K,V:Zero:Semiring]: CanCreateZeros[Counter[K,V],K] =
-    new CanCreateZeros[Counter[K,V],K] {
+  implicit def canCreateZeros[K,V:Zero:Semiring]: CanCreateZeros[Counter[K,V],K] = {
+    new CanCreateZeros[Counter[K, V], K] {
       // Shouldn't need to supply a key value here, but it really mixes up the
       // VectorSpace hierarchy since it would require separate types for
       // implicitly full-domain spaces (like Counter), and finite domain spaces, like Vector
       def apply(d: K): Counter[K, V] = {
-        Counter.apply()
+        Counter()
       }
     }
+  }
+
+  implicit def canCreateZerosLike[K,V:Zero:Semiring]: CanCreateZerosLike[Counter[K,V],Counter[K, V]] = {
+    new CanCreateZerosLike[Counter[K, V], Counter[K, V]] {
+      // Shouldn't need to supply a key value here, but it really mixes up the
+      // VectorSpace hierarchy since it would require separate types for
+      // implicitly full-domain spaces (like Counter), and finite domain spaces, like Vector
+      def apply(d: Counter[K, V]): Counter[K, V] = {
+        val r = Counter[K, V]()
+        val z = implicitly[Zero[V]].zero
+        for ( (k, v) <- d.iterator) {
+          r(k) = z
+        }
+        r
+      }
+    }
+  }
 
   implicit def space[K, V](implicit field: Field[V]): MutableEnumeratedCoordinateField[Counter[K, V], K, V] = {
     implicit def zipMap = Counter.zipMap[K, V, V]

@@ -20,6 +20,7 @@ import breeze.collection.mutable.Beam
 import breeze.generic.UFunc
 import breeze.math.Semiring
 
+import scala.util.hashing.MurmurHash3
 import scala.{specialized=>spec}
 import scala.reflect.ClassTag
 
@@ -83,6 +84,18 @@ trait QuasiTensor[@spec(Int) K, @spec(Double, Int, Float, Long) V] {
   /** Returns true if some element is non-zero */
   @deprecated("Use breeze.linalg.any instead", "0.6")
   def any(implicit semi: Semiring[V]) = valuesIterator.exists(_ != semi.zero)
+
+  // TODO: this is only consistent if the hashcode of inactive elements is 0!!!
+  override def hashCode() = {
+    var hash = 43
+    for(v <- activeValuesIterator) {
+      val hh = v.##
+      if (hh != 0)
+        hash = MurmurHash3.mix(hash, hh)
+    }
+
+    hash
+  }
 }
 
 
@@ -147,12 +160,12 @@ trait TensorLike[@spec(Int) K, @spec(Double, Int, Float, Long) V, +This<:Tensor[
 
   /** Creates a new map containing a transformed copy of this map. */
   def mapValues[TT>:This,O,That](f : V => O)(implicit bf : CanMapValues[TT, V, O, That]) : That = {
-    bf.map(repr.asInstanceOf[TT], f)
+    bf(repr.asInstanceOf[TT], f)
   }
 
   /** Maps all non-zero values. */
-  def mapActiveValues[TT>:This,O,That](f : V => O)(implicit bf : CanMapValues[TT, V, O, That]) : That = {
-    bf.mapActive(repr.asInstanceOf[TT], f)
+  def mapActiveValues[TT>:This,O,That](f : V => O)(implicit bf : CanMapActiveValues[TT, V, O, That]) : That = {
+    bf(repr.asInstanceOf[TT], f)
   }
 
 
@@ -244,6 +257,22 @@ object Tensor {
     new CanSlice2[Tensor[(K1,K2),V], Seq[K1], Seq[K2], SliceMatrix[K1, K2, V]] {
       def apply(from: Tensor[(K1, K2), V], slice: Seq[K1], slice2: Seq[K2]): SliceMatrix[K1, K2, V] = {
         new SliceMatrix(from, slice.toIndexedSeq, slice2.toIndexedSeq)
+      }
+    }
+  }
+
+  implicit def canSliceTensor2_CRs[K1, K2, V:Semiring:ClassTag]:CanSlice2[Tensor[(K1,K2),V], Seq[K1], K2, SliceMatrix[K1, K2, V]] = {
+    new CanSlice2[Tensor[(K1,K2),V], Seq[K1], K2, SliceMatrix[K1, K2, V]] {
+      def apply(from: Tensor[(K1, K2), V], slice: Seq[K1], slice2: K2): SliceMatrix[K1, K2, V] = {
+        new SliceMatrix(from, slice.toIndexedSeq, IndexedSeq(slice2))
+      }
+    }
+  }
+
+  implicit def canSliceTensor2_CsR[K1, K2, V:Semiring:ClassTag]:CanSlice2[Tensor[(K1,K2),V], K1, Seq[K2], SliceMatrix[K1, K2, V]] = {
+    new CanSlice2[Tensor[(K1,K2),V], K1, Seq[K2], SliceMatrix[K1, K2, V]] {
+      def apply(from: Tensor[(K1, K2), V], slice: K1, slice2: Seq[K2]): SliceMatrix[K1, K2, V] = {
+        new SliceMatrix(from, IndexedSeq(slice), slice2.toIndexedSeq)
       }
     }
   }
