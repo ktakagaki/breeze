@@ -4,6 +4,7 @@ import org.scalatest.FunSuite
 import java.io.{File, IOException}
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
+import spire.math.ULong
 
 /**
  * Created with IntelliJ IDEA.
@@ -138,10 +139,10 @@ class RandomAccessFileTestBigEndianWithFiles extends FunSuite {
   test("readUInt64"){
     val stream = new RAF( getResource("/UInt64"+fileNameAppend), "r")
     val res = stream.readUInt64(4)
-    assert(res(0) ==  0L)
-    assert(res(1) ==  1L)
-    assert(res(2) ==  1L)
-    assert(res(3) ==  9223372036854775807L)
+    assert(res(0) ==  ULong(0L))
+    assert(res(1) ==  ULong(1L))
+    assert(res(2) ==  ULong(1L))
+    assert(res(3) ==  ULong(9223372036854775807L))
     try{
       stream.readUInt64
     }catch{
@@ -320,18 +321,20 @@ class RandomAccessFileTestBigEndianWithFiles extends FunSuite {
 
   test("writeUInt64"){
     val stream = new RAF(fileHead + "/temp.bin", "rw")
-    stream.writeUInt64( 0L)
-    stream.writeUInt64( Array[BigInt](1L, 32767L, 9223372036854775807L) )
-    stream.writeUInt64( 9223372036854775807L )
+    stream.writeUInt64( ULong(0L))
+    stream.writeUInt64( Array(ULong(1L), ULong(32767L), ULong(9223372036854775807L)) )
+    stream.writeUInt64( ULong(9223372036854775807L) )
+    stream.writeUInt64( ULong("18446744073709551615") )
     stream.close
 
     val stream2 =  new RAF(fileHead + "/temp.bin", "r")
     val result2 = stream2.readUInt64(3)
-    assert(result2(0) == 0L )
-    assert(result2(1) == 1L )
-    assert(result2(2) == 32767L )
-    assert(stream2.readUInt64 ==  9223372036854775807L)
-    assert(stream2.readUInt64 == 9223372036854775807L)
+    assert(result2(0) == ULong(0L) )
+    assert(result2(1) == ULong(1L) )
+    assert(result2(2) == ULong(32767L) )
+    assert(stream2.readUInt64 ==  ULong(9223372036854775807L))
+    assert(stream2.readUInt64 == ULong(9223372036854775807L))
+    assert(stream2.readUInt64 == ULong("18446744073709551615"))
     stream2.close
   }
 
