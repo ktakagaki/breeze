@@ -59,7 +59,7 @@ trait Matrix[@spec(Double, Int, Float, Long) V] extends MatrixLike[V, Matrix[V]]
     def iterator: Iterator[(Int, Int)] = for{ j <- Iterator.range(0, cols); i <- Iterator.range(0, rows)} yield (i, j)
   }
 
-  def iterator = for(i <- Iterator.range(0, rows); j <- Iterator.range(0, cols)) yield (i -> j) -> apply(i, j)
+  def iterator = for(i <- Iterator.range(0, rows); j <- Iterator.range(0, cols)) yield (i, j) -> apply(i, j)
 
   def valuesIterator = for(i <- Iterator.range(0, rows); j <- Iterator.range(0, cols)) yield apply(i, j)
 
@@ -195,7 +195,7 @@ object Matrix extends MatrixConstructors[Matrix]
 
   implicit def canTraverseValues[V]: CanTraverseValues[Matrix[V], V] = {
     new CanTraverseValues[Matrix[V], V] {
-      def isTraversableAgain(from: Matrix[V]): Boolean = true
+      override def isTraversableAgain(from: Matrix[V]): Boolean = true
 
 
       /** Iterates all key-value pairs from the given collection. */
