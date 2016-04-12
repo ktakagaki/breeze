@@ -1,3 +1,5 @@
+package breeze.linalg
+
 /*
  *
  *  Copyright 2015 David Hall
@@ -13,18 +15,31 @@
  *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
- * /
+ *
  */
 
-package breeze.linalg
-
 /**
- * TODO
+ * Provides extra aliases for [[breeze.linalg]], to maintain backward compatibility.
+ *
  *
  * @author dlwh
  **/
 package object support {
+
+  /**
+    * Type alias. This was originally a trait, but was refactored into [[breeze.generic.UFunc]] objects,
+    * and this alias provides backward compatibility.
+    *
+    * @see [[breeze.linalg.mapValues]]
+    */
   type CanMapValues[From, A, B, To] = mapValues.Impl2[From, A=>B, To]
+
+  /**
+    * Type alias. This was originally a trait, but was refactored into [[breeze.generic.UFunc]] objects,
+    * and this alias provides backward compatibility.
+    *
+    * @see [[breeze.linalg.mapValues]]
+    */
   type CanMapActiveValues[From, A, B, To] = mapActiveValues.Impl2[From, A=>B, To]
 
   val CanMapValues: mapValues.type = mapValues
