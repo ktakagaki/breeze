@@ -403,7 +403,7 @@ object DenseVector extends VectorConstructors[DenseVector]
 
     new CanTraverseValues[DenseVector[V], V] {
 
-      def isTraversableAgain(from: DenseVector[V]): Boolean = true
+      override def isTraversableAgain(from: DenseVector[V]): Boolean = true
 
       /** Iterates all key-value pairs from the given collection. */
       def traverse(from: DenseVector[V], fn: ValuesVisitor[V]): Unit = {
@@ -505,6 +505,7 @@ object DenseVector extends VectorConstructors[DenseVector]
   // slicing
   // specialize to get the good class
   implicit def canSlice[V]: CanSlice[DenseVector[V], Range, DenseVector[V]] = {
+
     new CanSlice[DenseVector[V], Range, DenseVector[V]] {
       def apply(v: DenseVector[V], re: Range): DenseVector[V] = {
 
@@ -515,6 +516,7 @@ object DenseVector extends VectorConstructors[DenseVector]
         DenseVector.create(v.data, offset = v.offset + v.stride * range.start, stride = v.stride * range.step, length = range.length)
       }
     }
+
   }
 
   implicit def canTransposeComplex: CanTranspose[DenseVector[Complex], DenseMatrix[Complex]] = {
