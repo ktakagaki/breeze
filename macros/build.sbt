@@ -1,4 +1,4 @@
-organization := "org.scalanlp"
+organization := "com.github.ktakagaki.breeze"
 
 name := "breeze-macros"
 

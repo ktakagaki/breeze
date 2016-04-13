@@ -1,4 +1,4 @@
-organization := "org.scalanlp"
+organization := "com.github.ktakagaki.breeze"
 
 name := "breeze-parent"
 
@@ -36,22 +36,22 @@ publishArtifact in Test := false
 pomIncludeRepository := { _ => false }
 
 pomExtra := (
-  <url>http://scalanlp.org/</url>
-  <licenses>
-    <license>
-      <name>Apache 2</name>
-      <url>http://www.apache.org/licenses/LICENSE-2.0.html</url>
-      <distribution>repo</distribution>
-    </license>
-  </licenses>
-  <scm>
-    <url>git@github.com:scalanlp/breeze.git</url>
-    <connection>scm:git:git@github.com:scalanlp/breeze.git</connection>
-  </scm>
-  <developers>
-    <developer>
-      <id>dlwh</id>
-      <name>David Hall</name>
-      <url>http://www.dlwh.org/</url>
-    </developer>
-  </developers>)
+  <url>https://github.com/ktakagaki/nounou</url>
+    <licenses>
+      <license>
+        <name>Apache 2</name>
+        <url>http://www.apache.org/licenses/LICENSE-2.0.html</url>
+        <distribution>repo</distribution>
+      </license>
+    </licenses>
+    <scm>
+      <url>git@github.com:ktakagaki/breeze.git</url>
+      <connection>scm:git:git@github.com:ktakagaki/breeze.git</connection>
+    </scm>
+    <developers>
+      <developer>
+        <id>ktakagaki</id>
+        <name>Kenta Takagaki</name>
+        <url>http://www.kentarohtakagaki.org/</url>
+      </developer>
+    </developers>)

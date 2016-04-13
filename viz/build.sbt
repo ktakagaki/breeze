@@ -1,6 +1,6 @@
 name := "breeze-viz"
 
-organization := "org.scalanlp"
+organization := "com.github.ktakagaki.breeze"
 
 resolvers ++= Seq(
   "ScalaNLP Maven2" at "http://repo.scalanlp.org/repo",
