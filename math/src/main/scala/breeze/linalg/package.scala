@@ -63,6 +63,13 @@ package object linalg {
 
   // <editor-fold defaultstate="collapsed" desc=" io stuff ">
 
+  /**
+    * Add methods to the string class in order to make file reading easier
+    * @param s
+    */
+  implicit class String2File(s: String) {
+    def toFile:File = new File(s)
+  }
 
   /**
    * Reads in a DenseMatrix from a CSV File
@@ -275,12 +282,12 @@ package object linalg {
     if (center) {
       val xc = x(*,::) - mean(x, Axis._0).t
       if (scale)
-        xc(*,::) :/ stddev(x(::, *)).t
+        xc(*,::) /:/ stddev(x(::, *)).t
       else
         xc
     } else {
       if (scale)
-        x(*,::) :/ columnRMS(x)
+        x(*,::) /:/ columnRMS(x)
       else
         x
     }
@@ -325,7 +332,7 @@ package object linalg {
    * matrix. Feel free to make this more general.
    */
   private def columnRMS(x: DenseMatrix[Double]): DenseVector[Double] =
-    (sum(x:*x,Axis._0) / (x.rows-1.0)).t.map( scala.math.sqrt _ )
+    (sum(x *:* x, Axis._0) / (x.rows - 1.0)).t.map( scala.math.sqrt _ )
 
 
   /** Alias for randomDouble */

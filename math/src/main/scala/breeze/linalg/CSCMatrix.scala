@@ -48,7 +48,7 @@ class CSCMatrix[@spec(Double, Int, Float, Long) V: Zero](private var _data: Arra
 
   /**
    * Constructs a [[CSCMatrix]] instance. We don't validate the input data for performance reasons.
-   * So make sure you understand the [[http://en.wikipedia.org/wiki/Sparse_matrix CSC format]] correctly.
+   * So make sure you understand the [[https://en.wikipedia.org/wiki/Sparse_matrix#Compressed_sparse_column_.28CSC_or_CCS.29]] correctly.
    * Otherwise, please use the factory methods under [[CSCMatrix]] and [[CSCMatrix#Builder]] to construct CSC matrices.
    * @param data active values
    * @param rows number of rows
@@ -243,6 +243,37 @@ class CSCMatrix[@spec(Double, Int, Float, Long) V: Zero](private var _data: Arra
     }
     res
   }
+
+  override def equals(p1 : Any) : Boolean = p1 match {
+    case y: CSCMatrix[_] =>
+      if(this.rows != y.rows || this.cols != y.cols){
+        return false
+      } else {
+        val xIter = this.activeIterator
+        val yIter = y.activeIterator
+
+        while(xIter.hasNext && yIter.hasNext){
+          var xkeyval = xIter.next()
+          var ykeyval = yIter.next()
+          while(xkeyval._2 == 0 && xIter.hasNext) xkeyval = xIter.next()
+          while(ykeyval._2 == 0 && yIter.hasNext) ykeyval = yIter.next()
+          if(xkeyval != ykeyval) return false
+        }
+        if(xIter.hasNext && !yIter.hasNext){
+          while(xIter.hasNext) if(xIter.next()._2 != 0) return false
+        }
+
+        if(!xIter.hasNext && yIter.hasNext){
+          while(yIter.hasNext) if(yIter.next()._2 != 0) return false
+        }
+      }
+      return true
+    case y: Matrix[_] =>
+      return y == this
+    case _ =>
+      return false
+  }
+
 }
 
 object CSCMatrix extends MatrixConstructors[CSCMatrix]
@@ -482,6 +513,7 @@ object CSCMatrix extends MatrixConstructors[CSCMatrix]
         val colsEqual = col == lastCol
         val row = rowFromIndex(index)
         if (colsEqual && row == rowFromIndex(indices(order(i-1)))) {
+          assert(!keysAlreadyUnique)
           // TODO: might need to codegen to make this fast.
           outData(outDataIndex) = ring.+(outData(outDataIndex), vs(order(i)))
         } else {
@@ -501,6 +533,10 @@ object CSCMatrix extends MatrixConstructors[CSCMatrix]
         i += 1
       }
       outDataIndex += 1
+
+      if (keysAlreadyUnique) {
+        assert(outDataIndex == nnz)
+      }
 
       while(lastCol < _cols) {
         outCols(lastCol+1) = outDataIndex
