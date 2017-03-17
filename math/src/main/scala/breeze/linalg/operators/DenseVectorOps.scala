@@ -149,6 +149,7 @@ trait DenseVectorOps extends DenseVector_GenericOps { this: DenseVector.type =>
   op: Op.Impl2[T, T, T]):Op.Impl2[DenseVector[T], DenseVector[T], DenseVector[T]] = {
     new Op.Impl2[DenseVector[T], DenseVector[T], DenseVector[T]] {
       def apply(a: DenseVector[T], b: DenseVector[T]): DenseVector[T] = {
+        require(a.length == b.length, "Lengths must match!")
         val ad = a.data
         val bd = b.data
         var aoff = a.offset
@@ -642,6 +643,7 @@ trait DenseVector_OrderingOps extends DenseVectorOps { this: DenseVector.type =>
   (implicit @expand.sequence[Op]({_ > _},  {_ >= _}, {_ <= _}, {_ < _}, { _ == _}, {_ != _})
   op: Op.Impl2[T, T, Boolean]):Op.Impl2[DenseVector[T], Vector[T], BitVector] = new Op.Impl2[DenseVector[T], Vector[T], BitVector] {
     def apply(a: DenseVector[T], b: Vector[T]): BitVector = {
+      require(a.length == b.length, "Vector lengths must match!")
       val ad = a.data
       var aoff = a.offset
       val result = BitVector.zeros(a.length)
@@ -835,15 +837,19 @@ trait DenseVector_GenericOps { this: DenseVector.type =>
         import v._
         if (n == 1) {
           var sum = 0.0
-          foreach (v => sum += f.sNorm(v) )
+          foreach(v => sum += f.sNorm(v))
           sum
         } else if (n == 2) {
           var sum = 0.0
-          foreach (v => { val nn = f.sNorm(v); sum += nn * nn })
+          foreach(v => {
+            val nn = f.sNorm(v); sum += nn * nn
+          })
           math.sqrt(sum)
         } else if (n == Double.PositiveInfinity) {
           var max = 0.0
-          foreach (v => { val nn = f.sNorm(v); if (nn > max) max = nn })
+          foreach(v => {
+            val nn = f.sNorm(v); if (nn > max) max = nn
+          })
           max
         } else {
           var sum = 0.0

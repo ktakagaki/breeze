@@ -30,7 +30,7 @@ import spire.implicits.cfor
  * A trait for monadic distributions. Provides support for use in for-comprehensions
  * @author dlwh
  */
-trait Rand[@specialized(Int, Double) +T] { outer =>
+trait Rand[@specialized(Int, Double) +T] extends Serializable { outer =>
   /**
    * Gets one sample from the distribution. Equivalent to sample()
    */
@@ -180,7 +180,7 @@ private final case class MultiplePredicatesRand[@specialized(Int, Double) T](ran
 * Provides standard combinators and such to use
 * to compose new Rands.
 */
-class RandBasis(val generator: RandomGenerator) {
+class RandBasis(val generator: RandomGenerator) extends Serializable {
 
   /**
    * Chooses an element from a collection.
@@ -199,7 +199,7 @@ class RandBasis(val generator: RandomGenerator) {
     }
   }
 
-  def choose[T](c : Seq[T]) = Rand.randInt(c.size).map( c(_))
+  def choose[T](c : Seq[T]) = randInt(c.size).map( c(_))
 
   /**
    * The trivial random generator: always returns the argument
@@ -346,20 +346,19 @@ class RandBasis(val generator: RandomGenerator) {
 object Rand extends RandBasis(new ThreadLocalRandomGenerator(new MersenneTwister()))
 
 object RandBasis {
-  /** Returns a new MersenneTwister backed rand basis with seed set to 0. Note that
+  /**
+    * Returns a new MersenneTwister-backed rand basis with seed set to 0. Note that
     * if multiple threads use this, each thread gets a new generator with an increasing random
     * seed.
     * @return
     */
-  def mt0 = {
-    val int = new AtomicInteger()
-    new RandBasis(new ThreadLocalRandomGenerator(new MersenneTwister(int.getAndIncrement())))
-  }
+  def mt0: RandBasis = withSeed(0)
 
   /**
-   * Returns a new MersenneTwister backed rand basis with seed set to a specific value
+   * Returns a new MersenneTwister-backed rand basis with seed set to a specific value
+    * if multiple threads use this, each thread gets a new generator with an increasing random (starting from seed)
    */
-  def withSeed(seed: Int) = {
+  def withSeed(seed: Int): RandBasis = {
     val int = new AtomicInteger(seed)
     new RandBasis(new ThreadLocalRandomGenerator(new MersenneTwister(int.getAndIncrement())))
   }

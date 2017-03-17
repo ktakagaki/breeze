@@ -15,13 +15,13 @@ package breeze.linalg
  See the License for the specific language governing permissions and
  limitations under the License.
 */
+
 import org.scalatest._
 import org.scalatest.junit._
 import org.scalatest.prop._
 import org.junit.runner.RunWith
 import breeze.math.Complex
 import breeze.numerics._
-import org.scalatest.matchers.ShouldMatchers
 import breeze.util.DoubleImplicits
 
 @RunWith(classOf[JUnitRunner])
@@ -438,15 +438,6 @@ class DenseMatrixTest extends FunSuite with Checkers with Matchers with DoubleIm
     assert(r === DenseMatrix((1,5),(4,3),(2,6)))
   }
 
-  test("Reshape transpose") {
-    val m : DenseMatrix[Int] = DenseMatrix((1,2,3),(4,5,6)).t
-    val r : DenseMatrix[Int] = m.reshape(2, 3, true)
-    assert(m.data eq r.data)
-    assert(r.rows === 2)
-    assert(r.cols === 3)
-    assert(r === DenseMatrix((1,5),(4,3),(2,6)).t)
-  }
-
   test("Solve") {
     // square solve
     val r1 : DenseMatrix[Double] = DenseMatrix((1.0,3.0),(2.0,0.0)) \ DenseMatrix((1.0,2.0),(3.0,4.0))
@@ -754,6 +745,33 @@ class DenseMatrixTest extends FunSuite with Checkers with Matchers with DoubleIm
     assert(m2 * v2 == DenseVector.zeros[Double](10))
   }
 
+  test("#534: DenseMatrix construction from empty row sequence") {
+    val rows = Seq.empty[Seq[Double]]
+    val matrix = DenseMatrix(rows: _*)
+    assert(matrix.rows == 0)
+    assert(matrix.cols == 0)
+  }
+
+   test("#577: Empty DenseMatrix can be transposed") {
+    val m = new DenseMatrix(0, 0, Array.empty[Double])
+    val mt = m.t
+    assert(mt.rows == 0)
+    assert(mt.cols == 0)
+    assert(m === mt)
+  }
+
+  test("#592: can take an empty column or row slice") {
+    val m = DenseMatrix.fill(5,5)(0)
+    m(4 until 4, 0 until 5 )
+    m(0 until 5, 4 until 4 )
+  }
 
 
+  test("#559: reshape of transpose matrix") {
+    val a = DenseMatrix((1,4,7),(2,5,8),(3,6,9)) //Matrix A
+    val b = DenseMatrix((1,2,3),(4,5,6),(7,8,9)) // Matrix B
+    assert(a != b)
+    assert(a == b.t)
+    assert(a.reshape(9,1) == b.t.reshape(9,1))
+  }
 }

@@ -1,10 +1,12 @@
 package breeze.linalg.operators
 
-import breeze.generic.{MappingUFunc, UFunc}
+import breeze.generic.{ MappingUFunc, UFunc }
 import breeze.generic.UFunc.UImpl
-import breeze.math.{Field, Ring, Semiring}
+import breeze.macros.expand
+import breeze.math.{ Field, Ring, Semiring }
 
 /*
+ Copyright 2017 David Hall, based on code by:
  Copyright 2012 Daniel Ramage
 
  Licensed under the Apache License, Version 2.0 (the "License")
@@ -107,6 +109,14 @@ object OpLT  extends OpLT with UFunc {
       def apply(v: T, v2: T): Boolean = ord.lt(v, v2)
     }
   }
+
+
+  @expand
+  implicit def impl2[@expand.args(Int, Float, Long, Double) T, @expand.args(Int, Float, Long, Double) U]:Impl2[T, U, Boolean] = {
+    new Impl2[T, U, Boolean] {
+      def apply(v: T, v2: U): Boolean = v < v2
+    }
+  }
 }
 
 /**
@@ -120,6 +130,14 @@ object OpLTE extends OpLTE with UFunc {
     val ord = implicitly[Ordering[T]]
     new Impl2[T, T, Boolean] {
       def apply(v: T, v2: T): Boolean = ord.lteq(v, v2)
+    }
+  }
+
+  @expand
+  implicit def impl2[@expand.args(Int, Float, Long, Double) T,
+                     @expand.args(Int, Float, Long, Double) U]:Impl2[T, U, Boolean] = {
+    new Impl2[T, U, Boolean] {
+      def apply(v: T, v2: U): Boolean = v <= v2
     }
   }
 }
@@ -137,6 +155,15 @@ object OpGT  extends OpGT with UFunc {
       def apply(v: T, v2: T): Boolean = ord.gt(v, v2)
     }
   }
+
+
+  @expand
+  implicit def impl2[@expand.args(Int, Float, Long, Double) T,
+  @expand.args(Int, Float, Long, Double) U]:Impl2[T, U, Boolean] = {
+    new Impl2[T, U, Boolean] {
+      def apply(v: T, v2: U): Boolean = v > v2
+    }
+  }
 }
 
 /**
@@ -152,6 +179,13 @@ object OpGTE extends OpGTE with UFunc {
       def apply(v: T, v2: T): Boolean = ord.gteq(v, v2)
     }
   }
+
+  @expand
+  implicit def impl2[@expand.args(Int, Float, Long, Double) T, @expand.args(Int, Float, Long, Double) U]:Impl2[T, U, Boolean] = {
+    new Impl2[T, U, Boolean] {
+      def apply(v: T, v2: U): Boolean = v >= v2
+    }
+  }
 }
 
 /**
@@ -165,6 +199,13 @@ object OpEq  extends OpEq with UFunc {
     val ord = implicitly[Ordering[T]]
     new Impl2[T, T, Boolean] {
       def apply(v: T, v2: T): Boolean = ord.equiv(v, v2)
+    }
+  }
+
+  @expand
+  implicit def impl2[@expand.args(Int, Float, Long, Double) T, @expand.args(Int, Float, Long, Double) U]:Impl2[T, U, Boolean] = {
+    new Impl2[T, U, Boolean] {
+      def apply(v: T, v2: U): Boolean = v == v2
     }
   }
 }
@@ -284,5 +325,9 @@ object OpSolveMatrixBy extends OpSolveMatrixBy with UFunc
  * @author dramage
  */
 sealed trait OpMulMatrix extends OpType
-object OpMulMatrix extends OpMulMatrix with UFunc
+object OpMulMatrix extends OpMulMatrix with UFunc {
+  implicit def opMulMatrixFromSemiring[S:Semiring]: Impl2[S, S, S] = new Impl2[S, S, S] {
+    def apply(v: S, v2: S): S = implicitly[Semiring[S]].*(v, v2)
+  }
+}
 
