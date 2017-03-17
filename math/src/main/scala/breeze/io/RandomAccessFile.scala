@@ -189,6 +189,7 @@ class RandomAccessFile(file: File, arg0: String = "r")(implicit converter: ByteC
 
   //<editor-fold desc="Reading">
 
+  //ToDo: do not throw exception, give truncated data instead? Or god forbid, null?
   /** Tries to read an Int16 at the current getFilePointer().
     * Will throw an exception if it encounters an end of file.
     */
