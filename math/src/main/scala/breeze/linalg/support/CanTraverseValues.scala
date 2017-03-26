@@ -15,19 +15,32 @@ package breeze.linalg.support
  See the License for the specific language governing permissions and
  limitations under the License.
 */
+
 import breeze.linalg.support.CanTraverseValues.ValuesVisitor
 import breeze.math.Complex
 
+//ToDo convert to UFuncs, leave type aliases for compatibility (as was done for CanMapValues)
+//see breeze.linalg.support.package.scala
 /**
- * Marker for being able to traverse over the values in a collection/tensor
+ * Marker for being able to traverse over the values in a breeze collection/tensor.
+ * Implicit conversions to this trait allow regular scala collections and Array
  *
  * @author dramage
  * @author dlwh
  */
 trait CanTraverseValues[From, A] {
-  /**Traverses all values from the given collection. */
+
+  /** Traverses all values from the given breeze collection. */
   def traverse(from: From, fn: ValuesVisitor[A]): Unit
-  def isTraversableAgain(from: From):Boolean
+
+  /** Whether a breeze collection can be transversed multiple times.
+    * For native breeze objects, this is mostly (?completely) true,
+    * but for scala collections implicitly used as iterators, this can be false.
+    * Default implementation in [[CanTraverseValues]] is true.
+    *
+    * @see [[CanTraverseValues.canTraverseTraversable]]
+    */
+  def isTraversableAgain(from: From): Boolean = true
 
   def foldLeft[B](from: From, b: B)(fn: (B, A)=>B):B = {
     var bb = b
@@ -37,7 +50,7 @@ trait CanTraverseValues[From, A] {
         bb = fn(bb, a)
       }
 
-      override def zeros(numZero: Int, zeroValue: A): Unit = {
+      override def visitZeros(numZero: Int, zeroValue: A): Unit = {
         for(i <- 0 until numZero) {
           bb = fn(bb, zeroValue)
         }
@@ -52,57 +65,89 @@ trait CanTraverseValues[From, A] {
 
 object CanTraverseValues {
 
-  trait ValuesVisitor[@specialized A] {
-    def visit(a: A)
-    def visitArray(arr: Array[A]):Unit = visitArray(arr, 0, arr.length, 1)
+  /**
+    * This trait can be implemented and used to apply a function over a breeze collection/tensor,
+    * using [[CanTraverseValues.traverse()]].
+    *
+    */
+  trait ValuesVisitor[@specialized V] {
 
-    def visitArray(arr: Array[A], offset: Int, length: Int, stride: Int):Unit = {
+    def visit(a: V): Unit
+
+    /** Visits an array assuming offset of zero and stride of 1 */
+    final def visitArray(arr: Array[V]): Unit = visitArray(arr, 0, arr.length, 1): Unit
+
+    def visitArray(arr: Array[V], offset: Int, length: Int, stride: Int): Unit = {
       import spire.syntax.cfor._
       // Standard array bounds check stuff
       if (stride == 1) {
-        cforRange(offset until length + offset) { i =>
-          visit(arr(i))
-        }
+        cforRange(offset until length + offset) { i => visit(arr(i)) }
       } else {
-        cforRange(0 until length) { i =>
-          visit(arr(i * stride + offset))
-        }
+        cforRange(0 until length) { i => visit(arr(i * stride + offset)) }
       }
     }
-    def zeros(numZero: Int, zeroValue: A)
+
+    /**
+      * Allows separate iteration over zero values in sparse representations
+      * such as [[breeze.linalg.CSCMatrix]], [[breeze.linalg.HashVector]], and [[breeze.linalg.SparseVector]],
+      * to circumvent expensive unnecessary operations.
+      *
+      * Use as follows:
+      * `````
+      * override def traverse(from: CSCMatrix[V], fn: ValuesVisitor[V]): Unit = {
+      *    fn.zeros(from.size - from.activeSize, from.zero)
+      *    fn.visitArray(from.data, 0, from.activeSize, 1)
+      *  }
+      * `````
+      *
+      */
+    def visitZeros(numZero: Int, zeroValue: V): Unit
+
   }
 
   //
   // Arrays
   //
 
-  class OpArray[@specialized(Double, Int, Float, Long) A]
-    extends CanTraverseValues[Array[A], A] {
-    /** Traverses all values from the given collection. */
-    def traverse(from: Array[A], fn: ValuesVisitor[A]): Unit = {
+
+  class OpArray[@specialized(Double, Int, Float, Long) V]
+    extends CanTraverseValues[Array[V], V] {
+
+    def traverse(from: Array[V], fn: ValuesVisitor[V]): Unit = {
       fn.visitArray(from)
     }
 
-    def isTraversableAgain(from: Array[A]): Boolean = true
+    override def isTraversableAgain(from: Array[V]): Boolean = true
+
   }
 
+  // <editor-fold defaultstate="collapsed" desc=" implicit CanTraverseValues[Array[V], V] implementations ">
 
-  implicit def opArray[@specialized A] =
-    new OpArray[A]
+  implicit def opArray[@specialized A] = new OpArray[A]
 
-  implicit object OpArrayII extends OpArray[Int]
+  implicit object ImplicitOpArrayI extends OpArray[Int]
 
-  implicit object OpArraySS extends OpArray[Short]
+  implicit object ImplicitOpArrayS extends OpArray[Short]
 
-  implicit object OpArrayLL extends OpArray[Long]
+  implicit object ImplicitOpArrayL extends OpArray[Long]
 
-  implicit object OpArrayFF extends OpArray[Float]
+  implicit object ImplicitOpArrayF extends OpArray[Float]
 
-  implicit object OpArrayDD extends OpArray[Double]
+  implicit object ImplicitOpArrayD extends OpArray[Double]
 
-  implicit object OpArrayCC extends OpArray[Complex]
-  implicit def canTraverseTraversable[V,X <: TraversableOnce[V]]: CanTraverseValues[X, V] = {
+  implicit object ImplicitOpArrayC extends OpArray[Complex]
+
+  // </editor-fold>
+
+  // <editor-fold defaultstate="collapsed" desc=" implicit CanTraverseValues[scala.Traversableonce[V], V] implementation for  ">
+
+  /**
+    * Implicit conversion to apply breeze traversing operations to
+    * scala collections or iterators ([[scala.TraversableOnce]] objects).
+    */
+  implicit def canTraverseTraversable[X <: TraversableOnce[V], V]: CanTraverseValues[X, V] = {
     new CanTraverseValues[X, V] {
+
       /** Traverses all values from the given collection. */
       override def traverse(from: X, fn: CanTraverseValues.ValuesVisitor[V]): Unit = {
         for(v <- from) {
@@ -110,23 +155,26 @@ object CanTraverseValues {
         }
       }
 
-      def isTraversableAgain(from: X): Boolean = from.isTraversableAgain
+      override def isTraversableAgain(from: X): Boolean = from.isTraversableAgain
+
     }
   }
+
+  // </editor-fold>
+
 }
 
-trait LowPrioCanTraverseValues { this: CanTraverseValues.type =>
+@deprecated("not used","1.0")
+trait LowPrioCanTraverseValues {
+  this: CanTraverseValues.type =>
+
   implicit def canTraverseSelf[V, V2]: CanTraverseValues[V, V] = {
     new CanTraverseValues[V, V] {
+
       /** Traverses all values from the given collection. */
-      override def traverse(from: V, fn: CanTraverseValues.ValuesVisitor[V]): Unit = {
-        fn.visit(from)
-      }
+      override def traverse(from: V, fn: CanTraverseValues.ValuesVisitor[V]): Unit = fn.visit(from)
 
-
-      def isTraversableAgain(from: V): Boolean = true
+      override def isTraversableAgain(from: V): Boolean = true
     }
   }
-
-
 }

@@ -16,7 +16,7 @@ package breeze.linalg
  limitations under the License.
 */
 
-import operators._
+import breeze.linalg.operators._
 import breeze.linalg.support.{CanSlice, CanTranspose, CanSlice2}
 import breeze.generic.UFunc
 import breeze.storage.Zero
@@ -25,6 +25,8 @@ import scala.reflect.ClassTag
 
 
 trait ImmutableNumericOps[+This] extends Any {
+
+  /**"Representation," a reference to ```this```.*/
   def repr: This
 
   // Immutable
@@ -176,6 +178,7 @@ trait ImmutableNumericOps[+This] extends Any {
  * In some sense, this is the real root of the linalg hierarchy. It provides
  * methods for doing operations on a Tensor-like thing. All methods farm out to some implicit or another.
  * We use this when we don't care about the index into the Tensor, or if we don't really have an index.
+  *
  * @author dlwh
  */
 trait NumericOps[+This] extends ImmutableNumericOps[This] {
