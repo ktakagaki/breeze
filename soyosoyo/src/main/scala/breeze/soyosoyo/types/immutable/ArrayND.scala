@@ -1,32 +1,40 @@
-package breeze.linalg.immutable
+package soyosoyo.types.immutable
 
 import breeze.generic.UFunc
-import breeze.linalg.indexing.{SliceRange, Indexer, Slicer}
-
+import breeze.linalg.indexing.{Indexer, SliceRange, Slicer}
 import breeze.linalg._
 import breeze.linalg.support.CanTraverseValues
 import breeze.linalg.support.CanTraverseValues.ValuesVisitor
-import scala.{specialized=>spec}
+import breeze.math.Complex
+import breeze.util.SerializableLogging
+
+import scala.{specialized => spec}
 import scala.reflect.runtime.universe._
 
 /**
+  * Trait describing an immutable square (non-ragged) multidimensional array.
+  *
  * Created by ktakagaki on 15/04/09.
  */
-trait Tensor[@spec(Double, Int, Float, Long) V, D <: Dimensions] {
+trait ArrayND[@spec(Double, Int, Float, Long, Complex) V,
+              D <: Dimensions,
+              S <: Slicer] extends SerializableLogging {
 
   final val dimensionType = typeTag[D]
 
-  // <editor-fold defaultstate="collapsed" desc=" Dimension related ">
+// <editor-fold defaultstate="collapsed" desc=" Dimension related ">
 
- /** Tensor dimensions for each rank. */
+  /** Get object encapsulating array dimensions for each rank. */
   def dimensions(): D
+
+  final def getDimensions(): D = dimensions()
 
   /**
     * Plain-old-Java accessor for [[dimensions()]]. Returns as a variable length array.
     * Use [[dimensions()]] instead if at all possible (i.e. when programming in Scala).
     *
     */
-  final def getDimensions(): Array[Int] = {
+  final def getDimensionsArray(): Array[Int] = {
     dimensions match {
       case x: Dimensions3 => Array(x.dim1, x.dim2, x.dim3)
       case x: Dimensions2 => Array(x.dim1, x.dim2)
@@ -35,7 +43,7 @@ trait Tensor[@spec(Double, Int, Float, Long) V, D <: Dimensions] {
     }
   }
 
-  // </editor-fold>
+// </editor-fold>
 
 //  def apply(slicer: Slicer*): V
 ////  def apply(indices: Int*): V
@@ -53,7 +61,8 @@ trait Tensor[@spec(Double, Int, Float, Long) V, D <: Dimensions] {
 
 }
 
-trait Tensor1[@spec(Double, Int, Float, Long) V] extends Tensor[V, Dimensions1] {
+trait Array1D[@spec(Double, Int, Float, Long, Complex) V]
+              extends ArrayND[V, Dimensions1] {
 
   def apply(dim1: Int): V
   def apply(ran1: SliceRange): Tensor1
@@ -96,7 +105,8 @@ trait Tensor1[@spec(Double, Int, Float, Long) V] extends Tensor[V, Dimensions1] 
   }
 }
 
-trait Tensor2[@spec(Double, Int, Float, Long) V] extends Tensor[V, Dimensions2] {
+trait Array2D[@spec(Double, Int, Float, Long, Complex) V]
+  extends ArrayND[V, Dimensions2] {
 
   def apply(dim1: Int, dim2: Int): V
   def apply(dim1: Int, ran2: SliceRange): Tensor1
@@ -104,19 +114,19 @@ trait Tensor2[@spec(Double, Int, Float, Long) V] extends Tensor[V, Dimensions2] 
 
 }
 
-trait Tensor3[@spec(Double, Int, Float, Long) V] extends Tensor[V, Dimensions3] {
-
-  def apply(dim1: Int, dim2: Int, dim3: Int): V
-
-  def apply(dim1: Int, dim2: Int, ran3: SliceRange): Tensor1
-  def apply(dim1: Int, ran2: SliceRange, dim3: Int): Tensor1
-  def apply(ran1: SliceRange, dim2: Int, dim3: Int): Tensor1
-
-  def apply(dim1: Int, ran2: SliceRange, ran3: SliceRange): Tensor2
-  def apply(ran1: SliceRange, dim2: Int, ran3: SliceRange): Tensor2
-  def apply(ran1: SliceRange, ran2: SliceRange, dim3: Int): Tensor2
-
-  def apply(ran1: SliceRange, ran2: SliceRange, ran3: SliceRange): Tensor3
-
-}
+//trait Tensor3[@spec(Double, Int, Float, Long) V] extends ArrayMD[V, Dimensions3] {
+//
+//  def apply(dim1: Int, dim2: Int, dim3: Int): V
+//
+//  def apply(dim1: Int, dim2: Int, ran3: SliceRange): Tensor1
+//  def apply(dim1: Int, ran2: SliceRange, dim3: Int): Tensor1
+//  def apply(ran1: SliceRange, dim2: Int, dim3: Int): Tensor1
+//
+//  def apply(dim1: Int, ran2: SliceRange, ran3: SliceRange): Tensor2
+//  def apply(ran1: SliceRange, dim2: Int, ran3: SliceRange): Tensor2
+//  def apply(ran1: SliceRange, ran2: SliceRange, dim3: Int): Tensor2
+//
+//  def apply(ran1: SliceRange, ran2: SliceRange, ran3: SliceRange): Tensor3
+//
+//}
 
