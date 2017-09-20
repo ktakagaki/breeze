@@ -95,7 +95,7 @@ object HashVector extends HashVectorOps
     new HashVector(oah)
   }
 
-  def apply[V:ClassTag:Zero](values: V*): HashVector[V] = {
+  def apply[V:ClassTag:Zero](values: V*):HashVector[V] = {
     apply(values.toArray)
   }
   def fill[@spec(Double, Int, Float, Long) V:ClassTag:Zero](size: Int)(v: =>V):HashVector[V] = apply(Array.fill(size)(v))
@@ -158,10 +158,10 @@ object HashVector extends HashVectorOps
     new CanTraverseValues[HashVector[V],V] {
 
 
-      override def isTraversableAgain(from: HashVector[V]): Boolean = true
+      def isTraversableAgain(from: HashVector[V]): Boolean = true
 
       def traverse(from: HashVector[V], fn: ValuesVisitor[V]): Unit = {
-        fn.visitZeros(from.size - from.activeSize, from.default)
+        fn.zeros(from.size - from.activeSize, from.default)
         var i = 0
         while(i < from.iterableSize) {
           if(from.isActive(i))
@@ -172,11 +172,12 @@ object HashVector extends HashVectorOps
     }
   }
 
-  implicit def canTraverseKeyValuePairs[V]: CanTraverseKeyValuePairs[HashVector[V], Int, V] = {
+  implicit def canTraverseKeyValuePairs[V]:CanTraverseKeyValuePairs[HashVector[V], Int, V] = {
     new CanTraverseKeyValuePairs[HashVector[V], Int, V] {
 
+
       def traverse(from: HashVector[V], fn: KeyValuePairsVisitor[Int, V]): Unit = {
-        fn.visitZeros(from.size - from.activeSize, Iterator.range(0, from.size).filterNot(from.index contains _), from.default)
+        fn.zeros(from.size - from.activeSize, Iterator.range(0, from.size).filterNot(from.index contains _), from.default)
         var i = 0
         while(i < from.iterableSize) {
           if(from.isActive(i))
@@ -193,9 +194,8 @@ object HashVector extends HashVectorOps
     }
   }
 
-  implicit def canMapPairs[V, V2: ClassTag: Zero]: CanMapKeyValuePairs[HashVector[V], Int, V, V2, HashVector[V2]] = {
+  implicit def canMapPairs[V, V2: ClassTag: Zero]:CanMapKeyValuePairs[HashVector[V], Int, V, V2, HashVector[V2]] = {
     new CanMapKeyValuePairs[HashVector[V], Int, V, V2, HashVector[V2]] {
-
       /**Maps all key-value pairs from the given collection. */
       def map(from: HashVector[V], fn: (Int, V) => V2) = {
         HashVector.tabulate(from.length)(i => fn(i, from(i)))

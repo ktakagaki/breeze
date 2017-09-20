@@ -47,7 +47,6 @@ import scalaxy.debug._
  *
  * Most implementations based on "Direct Methods for Sparse Linear Systems"
  * by Timothy A. Davis
-  *
  * @author dlwh
  */
 // TODO: maybe put columns in own array of sparse vectors, making slicing easier?
@@ -368,14 +367,14 @@ object CSCMatrix extends MatrixConstructors[CSCMatrix]
 
   implicit def scalarOf[T]: ScalarOf[CSCMatrix[T], T] = ScalarOf.dummy
 
-  implicit def canIterateValues[V]: CanTraverseValues[CSCMatrix[V], V] = {
+  implicit def canIterateValues[V]:CanTraverseValues[CSCMatrix[V], V] = {
     new CanTraverseValues[CSCMatrix[V], V] {
 
-      override def isTraversableAgain(from: CSCMatrix[V]): Boolean = true
+      def isTraversableAgain(from: CSCMatrix[V]): Boolean = true
 
       /** Iterates all key-value pairs from the given collection. */
       def traverse(from: CSCMatrix[V], fn: ValuesVisitor[V]): Unit = {
-        fn.visitZeros(from.size - from.activeSize, from.zero)
+        fn.zeros(from.size - from.activeSize, from.zero)
         fn.visitArray(from.data, 0, from.activeSize, 1)
       }
     }
@@ -389,7 +388,7 @@ object CSCMatrix extends MatrixConstructors[CSCMatrix]
       /** Iterates all key-value pairs from the given collection. */
       def traverse(from: CSCMatrix[V], fn: CanTraverseKeyValuePairs.KeyValuePairsVisitor[(Int, Int), V]): Unit = {
         val zero = implicitly[Zero[V]].zero
-        fn.visitZeros(from.size - from.activeSize, from.iterator.collect { case (k, v) if v != zero => k}, zero)
+        fn.zeros(from.size - from.activeSize, from.iterator.collect { case (k, v) if v != zero => k}, zero)
         // TODO: I can use visitArray if I want to be clever
         from.activeIterator.foreach((fn.visit _).tupled)
       }
