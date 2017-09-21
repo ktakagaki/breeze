@@ -64,7 +64,7 @@ object accumulateAndCount extends UFunc {
           n += 1
         }
 
-        def visitZeros(numZero: Int, zeroValue: Scalar): Unit = {
+        def zeros(numZero: Int, zeroValue: Scalar): Unit = {
           sum += (numZero * zeroValue)
           n += numZero
         }
@@ -82,37 +82,30 @@ trait DescriptiveStats {
    * A [[breeze.generic.UFunc]] for computing the mean of objects
    */
   object mean extends UFunc {
-
     @expand
-    implicit def reduce[@expand.args(Float, Double, Complex) V, T](
-        implicit iter: CanTraverseValues[T, V],
-        @expand.sequence[V](0f, 0d, Complex.zero) zero: V): Impl[T, V] = {
+    implicit def reduce[@expand.args(Float, Double, Complex) S, T](implicit iter: CanTraverseValues[T, S],
+                                                                   @expand.sequence[S](0f, 0d, Complex.zero) z: S): Impl[T, S] = new Impl[T, S] {
+      def apply(v: T): S = {
+        val visit = new ValuesVisitor[S] {
+          var mu: S = z
+          var n: Long = 0
 
-          new Impl[T, V] {
-
-            override def apply(v: T): V = {
-              val visit = new ValuesVisitor[V] {
-                var mu: V = zero
-                var n: Long = 0
-
-                def visit(y: V): Unit = {
-                  n += 1
-                  mu = mu + (y - mu) / n
-                }
-
-                def visitZeros(numZero: Int, zeroValue: V): Unit = {
-                  if (numZero != 0){
-                    mu = mu * n / (n + numZero)
-                  }
-                  n += numZero
-                }
-              }
-
-              iter.traverse(v, visit)
-              visit.mu
-            }
+          def visit(y: S): Unit = {
+            n += 1
+            val d = y - mu
+            mu = mu + d / n
           }
 
+          def zeros(numZero: Int, zeroValue: S): Unit = {
+            if (numZero != 0)
+              mu = mu * n / (n + numZero)
+            n += numZero
+          }
+        }
+        iter.traverse(v, visit)
+        import visit._
+        mu
+      }
     }
 
   }
@@ -138,7 +131,7 @@ trait DescriptiveStats {
             s = s + (n - 1) * d / n * d
           }
 
-          def visitZeros(numZero: Int, zeroValue: S): Unit = {
+          def zeros(numZero: Int, zeroValue: S): Unit = {
             for (i <- 0 until numZero) visit(zeroValue)
           }
         }
@@ -158,10 +151,8 @@ trait DescriptiveStats {
    * The method just calls meanAndVariance and returns the second result.
    */
   object variance extends UFunc {
-    implicit def reduceDouble[T](implicit mv: meanAndVariance.Impl[T, MeanAndVariance]): Impl[T, Double] = {
-      new Impl[T, Double] {
-        def apply(v: T): Double = mv(v).variance
-      }
+    implicit def reduceDouble[T](implicit mv: meanAndVariance.Impl[T, MeanAndVariance]): Impl[T, Double] = new Impl[T, Double] {
+      def apply(v: T): Double = mv(v).variance
     }
   }
 
@@ -169,10 +160,8 @@ trait DescriptiveStats {
    * Computes the standard deviation by calling variance and then sqrt'ing
    */
   object stddev extends UFunc {
-    implicit def reduceDouble[T](implicit vari: variance.Impl[T, Double]): Impl[T, Double] = {
-      new Impl[T, Double] {
-        def apply(v: T): Double = scala.math.sqrt(vari(v))
-      }
+    implicit def reduceDouble[T](implicit vari: variance.Impl[T, Double]): Impl[T, Double] = new Impl[T, Double] {
+      def apply(v: T): Double = scala.math.sqrt(vari(v))
     }
   }
 
@@ -305,7 +294,7 @@ trait DescriptiveStats {
 
     def visit(value: Scalar): Unit = recordOccurrences(value, 1)
 
-    def visitZeros(numZeros: Int, zeroValue: Scalar): Unit = recordOccurrences(zeroValue, numZeros)
+    def zeros(numZeros: Int, zeroValue: Scalar): Unit = recordOccurrences(zeroValue, numZeros)
 
     private def recordOccurrences(value: Scalar, count: Int): Unit = {
       frequencyCounts(value) = frequencyCounts.getOrElse(value, 0) + count
@@ -428,7 +417,7 @@ trait DescriptiveStats {
           val result = new DenseVector[Int](max(x)+1)
           class BincountVisitor extends ValuesVisitor[Int] {
             def visit(a: Int): Unit = { result(a) = result(a) + 1 }
-            def visitZeros(numZero: Int, zeroValue: Int) = {
+            def zeros(numZero: Int, zeroValue: Int) = {
               result(0) = result(0) + numZero
             }
           }
@@ -473,7 +462,7 @@ trait DescriptiveStats {
 
             class BincountVisitor extends ValuesVisitor[Int] {
               def visit(a: Int): Unit = { counter.update(a,counter(a) + 1) }
-              def visitZeros(numZero: Int, zeroValue: Int) = {
+              def zeros(numZero: Int, zeroValue: Int) = {
                 counter.update(zeroValue, counter(zeroValue) + numZero)
               }
             }

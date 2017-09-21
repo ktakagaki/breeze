@@ -1,5 +1,4 @@
 package breeze.linalg.support
-
 /*
  Copyright 2012 David Hall
 
@@ -15,7 +14,6 @@ package breeze.linalg.support
  See the License for the specific language governing permissions and
  limitations under the License.
 */
-
 import breeze.math.Field
 import breeze.util.ArrayUtil
 import scala.reflect.ClassTag
@@ -46,17 +44,16 @@ object CanCopy {
   implicit def opMapValues[From,V](implicit map : CanMapValues[From,V,V,From], op : CanCopy[V]): CanCopy[From] =
     new OpMapValues[From,V]()(op, map)
 
-  implicit def implicitOpArrayAny[V:ClassTag:Field] : OpArray[V] = new OpArray[V]
-  implicit object ImplicitOpArrayI extends OpArray[Int]
-  implicit object ImplicitOpArrayS extends OpArray[Short]
-  implicit object ImplicitOpArrayL extends OpArray[Long]
-  implicit object ImplicitOpArrayF extends OpArray[Float]
-  implicit object ImplicitOpArrayD extends OpArray[Double]
+  implicit def opArrayAny[V:ClassTag:Field] : OpArray[V] = new OpArray[V]
+  implicit object OpArrayI extends OpArray[Int]
+  implicit object OpArrayS extends OpArray[Short]
+  implicit object OpArrayL extends OpArray[Long]
+  implicit object OpArrayF extends OpArray[Float]
+  implicit object OpArrayD extends OpArray[Double]
 
-  implicit def implicitOpField[V:Field]:CanCopy[V] = new CanCopy[V] {
+  implicit def canCopyField[V:Field]:CanCopy[V] = new CanCopy[V] {
     def apply(v1: V) = v1
   }
 
   // </editor-fold>
-
 }

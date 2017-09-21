@@ -1,4 +1,4 @@
-package breeze.linalg;
+package breeze.linalg
 
 import breeze.util.Opt
 import breeze.macros.expand

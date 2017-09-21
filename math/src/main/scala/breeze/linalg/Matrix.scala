@@ -1,5 +1,4 @@
 package breeze.linalg
-
 /*
  Copyright 2012 David Hall
 
@@ -16,29 +15,24 @@ package breeze.linalg
  limitations under the License.
 */
 
-
-import scala.annotation.unchecked.uncheckedVariance
-import scala.{specialized=>spec}
-import scala.reflect.ClassTag
-
-import breeze.util.Terminal
-import breeze.linalg.operators._
-import breeze.linalg.support._
 import breeze.linalg.support.CanTraverseValues.ValuesVisitor
-import breeze.math._
-import breeze.stats.distributions.Rand
+
+import scala.{specialized=>spec}
 import breeze.storage.Zero
+import breeze.util.Terminal
+import breeze.linalg.support._
+import breeze.math._
+import breeze.linalg.operators._
+import scala.reflect.ClassTag
+import scala.annotation.unchecked.uncheckedVariance
+import breeze.stats.distributions.Rand
 
 /**
  *
  * @author dlwh
  */
-trait MatrixLike[@spec(Double, Int, Float, Long) V, +Self  <: Matrix[V]]
-  extends Tensor[(Int, Int), V] with TensorLike[(Int, Int), V, Self] {
-
-  def map[V2, That](fn: V=>V2)(
-      implicit canMapValues: CanMapValues[Self @uncheckedVariance , V, V2, That]
-  ): That = values map fn
+trait MatrixLike[@spec(Double, Int, Float, Long) V, +Self  <: Matrix[V]] extends Tensor[(Int, Int), V] with TensorLike[(Int, Int), V, Self] {
+  def map[V2, That](fn: V=>V2)(implicit canMapValues: CanMapValues[Self @uncheckedVariance , V, V2, That]):That = values map fn
 
 }
 
@@ -65,7 +59,7 @@ trait Matrix[@spec(Double, Int, Float, Long) V] extends MatrixLike[V, Matrix[V]]
     def iterator: Iterator[(Int, Int)] = for{ j <- Iterator.range(0, cols); i <- Iterator.range(0, rows)} yield (i, j)
   }
 
-  def iterator = for(i <- Iterator.range(0, rows); j <- Iterator.range(0, cols)) yield (i, j) -> apply(i, j)
+  def iterator = for(i <- Iterator.range(0, rows); j <- Iterator.range(0, cols)) yield (i -> j) -> apply(i, j)
 
   def valuesIterator = for(i <- Iterator.range(0, rows); j <- Iterator.range(0, cols)) yield apply(i, j)
 
@@ -148,6 +142,7 @@ trait Matrix[@spec(Double, Int, Float, Long) V] extends MatrixLike[V, Matrix[V]]
 }
 
 object Matrix extends MatrixConstructors[Matrix]
+                      with LowPriorityMatrix
                       with MatrixGenericOps
                       with MatrixOpsLowPrio
                       with MatrixOps
@@ -201,7 +196,7 @@ object Matrix extends MatrixConstructors[Matrix]
 
   implicit def canTraverseValues[V]: CanTraverseValues[Matrix[V], V] = {
     new CanTraverseValues[Matrix[V], V] {
-      override def isTraversableAgain(from: Matrix[V]): Boolean = true
+      def isTraversableAgain(from: Matrix[V]): Boolean = true
 
 
       /** Iterates all key-value pairs from the given collection. */
@@ -212,27 +207,24 @@ object Matrix extends MatrixConstructors[Matrix]
   }
 }
 
-/** Trait for matrix initialization.
-  * Implemented in [[DenseMatrix]] and [[CSCMatrix]].
-  *
-  * @tparam Mat
-  */
-trait MatrixConstructors[Mat[V] <: Matrix[V]] {
 
-  /**Create a matrix of all zero values.*/
-  def zeros[@spec(Double, Int, Float, Long) V: ClassTag: Zero](rows: Int, cols: Int): Mat[V]
+trait MatrixConstructors[Mat[T]<:Matrix[T]] {
+  def zeros[@spec(Double, Int, Float, Long) V:ClassTag:Zero](rows: Int, cols: Int):Mat[V]
+  def create[@spec(Double, Int, Float, Long) V:Zero](rows: Int, cols: Int, data: Array[V]):Mat[V]
 
-  def create[@spec(Double, Int, Float, Long) V: Zero](rows: Int, cols: Int, data: Array[V]): Mat[V]
-
-  /**Create a matrix of all ones.*/
-  def ones[@spec(Double, Int, Float, Long) V:ClassTag:Zero:Semiring](rows: Int, cols: Int): Mat[V] = {
+  /**
+   * Creates a matrix of all ones.
+   * @param rows
+   * @param cols
+   * @tparam V
+   * @return
+   */
+  def ones[@spec(Double, Int, Float, Long) V:ClassTag:Zero:Semiring](rows: Int, cols: Int):Mat[V] = {
     fill(rows,cols)(implicitly[Semiring[V]].one)
   }
 
-  def fill[@spec(Double, Int, Float, Long) V:ClassTag:Zero](rows: Int, cols: Int)(v: =>V): Mat[V] =
-    create( rows, cols, Array.fill(rows * cols)(v) )
-
-  def tabulate[@spec(Double, Int, Float, Long) V:ClassTag:Zero](rows: Int, cols: Int)(f: (Int,Int) => V): Mat[V]= {
+  def fill[@spec(Double, Int, Float, Long) V:ClassTag:Zero](rows: Int, cols: Int)(v: =>V):Mat[V] = create(rows, cols, Array.fill(rows * cols)(v))
+  def tabulate[@spec(Double, Int, Float, Long) V:ClassTag:Zero](rows: Int, cols: Int)(f: (Int,Int)=>V):Mat[V]= {
     val z = zeros(rows, cols)
     for(c <- 0 until cols; r <- 0 until rows) {
       z(r, c) = f(r, c)
@@ -240,7 +232,7 @@ trait MatrixConstructors[Mat[V] <: Matrix[V]] {
     z
   }
 
-  def rand[V: ClassTag: Zero](rows: Int, cols: Int, rand: Rand[V] = Rand.uniform): Mat[V] = {
+  def rand[T:ClassTag:Zero](rows: Int, cols: Int, rand: Rand[T] = Rand.uniform): Mat[T] = {
     fill(rows, cols)(rand.draw())
   }
 
@@ -249,7 +241,10 @@ trait MatrixConstructors[Mat[V] <: Matrix[V]] {
   def apply[@specialized(/* Don't remove until SI-8886 is closed*/) R,
             @spec(Double, Int, Float, Long) V](rows : R*)(implicit rl : LiteralRow[R,V], man : ClassTag[V], zero: Zero[V]) = {
     val nRows = rows.length
-    val ns = rl.length(rows(0))
+    val ns = rows.headOption match {
+      case None => 0
+      case Some(firstRow) => rl.length(firstRow)
+    }
     val rv = zeros(nRows, ns)
     finishLiteral(rv, rl, rows)
     rv
@@ -258,13 +253,14 @@ trait MatrixConstructors[Mat[V] <: Matrix[V]] {
   implicit def canCreateZeros[T:ClassTag:Zero]: CanCreateZeros[Mat[T],(Int,Int)] =
     new CanCreateZeros[Mat[T],(Int,Int)] {
       def apply(dims: (Int,Int)): Mat[T] = {
-        zeros[T](dims._1, dims._2)
+        zeros[T](dims._1,dims._2)
       }
     }
 
   implicit def canTabulate[T:ClassTag:Zero] = new CanTabulate[(Int,Int),Mat[T],T] {
     def apply(d: (Int, Int), f: ((Int, Int)) => T): Mat[T] = tabulate[T](d._1,d._2)((r: Int, c: Int) => f((r,c)))
   }
+
 
   // This method only exists because of trouble in Scala-specialization land.
   // basically, we turn off specialization for this loop, since it's not going to be fast anyway.
@@ -273,5 +269,74 @@ trait MatrixConstructors[Mat[V] <: Matrix[V]] {
       rl.foreach(row, {(j, v) => rv(i,j) = v})
     }
   }
+}
 
+trait LowPriorityMatrix {
+  implicit def canSliceTensorBooleanRows[V: Semiring : ClassTag]: CanSlice2[Matrix[V], Tensor[Int, Boolean], ::.type, SliceMatrix[Int, Int, V]] = {
+    new CanSlice2[Matrix[V], Tensor[Int, Boolean], ::.type, SliceMatrix[Int, Int, V]] {
+      def apply(from: Matrix[V], rows: Tensor[Int, Boolean], cols: ::.type): SliceMatrix[Int, Int, V] = {
+        val cols = 0 until from.cols
+        new SliceMatrix(from, SliceUtils.mapRowSeq(rows.findAll(_ == true), from.rows), cols)
+      }
+    }
+  }
+
+  implicit def canSliceTensorBooleanCols[V: Semiring : ClassTag]: CanSlice2[Matrix[ V], ::.type, Tensor[Int, Boolean], SliceMatrix[Int, Int, V]] = {
+    new CanSlice2[Matrix[V], ::.type, Tensor[Int, Boolean], SliceMatrix[Int, Int, V]] {
+      def apply(from: Matrix[V], rows: ::.type, cols: Tensor[Int, Boolean]): SliceMatrix[Int, Int, V] = {
+        val rows = 0 until from.rows
+        new SliceMatrix(from, rows, SliceUtils.mapColumnSeq(cols.findAll(_ == true), from.cols))
+      }
+    }
+  }
+
+  implicit def canSliceTensorBooleanRowsAndCol[V: Semiring : ClassTag]: CanSlice2[Matrix[V], Tensor[Int, Boolean], Int, SliceVector[(Int, Int), V]] = {
+    new CanSlice2[Matrix[V], Tensor[Int, Boolean], Int, SliceVector[(Int, Int), V]] {
+      def apply(from: Matrix[V], sliceRows: Tensor[Int, Boolean], sliceCol: Int): SliceVector[(Int, Int), V] = {
+        val rows = SliceUtils.mapRowSeq(sliceRows.findAll(_ == true), from.rows)
+        val col = SliceUtils.mapColumn(sliceCol, from.cols)
+        new SliceVector(from, slices = rows.map(row => (row, col)))
+      }
+    }
+  }
+
+  implicit def canSliceRowAndTensorBooleanCols[V: Semiring : ClassTag]: CanSlice2[Matrix[V], Int, Tensor[Int, Boolean], Transpose[SliceVector[(Int, Int), V]]] = {
+    new CanSlice2[Matrix[V], Int, Tensor[Int, Boolean], Transpose[SliceVector[(Int, Int), V]]] {
+      def apply(from: Matrix[V], sliceRow: Int, sliceCols: Tensor[Int, Boolean]): Transpose[SliceVector[(Int, Int), V]] = {
+        val row = SliceUtils.mapRow(sliceRow, from.rows)
+        val cols = SliceUtils.mapColumnSeq(sliceCols.findAll(_ == true), from.cols)
+        new SliceVector(from, slices = cols.map(col => (row, col))).t
+      }
+    }
+  }
+
+  implicit def canSliceTensorBooleanRowsAndCols[V: Semiring : ClassTag]: CanSlice2[Matrix[V], Tensor[Int, Boolean], Tensor[Int, Boolean], SliceMatrix[Int, Int, V]] = {
+    new CanSlice2[Matrix[V], Tensor[Int, Boolean], Tensor[Int, Boolean], SliceMatrix[Int, Int, V]] {
+      def apply(from: Matrix[V], sliceRows: Tensor[Int, Boolean], sliceCols: Tensor[Int, Boolean]): SliceMatrix[Int, Int, V] = {
+        val rows = SliceUtils.mapRowSeq(sliceRows.findAll(_ == true), from.rows)
+        val cols = SliceUtils.mapColumnSeq(sliceCols.findAll(_ == true), from.cols)
+        new SliceMatrix(from, rows, cols)
+      }
+    }
+  }
+
+  implicit def canSliceTensorBooleanRowsAndWeirdCols[V: Semiring : ClassTag]: CanSlice2[Matrix[V], Tensor[Int, Boolean], Seq[Int], SliceMatrix[Int, Int, V]] = {
+    new CanSlice2[Matrix[V], Tensor[Int, Boolean], Seq[Int], SliceMatrix[Int, Int, V]] {
+      def apply(from: Matrix[V], sliceRows: Tensor[Int, Boolean], sliceCols: Seq[Int]): SliceMatrix[Int, Int, V] = {
+        val rows = SliceUtils.mapRowSeq(sliceRows.findAll(_ == true), from.rows)
+        val cols = SliceUtils.mapColumnSeq(sliceCols, from.cols)
+        new SliceMatrix(from, rows, cols)
+      }
+    }
+  }
+
+  implicit def canSliceWeirdRowsAndTensorBooleanCols[V: Semiring : ClassTag]: CanSlice2[Matrix[V], Seq[Int], Tensor[Int, Boolean], SliceMatrix[Int, Int, V]] = {
+    new CanSlice2[Matrix[V], Seq[Int], Tensor[Int, Boolean], SliceMatrix[Int, Int, V]] {
+      def apply(from: Matrix[V], sliceRows: Seq[Int], sliceCols: Tensor[Int, Boolean]): SliceMatrix[Int, Int, V] = {
+        val rows = SliceUtils.mapRowSeq(sliceRows, from.rows)
+        val cols = SliceUtils.mapColumnSeq(sliceCols.findAll(_ == true), from.cols)
+        new SliceMatrix(from, rows, cols)
+      }
+    }
+  }
 }

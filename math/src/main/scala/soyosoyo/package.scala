@@ -4,7 +4,7 @@ package object soyosoyo {
 
   //def random0D()
 
-  def randomIntegerWeighted(): Int = 1
+  def randomI0(): Int = scala.util.Random.nextInt()
 
   // </editor-fold>
 

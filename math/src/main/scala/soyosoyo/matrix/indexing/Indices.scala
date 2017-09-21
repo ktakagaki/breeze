@@ -1,7 +1,7 @@
-//package breeze.linalg
+//package soyosoyo.indexing
 //
 ///**
-//  * Encapsulates indexing information for DenseN,
+//  * Encapsulates indexing information for Dense,
 //  * and ultimately gives an iterator to map through a flat internal array by index.
 //  *
 //  * Using tuple for this purpose would have been an option, except that

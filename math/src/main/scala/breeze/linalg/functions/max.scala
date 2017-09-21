@@ -37,7 +37,7 @@ object max extends UFunc /*with VectorizedReduceUFunc <-- doesn't work with 2.10
           max = scala.math.max(max, a)
         }
 
-        def visitZeros(numZero: Int, zeroValue: S): Unit = {
+        def zeros(numZero: Int, zeroValue: S): Unit = {
           if(numZero != 0) {
             visitedOne = true
             max = scala.math.max(zeroValue, max)
@@ -108,8 +108,7 @@ object max extends UFunc /*with VectorizedReduceUFunc <-- doesn't work with 2.10
   /**
    * Method for computing the max of the first length elements of an array. Arrays
    * of size 0 give Double.NegativeInfinity
-    *
-    * @param arr
+   * @param arr
    * @param length
    * @return
    */
@@ -148,55 +147,47 @@ object min extends UFunc {
     }
 
   @expand
-  implicit def reduce[T, @expand.args(Int, Double, Float, Long) V](
-      implicit iter: CanTraverseValues[T, V],
-      @expand.sequence[V](Int.MaxValue, Double.PositiveInfinity, Float.PositiveInfinity, Long.MaxValue) init: V): Impl[T, V] = {
+  implicit def reduce[T, @expand.args(Int, Double, Float, Long) S]
+            (implicit iter: CanTraverseValues[T, S],
+             @expand.sequence[S](Int.MaxValue, Double.PositiveInfinity, Float.PositiveInfinity, Long.MaxValue) init: S): Impl[T, S] = new Impl[T, S] {
 
-      new Impl[T, V] {
+    def apply(v: T): S = {
+      class MinVisitor extends ValuesVisitor[S] {
+        var min = init
+        var visitedOne = false
 
-        def apply(v: T): V = {
-
-          // <editor-fold defaultstate="collapsed" desc=" ValuesVisitor implementation (MinVisitor) ">
-
-          class MinVisitor extends ValuesVisitor[V] {
-            var min = init
-            var visitedOne = false
-
-            def visit(a: V): Unit = {
-              visitedOne = true
-              min = scala.math.min(min, a)
-            }
-
-            def visitZeros(numZero: Int, zeroValue: V): Unit = {
-              if(numZero != 0) {
-                visitedOne = true
-                min = scala.math.min(zeroValue, min)
-              }
-            }
-
-            override def visitArray(arr: Array[V], offset: Int, length: Int, stride: Int): Unit = {
-              var i = 0
-              var off = offset
-              while(i < length) {
-                visitedOne = true
-                min = scala.math.min(min, arr(off))
-                i += 1
-                off += stride
-              }
-            }
-          }
-
-          // </editor-fold>
-
-          val visit = new MinVisitor
-
-          iter.traverse(v, visit)
-          if(!visit.visitedOne) throw new IllegalArgumentException(s"No values in $v!")
-
-          visit.min
+        def visit(a: S): Unit = {
+          visitedOne = true
+          min = scala.math.min(min, a)
         }
 
+        def zeros(numZero: Int, zeroValue: S): Unit = {
+          if(numZero != 0) {
+            visitedOne = true
+            min = scala.math.min(zeroValue, min)
+          }
+        }
+
+        override def visitArray(arr: Array[S], offset: Int, length: Int, stride: Int): Unit = {
+          var i = 0
+          var off = offset
+          while(i < length) {
+            visitedOne = true
+            min = scala.math.min(min, arr(off))
+            i += 1
+            off += stride
+          }
+        }
       }
+
+      val visit = new MinVisitor
+
+      iter.traverse(v, visit)
+      if(!visit.visitedOne) throw new IllegalArgumentException(s"No values in $v!")
+
+      visit.min
+    }
+
   }
 
   implicit def minVS[T, U, LHS, RHS, RV](implicit cmvH: ScalarOf[T, LHS],
@@ -264,7 +255,7 @@ object ptp extends UFunc {
           min = scala.math.min(min, a)
         }
 
-        def visitZeros(numZero: Int, zeroValue: S): Unit = {
+        def zeros(numZero: Int, zeroValue: S): Unit = {
           if(numZero != 0) {
             visitedOne = true
             max = scala.math.max(zeroValue, max)
@@ -316,7 +307,7 @@ object minMax extends UFunc {
           min = scala.math.min(min, a)
         }
 
-        def visitZeros(numZero: Int, zeroValue: S): Unit = {
+        def zeros(numZero: Int, zeroValue: S): Unit = {
           if(numZero != 0) {
             visitedOne = true
             max = scala.math.max(zeroValue, max)

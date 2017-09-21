@@ -62,25 +62,25 @@ object CanZipMapValues {
 
   implicit def opArray[@spec V, @spec RV: ClassTag] = new OpArray[V, RV]
 
-  implicit object ImplicitOpArrayII extends OpArray[Int, Int]
+  implicit object OpArrayII extends OpArray[Int, Int]
 
-  implicit object ImplicitOpArraySS extends OpArray[Short, Short]
+  implicit object OpArraySS extends OpArray[Short, Short]
 
-  implicit object ImplicitOpArrayLL extends OpArray[Long, Long]
+  implicit object OpArrayLL extends OpArray[Long, Long]
 
-  implicit object ImplicitOpArrayFF extends OpArray[Float, Float]
+  implicit object OpArrayFF extends OpArray[Float, Float]
 
-  implicit object ImplicitOpArrayDD extends OpArray[Double, Double]
+  implicit object OpArrayDD extends OpArray[Double, Double]
 
-  implicit object ImplicitOpArrayCC extends OpArray[Complex, Complex]
+  implicit object OpArrayCC extends OpArray[Complex, Complex]
 
-  implicit object ImplicitOpArrayID extends OpArray[Int, Double]
+  implicit object OpArrayID extends OpArray[Int, Double]
 
-  implicit object ImplicitOpArraySD extends OpArray[Short, Double]
+  implicit object OpArraySD extends OpArray[Short, Double]
 
-  implicit object ImplicitOpArrayLD extends OpArray[Long, Double]
+  implicit object OpArrayLD extends OpArray[Long, Double]
 
-  implicit object ImplicitOpArrayFD extends OpArray[Float, Double]
+  implicit object OpArrayFD extends OpArray[Float, Double]
 
   // </editor-fold>
 

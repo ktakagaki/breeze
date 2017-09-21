@@ -18,20 +18,19 @@ import breeze.math.Semiring
  limitations under the License.
 */
 
+
+
 /**
-  * Trait marking a zero value in a particular specialized type (0, 0L, od, etc.).
-  * Used in particular to retrieve implicit zero values particular types,
-  * which are implicitly defined in the companion object to this trait.
-  *
-  * @author dlwh
-  */
+ *
+ * @author dlwh
+ */
 @SerialVersionUID(1l)
-trait Zero[@specialized V] extends Serializable {
-  def zero : V
+trait Zero[@specialized T] extends Serializable {
+  def zero : T
 }
 
-object Zero extends ZeroLowPriority {
 
+object Zero extends ZeroLowPriority {
   def forClass(clazz: Class[_]):Zero[_] = {
     if(clazz == Integer.TYPE) IntZero
     else if (clazz == java.lang.Float.TYPE) FloatZero
@@ -43,70 +42,76 @@ object Zero extends ZeroLowPriority {
     else refDefault
   }
 
-  def apply[V](v: V): Zero[V] = new Zero[V] {
+  def apply[T](v: T):Zero[T] = new Zero[T] {
     def zero = v
   }
 
-  // <editor-fold defaultstate="collapsed" desc=" implicit Zero[V] definitions ">
-
+  @SerialVersionUID(1l)
   implicit object IntZero extends Zero[Int] {
     override def zero = 0
   }
 
+  @SerialVersionUID(1l)
   implicit object ShortZero extends Zero[Short] {
     override def zero = 0.toShort
   }
 
+  @SerialVersionUID(1l)
   implicit object LongZero extends Zero[Long] {
     override def zero = 0l
   }
 
+  @SerialVersionUID(1l)
   implicit object ByteZero extends Zero[Byte] {
     override def zero = 0.toByte
   }
 
+  @SerialVersionUID(1l)
   implicit object CharZero extends Zero[Char] {
     override def zero = 0.toChar
   }
 
+  @SerialVersionUID(1l)
   implicit object FloatZero extends Zero[Float] {
     override def zero = 0.0f
   }
 
+  @SerialVersionUID(1l)
   implicit object DoubleZero extends Zero[Double] {
     override def zero = 0.0
   }
 
+  @SerialVersionUID(1l)
   implicit object BooleanZero extends Zero[Boolean] {
     override def zero = false
   }
 
+  @SerialVersionUID(1l)
   implicit object BigIntZero extends Zero[BigInt] {
     override def zero = BigInt(0)
   }
 
+  @SerialVersionUID(1l)
   implicit object BigDecimalZero extends Zero[BigDecimal] {
     override def zero = BigDecimal(0L)
   }
 
-  // </editor-fold>
 
 }
 
 trait ZeroVeryLowPriority { this: Zero.type =>
-
-  implicit def ObjectZero[V <: AnyRef] = {
-    refDefault.asInstanceOf[Zero[V]]
+  implicit def ObjectZero[T<:AnyRef] = {
+    refDefault.asInstanceOf[Zero[T]]
   }
 
   protected val refDefault = new Zero[AnyRef] {
     override def zero : AnyRef = null
   }
-
 }
 
 trait ZeroLowPriority extends ZeroVeryLowPriority { this: Zero.type =>
 
-  implicit def zeroFromSemiring[V: Semiring] = Zero(implicitly[Semiring[V]].zero)
+  implicit def zeroFromSemiring[T:Semiring] = Zero(implicitly[Semiring[T]].zero)
+
 
 }

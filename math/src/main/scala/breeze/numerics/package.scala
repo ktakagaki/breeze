@@ -502,7 +502,6 @@ package object numerics {
 
     implicit def reduceDouble[T](implicit iter: CanTraverseValues[T, Double]): Impl[T, Double] = new Impl[T, Double] {
       def apply(v: T): Double = {
-
         val visit = new ValuesVisitor[Double] {
           var sum = 0.0
           var lgSum = 0.0
@@ -511,7 +510,7 @@ package object numerics {
             lgSum += lgamma(a)
           }
 
-          def visitZeros(numZero: Int, zeroValue: Double): Unit = {
+          def zeros(numZero: Int, zeroValue: Double): Unit = {
             sum += numZero * zeroValue
             lgSum += lgamma(zeroValue)
           }

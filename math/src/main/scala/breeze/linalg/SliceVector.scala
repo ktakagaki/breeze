@@ -85,7 +85,7 @@ object SliceVector extends SliceVectorOps {
 
     new CanTraverseValues[SliceVector[K, V], V] {
 
-      override def isTraversableAgain(from: SliceVector[K, V]): Boolean = true
+      def isTraversableAgain(from: SliceVector[K, V]): Boolean = true
 
       /** Iterates all key-value pairs from the given collection. */
       def traverse(from: SliceVector[K, V], fn: ValuesVisitor[V]): Unit = {

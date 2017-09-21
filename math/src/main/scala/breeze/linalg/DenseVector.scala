@@ -57,7 +57,7 @@ class DenseVector[@spec(Double, Int, Float, Long) V](val data: Array[V],
                                               with VectorLike[V, DenseVector[V]] with Serializable{
   def this(data: Array[V]) = this(data, 0, 1, data.length)
   def this(data: Array[V], offset: Int) = this(data, offset, 1, data.length)
-  def this(length: Int)(implicit man: ClassTag[V]) = this(new Array[V](length), 0, 1, length)
+  def this(length: Int)(implicit classTag: ClassTag[V]) = this(new Array[V](length), 0, 1, length)
 
 
 
@@ -449,7 +449,7 @@ object DenseVector extends VectorConstructors[DenseVector]
 
     new CanTraverseValues[DenseVector[V], V] {
 
-      override def isTraversableAgain(from: DenseVector[V]): Boolean = true
+      def isTraversableAgain(from: DenseVector[V]): Boolean = true
 
       /** Iterates all key-value pairs from the given collection. */
       def traverse(from: DenseVector[V], fn: ValuesVisitor[V]): Unit = {
@@ -551,7 +551,6 @@ object DenseVector extends VectorConstructors[DenseVector]
   // slicing
   // specialize to get the good class
   implicit def canSlice[V]: CanSlice[DenseVector[V], Range, DenseVector[V]] = {
-
     new CanSlice[DenseVector[V], Range, DenseVector[V]] {
       def apply(v: DenseVector[V], re: Range): DenseVector[V] = {
 
@@ -562,7 +561,6 @@ object DenseVector extends VectorConstructors[DenseVector]
         DenseVector.create(v.data, offset = v.offset + v.stride * range.start, stride = v.stride * range.step, length = range.length)
       }
     }
-
   }
 
   implicit def canTransposeComplex: CanTranspose[DenseVector[Complex], DenseMatrix[Complex]] = {
