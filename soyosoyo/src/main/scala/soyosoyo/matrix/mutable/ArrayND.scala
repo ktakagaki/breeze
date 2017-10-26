@@ -49,15 +49,8 @@
 //////  def apply(indices: Int*): V
 //////  def apply(indices: Indices[Ord]): Matrix[V, OutputOrder]
 //
-////  def equals(tensor: Tensor): Boolean = ???
 ////  def reshape(): Tensor = ???
 ////
-////  def iterator: Iterator[(Int, V)] = ???
-////  def activeIterator: Iterator[(Int, V)] = ???
-////  def valuesIterator: Iterator[V] = ???
-////  def activeValuesIterator: Iterator[V] = ???
-////  def keysIterator: Iterator[Int] = ???
-////  def activeKeysIterator: Iterator[Int] = ???
 //
 //}
 //
