@@ -1,6 +1,7 @@
 name := "breeze-viz"
 
-organization := "org.scalanlp"
+Common.commonSettings
+//organization := "org.scalanlp"
 
 resolvers ++= Seq(
   "ScalaNLP Maven2" at "http://repo.scalanlp.org/repo",

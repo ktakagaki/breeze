@@ -2,12 +2,16 @@ import sbt.Keys._
 import sbt._
 
 object Common {
+
   val crossScalaVersions = Seq("2.12.1", "2.11.8", "2.10.6")
+
   val scalaVersion = crossScalaVersions.head
 
   val commonSettings = Seq(
-    organization := "org.scalanlp",
+    organization := "com.github.ktakagaki", //"org.scalanlp",
+
     Keys.scalaVersion := Common.scalaVersion,
+
     Keys.crossScalaVersions := Common.crossScalaVersions,
 
     scalacOptions ++= Seq("-deprecation", "-language:_"),
