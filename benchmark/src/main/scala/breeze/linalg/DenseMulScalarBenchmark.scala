@@ -33,7 +33,7 @@ class DenseMulScalarBenchmark extends BreezeBenchmark {
     var sum = 0.0
     var q = dv2
     cforRange(0 until reps) { rep =>
-      q = dv :* q
+      q = dv *:* q
     }
     q
   }
@@ -75,7 +75,5 @@ class DenseMulScalarBenchmark extends BreezeBenchmark {
   }
 
 }
-
-
 
 object DenseMulScalarBenchmark extends MyRunner(classOf[DenseMulScalarBenchmark])
