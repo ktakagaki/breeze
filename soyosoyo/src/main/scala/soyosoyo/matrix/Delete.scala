@@ -1,7 +1,7 @@
 package soyosoyo.matrix
 
 import soyosoyo.matrix.immutable.{Dense1, Matrix1}
-import soyosoyo.types.{Indices, IndicesNull, IndicesRangeInstantiated, IndicesSingleInstantiated}
+import soyosoyo.matrix.types.{Indices, IndicesNull, IndicesRangeInstantiated, IndicesSingleInstantiated}
 
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag

@@ -2,7 +2,7 @@ package soyosoyo.matrix.immutable
 
 import breeze.linalg.DenseVector
 import soyosoyo.subroutines.LoggingExtension
-import soyosoyo.types.Indices
+import soyosoyo.matrix.types.Indices
 
 import scala.reflect.ClassTag
 import scala.{specialized => spec}

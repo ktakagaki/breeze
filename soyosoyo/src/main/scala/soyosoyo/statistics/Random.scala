@@ -3,12 +3,12 @@ package soyosoyo.statistics
 import soyosoyo.matrix.immutable.{Dense, DenseIrregular, Dense1}
 import soyosoyo.matrix.indexing.{Indexer1}
 import soyosoyo.subroutines.LoggingExtension
-import soyosoyo.types.{RangeInclusiveD, RangeInclusiveI}
+import soyosoyo.matrix.types.{Span2D, Span2I}
 
 
 object Random extends LoggingExtension {
 
-  def random(range: RangeInclusiveI): Int = {
+  def random(range: Span2I): Int = {
     val rangeSpan = range.x2 - range.x1
     scala.util.Random.nextInt(rangeSpan) + range.x1
   }
@@ -23,7 +23,7 @@ object Random extends LoggingExtension {
 
   def random(): Double = scala.util.Random.nextDouble()
 
-  def random(range: RangeInclusiveD): Double = {
+  def random(range: Span2D): Double = {
     val rangeSpan = range.x2 - range.x1
     scala.util.Random.nextDouble()*rangeSpan + range.x1
   }

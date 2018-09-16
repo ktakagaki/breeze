@@ -4,7 +4,7 @@ import breeze.linalg.DenseMatrix
 
 import scala.reflect.ClassTag
 import scala.{specialized => spec}
-import soyosoyo.types.Indices
+import soyosoyo.matrix.types.Indices
 
 import scala.collection.mutable.ArrayBuffer
 

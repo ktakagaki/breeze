@@ -7,7 +7,7 @@ import scala.{specialized => spec}
 import soyosoyo._
 import soyosoyo.matrix.immutable.{Dense, Dense1, Matrix1}
 import soyosoyo.subroutines.LoggingExtension
-import soyosoyo.types.{IndicesSingle, IndicesSingleInstantiated}
+import soyosoyo.matrix.types.{IndicesSingle, IndicesSingleInstantiated}
 
 import scala.annotation.tailrec
 import scala.reflect.ClassTag
@@ -21,37 +21,32 @@ object RandomSample extends LoggingExtension {
 //  def randomSample[@expand.args(Double, Float, Int, Long) V: ClassTag](
   def randomSample[V: ClassTag]( data: Matrix1[V], n: Int ): Dense1[V] = {
 
-    loggerRequire( n <= data.length, "Length of selection must be shorter than data length" )
     new Dense1[V]( randomSample( data.toArray, n) )
 
   }
 
-//  @expand
-//  def randomSample[@expand.args(Double, Float, Int, Long) V: ClassTag](
   def randomSample[V: ClassTag]( data: Array[V], n: Int ): Array[V] = {
 
-    val tempret = scala.util.Random.shuffle( data.toVector )
-    tempret.slice(0, n).toArray
+  loggerRequire( n <= data.length, "Length of selection must be shorter than data length" )
+
+  val tempret = scala.util.Random.shuffle( data.toVector )
+  tempret.slice(0, n).toArray
 
   }
 
-//  @expand
-//  def randomSample[@expand.args(Double, Float, Int, Long) V: ClassTag](
   def randomSample[V: ClassTag]( data: Matrix1[V], weights: Matrix1[Double], n: Int ): Dense1[V] = {
 
     new Dense1[V]( randomSample( data.toArray, weights.toArray, n) )
 
   }
 
-//  @expand
-//  def randomSample[@expand.args(Double, Float, Int, Long) V: ClassTag](
   def randomSample[V: ClassTag]( data: Array[V], weights: Array[Double], n: Int ): Array[V] = {
 
     loggerRequire( n <= data.length, "Length of selection must be shorter than data length" )
     loggerRequire( weights.length == data.length, "Number of weights specified differs from data length." )
     loggerRequire( weights.forall( _ >= 0d ), "Weights must all be >= 0d." )
 
-    randomSampleImpl(data, weights, Array[V](), n).toArray
+    randomSampleImpl(data, weights, Array[V](), n)
 
   }
 

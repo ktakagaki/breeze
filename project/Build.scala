@@ -54,6 +54,11 @@ object Common {
             <name>David Hall</name>
             <url>http://www.dlwh.org/</url>
           </developer>
+          <developer>
+            <id>ktakagaki</id>
+            <name>Kenta Takagaki</name>
+            <url>http://www.kentarohtakagaki.org/</url>
+          </developer>
         </developers>,
     publishMavenStyle := true,
 

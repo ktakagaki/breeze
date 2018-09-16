@@ -1,4 +1,4 @@
-package soyosoyo.types
+package soyosoyo.matrix.types
 
 import soyosoyo.subroutines.LoggingExtension
 
@@ -10,6 +10,12 @@ object Indices {
     else IndicesList( seq.toVector )
 
   }
+
+  implicit def spanToIndices( span: Span2I ): IndicesRange =
+    IndicesRange( span.x1, span.x2 )
+
+  implicit def spanToIndices( span: Span3I ): IndicesRange =
+    IndicesRange( span.x1, span.x2, span.x3 )
 
   /**Instantiates a virtual index (may be negative, counting from end, to real array index (>0).*/
   def instantiate( index: Int, dimensionLength: Int ): Int =

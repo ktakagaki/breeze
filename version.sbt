@@ -1,4 +1,4 @@
-git.baseVersion := "0.13"
+git.baseVersion := "0.15"
 // append -SNAPSHOT unless we're on a branch
 //git.gitUncommittedChanges := git.gitCurrentTags.value.isEmpty
 // git.useGitDescribe := true

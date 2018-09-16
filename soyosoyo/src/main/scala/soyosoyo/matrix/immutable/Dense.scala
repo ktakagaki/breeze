@@ -4,7 +4,7 @@ import breeze.linalg.DenseVector
 import breeze.macros.expand
 import breeze.math.Complex
 import soyosoyo._
-import soyosoyo.types.Indices
+import soyosoyo.matrix.types.Indices
 
 import scala.reflect.ClassTag
 import scala.{specialized => spec}

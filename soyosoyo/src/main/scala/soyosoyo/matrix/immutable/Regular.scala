@@ -1,7 +1,7 @@
 package soyosoyo.matrix.immutable
 
 import breeze.linalg.DenseVector
-import soyosoyo.types.Indices
+import soyosoyo.matrix.types.Indices
 
 import scala.{specialized => spec}
 

@@ -3,7 +3,7 @@ package soyosoyo.matrix.indexing
 import org.scalatest.FunSuite
 import soyosoyo._
 import soyosoyo.soyosoyoTestData
-import soyosoyo.types.{IndicesRange, IndicesRangeInstantiated}
+import soyosoyo.matrix.types.{IndicesRange, IndicesRangeInstantiated}
 
 class IndexingTest  extends FunSuite with soyosoyoTestData {
 

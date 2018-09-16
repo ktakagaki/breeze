@@ -14,14 +14,6 @@ publishTo := Some({
 
 publishArtifact in Test := false
 
-// Add sonatype repository settings
-publishTo := Some(
-  if (isSnapshot.value)
-    Opts.resolver.sonatypeSnapshots
-  else
-    Opts.resolver.sonatypeStaging
-)
-
 lazy val root = project.in(file("."))
   .aggregate(math, natives, viz, macros, soyosoyo).dependsOn(math, viz)
 
